@@ -21,6 +21,13 @@ const QRCodeSVG = dynamic(
   }
 );
 
+async function copyToClipboard(text: string): Promise<void> {
+  if (!navigator.clipboard || !navigator.clipboard.writeText) {
+    throw new Error("Clipboard not supported");
+  }
+  await navigator.clipboard.writeText(text);
+}
+
 async function fetchEscrowLink() {
   await new Promise((resolve) => setTimeout(resolve, 150));
   return {
@@ -57,13 +64,6 @@ export default function EscrowLinkCard({
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const showQRCode = true;
-
-  const copyToClipboard = async (text: string) => {
-    if (!navigator.clipboard || !navigator.clipboard.writeText) {
-      throw new Error("Clipboard not supported");
-    }
-    await navigator.clipboard.writeText(text);
-  };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { Search, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/Skeleton";
 import OptimizedImage from "@/components/ui/OptimizedImage";
