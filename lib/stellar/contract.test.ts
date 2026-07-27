@@ -21,6 +21,31 @@ vi.mock("./freighter", () => ({
 
 // Mock Stellar SDK
 vi.mock("@stellar/stellar-sdk", () => {
+  function buildTx() {
+    return {
+      addOperation: vi.fn().mockReturnThis(),
+      setTimeout: vi.fn().mockReturnThis(),
+      build: vi.fn().mockReturnValue({
+        toXDR: vi.fn().mockReturnValue("mock-xdr-string"),
+      }),
+    };
+  }
+  function MockTxBuilderFn() {
+    return buildTx();
+  }
+  const MockTxBuilder = vi.fn().mockImplementation(MockTxBuilderFn);
+  MockTxBuilder.fromXDR = function () {
+    return buildTx();
+  };
+
+  function MockServer() {
+    return {
+      getAccount: vi.fn().mockResolvedValue({ accountId: "GTEST", sequenceNumber: "0" }),
+      sendTransaction: vi.fn(),
+      getTransaction: vi.fn(),
+    };
+  }
+
   return {
     Contract: vi.fn().mockImplementation(function(id) {
       return {
@@ -29,15 +54,7 @@ vi.mock("@stellar/stellar-sdk", () => {
       };
     }),
     Keypair: { random: vi.fn() },
-    TransactionBuilder: vi.fn().mockImplementation(function() {
-      return {
-        addOperation: vi.fn().mockReturnThis(),
-        setTimeout: vi.fn().mockReturnThis(),
-        build: vi.fn().mockReturnValue({
-          toXDR: vi.fn().mockReturnValue("mock-xdr-string"),
-        }),
-      };
-    }),
+    TransactionBuilder: MockTxBuilder,
     Networks: {
       PUBLIC: "Public Global Stellar Network ; September 2015",
       TESTNET: "Test SDF Network ; September 2015",
@@ -46,6 +63,7 @@ vi.mock("@stellar/stellar-sdk", () => {
       invokeHostFunction: vi.fn().mockReturnValue({}),
       extendFootprintTtl: vi.fn().mockReturnValue({}),
       invokeContractFunction: vi.fn().mockReturnValue({}),
+      uploadContractWasm: vi.fn().mockReturnValue({}),
     },
     xdr: {
       TransactionEnvelope: {
@@ -53,22 +71,16 @@ vi.mock("@stellar/stellar-sdk", () => {
       },
     },
     rpc: {
-      Server: vi.fn().mockImplementation(() => ({
-        getAccount: vi.fn().mockResolvedValue({ accountId: "GTEST", sequenceNumber: "0" }),
-        sendTransaction: vi.fn(),
-        getTransaction: vi.fn(),
-      })),
+      Server: vi.fn().mockImplementation(MockServer),
     },
     SorobanRpc: {
-      Server: vi.fn().mockImplementation(() => ({
-        getAccount: vi.fn().mockResolvedValue({ accountId: "GTEST", sequenceNumber: "0" }),
-        sendTransaction: vi.fn(),
-        getTransaction: vi.fn(),
-      })),
+      Server: vi.fn().mockImplementation(MockServer),
     },
     BASE_FEE: "100",
     StrKey: {
-      isValidEd25519PublicKey: vi.fn((key) => typeof key === "string" && key.startsWith("G") && key.length === 56),
+      isValidEd25519PublicKey: vi.fn(function(key) {
+        return typeof key === "string" && key.startsWith("G") && key.length === 56;
+      }),
     },
   };
 });

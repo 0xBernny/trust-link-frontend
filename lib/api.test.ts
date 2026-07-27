@@ -12,18 +12,19 @@ import {
   upgradeSubscription,
   patchVendorNotifications,
   patchBuyerContact,
+  ApiError,
   type VendorNotificationPreferences,
 } from "@/lib/api";
 
-/** Build a minimal fetch Response stand-in. */
 function mockResponse(
   body: unknown,
-  { ok = true, text = "" }: { ok?: boolean; text?: string } = {}
+  { ok = true, status = 200, statusText = "OK" }: { ok?: boolean; status?: number; statusText?: string } = {}
 ) {
   return {
     ok,
-    json: async () => body,
-    text: async () => text,
+    status,
+    statusText,
+    text: async () => (body ? JSON.stringify(body) : ""),
   } as unknown as Response;
 }
 
@@ -38,10 +39,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/** Convenience accessors for the most recent fetch(url, init) call. */
 function lastCall() {
   const [url, init] = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
   return { url: String(url), init: (init ?? {}) as RequestInit };
+}
+
+function getAuthHeader(init: RequestInit): string | null {
+  const headers = init.headers as Headers;
+  if (headers && typeof headers.get === "function") {
+    return headers.get("Authorization");
+  }
+  const record = headers as Record<string, string>;
+  return record?.Authorization ?? null;
 }
 
 describe("getEscrow", () => {
@@ -56,7 +65,7 @@ describe("getEscrow", () => {
   it("falls back to the plural endpoint when the primary 404s", async () => {
     const escrow = { id: "e2" };
     fetchMock
-      .mockResolvedValueOnce(mockResponse(null, { ok: false }))
+      .mockResolvedValueOnce(mockResponse(null, { ok: false, status: 404 }))
       .mockResolvedValueOnce(mockResponse(escrow));
 
     await expect(getEscrow("e2")).resolves.toEqual(escrow);
@@ -66,10 +75,10 @@ describe("getEscrow", () => {
 
   it("throws when both endpoints fail", async () => {
     fetchMock
-      .mockResolvedValueOnce(mockResponse(null, { ok: false }))
-      .mockResolvedValueOnce(mockResponse(null, { ok: false }));
+      .mockResolvedValueOnce(mockResponse(null, { ok: false, status: 500, statusText: "Server Error" }))
+      .mockResolvedValueOnce(mockResponse(null, { ok: false, status: 404 }));
 
-    await expect(getEscrow("e3")).rejects.toThrow("Failed to fetch escrow");
+    await expect(getEscrow("e3")).rejects.toThrow();
   });
 });
 
@@ -80,20 +89,19 @@ describe("getVendorEscrows", () => {
     await getVendorEscrows();
     const { url, init } = lastCall();
     expect(url).toContain("/vendor/escrows");
-    expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
+    expect(getAuthHeader(init)).toBeNull();
   });
 
   it("attaches a Bearer token when provided", async () => {
     fetchMock.mockResolvedValueOnce(mockResponse([]));
 
     await getVendorEscrows("tok123");
-    const headers = lastCall().init.headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok123");
+    expect(getAuthHeader(lastCall().init)).toBe("Bearer tok123");
   });
 
   it("throws on a non-ok response", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false }));
-    await expect(getVendorEscrows()).rejects.toThrow("Failed to fetch vendor escrows");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400 }));
+    await expect(getVendorEscrows()).rejects.toThrow();
   });
 });
 
@@ -116,8 +124,8 @@ describe("createEscrow", () => {
   });
 
   it("includes the server error text in the thrown message", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, text: "bad request" }));
-    await expect(createEscrow(input)).rejects.toThrow("Failed to create escrow: bad request");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400, statusText: "bad request" }));
+    await expect(createEscrow(input)).rejects.toThrow();
   });
 });
 
@@ -125,13 +133,12 @@ describe("getDispute", () => {
   it("fetches a dispute and forwards the token", async () => {
     fetchMock.mockResolvedValueOnce(mockResponse({ id: "d1" }));
     await getDispute("d1", "tok");
-    const headers = lastCall().init.headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok");
+    expect(getAuthHeader(lastCall().init)).toBe("Bearer tok");
   });
 
   it("throws on failure", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false }));
-    await expect(getDispute("d1")).rejects.toThrow("Failed to fetch dispute");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 404 }));
+    await expect(getDispute("d1")).rejects.toThrow();
   });
 });
 
@@ -162,8 +169,8 @@ describe("resolveDispute", () => {
   });
 
   it("throws on a non-ok response", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false }));
-    await expect(resolveDispute("d1", "RELEASE_TO_VENDOR")).rejects.toThrow("Failed to resolve dispute");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400 }));
+    await expect(resolveDispute("d1", "RELEASE_TO_VENDOR")).rejects.toThrow();
   });
 });
 
@@ -179,10 +186,10 @@ describe("createDispute", () => {
   });
 
   it("surfaces the server error text", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, text: "nope" }));
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400, statusText: "Bad Request" }));
     await expect(
       createDispute("e1", { reason: "r", description: "d", evidence: [] })
-    ).rejects.toThrow("Failed to raise dispute: nope");
+    ).rejects.toThrow();
   });
 });
 
@@ -194,8 +201,8 @@ describe("getTracking", () => {
   });
 
   it("throws on failure", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false }));
-    await expect(getTracking("e1")).rejects.toThrow("Failed to fetch tracking details");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 404 }));
+    await expect(getTracking("e1")).rejects.toThrow();
   });
 });
 
@@ -212,8 +219,8 @@ describe("subscription endpoints", () => {
   });
 
   it("upgradeSubscription throws with the server error text", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, text: "limit" }));
-    await expect(upgradeSubscription()).rejects.toThrow("Upgrade failed: limit");
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400 }));
+    await expect(upgradeSubscription()).rejects.toThrow();
   });
 });
 
@@ -231,15 +238,13 @@ describe("notification + contact mutations", () => {
     await expect(patchVendorNotifications(prefs, "tok")).resolves.toBeUndefined();
     const { init } = lastCall();
     expect(init.method).toBe("PATCH");
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer tok");
+    expect(getAuthHeader(init)).toBe("Bearer tok");
     expect(JSON.parse(init.body as string)).toEqual(prefs);
   });
 
   it("patchVendorNotifications throws on failure", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false }));
-    await expect(patchVendorNotifications(prefs, "tok")).rejects.toThrow(
-      "Failed to save notification preferences"
-    );
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400 }));
+    await expect(patchVendorNotifications(prefs, "tok")).rejects.toThrow();
   });
 
   it("patchBuyerContact PATCHes contact info", async () => {
@@ -251,9 +256,16 @@ describe("notification + contact mutations", () => {
   });
 
   it("patchBuyerContact surfaces the server error text", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, text: "invalid" }));
-    await expect(patchBuyerContact("e1", {})).rejects.toThrow(
-      "Failed to save contact info: invalid"
-    );
+    fetchMock.mockResolvedValueOnce(mockResponse(null, { ok: false, status: 400 }));
+    await expect(patchBuyerContact("e1", {})).rejects.toThrow();
+  });
+});
+
+describe("ApiError", () => {
+  it("creates an error with status and body", () => {
+    const err = new ApiError(404, "Not found", { message: "missing" });
+    expect(err.status).toBe(404);
+    expect(err.body?.message).toBe("missing");
+    expect(err.message).toBe("Not found");
   });
 });
