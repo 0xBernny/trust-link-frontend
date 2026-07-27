@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import * as StellarSdk from "@stellar/stellar-sdk";
 
 type Network = "testnet" | "mainnet";

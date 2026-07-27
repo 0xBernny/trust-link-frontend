@@ -41,6 +41,11 @@ exports[`Footer > matches snapshot 1`] = `
           >
             Français
           </option>
+          <option
+            value="pcm"
+          >
+            Pidgin
+          </option>
         </select>
       </div>
     </div>

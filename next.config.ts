@@ -23,6 +23,9 @@ Missing required environment variable: ${key}
 
 const nextConfig: NextConfig = {
   compress: true,
+  turbopack: {
+    root: process.cwd(),
+  },
 
   images: {
     formats: ["image/avif", "image/webp"],
@@ -122,12 +125,16 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "no-cache, must-revalidate" },
         ],
       },
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+      ...(process.env.NODE_ENV === "production"
+        ? [
+            {
+              source: "/_next/static/:path*",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+          ]
+        : []),
       {
         source: "/:path*.(jpg|jpeg|png|gif|svg|webp|avif|ico|woff|woff2|ttf|eot|otf)",
         locale: false,

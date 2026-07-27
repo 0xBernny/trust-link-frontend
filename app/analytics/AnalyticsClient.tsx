@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -221,14 +221,16 @@ function AnalyticsPageContent() {
       router.push("/");
       return;
     }
-    setIsChecking(false);
+    startTransition(() => setIsChecking(false));
   }, [router]);
 
   useEffect(() => {
     if (isChecking || !isPro || planLoading) return;
     const token = localStorage.getItem("wallet.jwt") ?? undefined;
-    setIsLoading(true);
-    setError(null);
+    startTransition(() => {
+      setIsLoading(true);
+      setError(null);
+    });
     getVendorEscrows(token)
       .then(setEscrows)
       .catch((caught) => {

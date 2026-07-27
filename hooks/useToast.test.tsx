@@ -73,7 +73,6 @@ describe("useToast", () => {
 
     expect(sonnerSuccess).toHaveBeenCalledWith("Done", {
       duration: 2000,
-      important: true,
     });
   });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, memo } from "react";
+import { useCallback, useEffect, useState, memo, startTransition } from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
 import { useTranslation } from "react-i18next";
@@ -21,7 +21,7 @@ const PaymentSection = ({ loading = false }: { loading?: boolean }) => {
   }, []);
 
   useEffect(() => {
-    loadData();
+    startTransition(() => loadData());
   }, [loadData]);
 
   if (error) {

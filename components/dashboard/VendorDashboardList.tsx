@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, startTransition } from "react";
 import Link from "next/link";
 import { Search, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -31,7 +31,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    setCurrentPage(1);
+    startTransition(() => setCurrentPage(1));
   }, [searchQuery, statusFilter, fromDate, toDate]);
 
   const filteredEscrows = useMemo(() => {
@@ -82,7 +82,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   };
 
   useEffect(() => {
-    loadItems();
+    startTransition(() => loadItems());
   }, []);
 
   const handleShipmentSuccess = (escrowId: string) => {

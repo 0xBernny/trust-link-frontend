@@ -14,7 +14,7 @@ export default function OfflinePage() {
       </div>
       <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">You are offline</h1>
       <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mb-8">
-        It looks like you've lost your internet connection. Please check your network settings and try again.
+        It looks like you&apos;ve lost your internet connection. Please check your network settings and try again.
       </p>
       <Link 
         href="/"

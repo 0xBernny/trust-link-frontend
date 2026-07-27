@@ -13,6 +13,8 @@ vi.mock("@/hooks/useEscrow", () => ({
 }));
 
 import { useEscrow } from "@/hooks/useEscrow";
+import { WalletProvider } from "@/components/providers/WalletProvider";
+import { NetworkProvider } from "@/components/providers/NetworkProvider";
 
 const mockEscrow: Escrow = {
   id: "esc_123",
@@ -29,12 +31,12 @@ const mockEscrow: Escrow = {
 describe("TrackingTimeline", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useEscrow).mockReturnValue({
-      escrow: mockEscrow,
+    vi.mocked(useEscrow).mockImplementation((escrowId: string | null | undefined, opts?: { initialData?: Escrow }) => ({
+      escrow: opts?.initialData ?? mockEscrow,
       isLoading: false,
       error: undefined,
       refetch: vi.fn(),
-    });
+    }));
   });
 
   it("renders loading state", () => {
@@ -75,7 +77,11 @@ describe("TrackingTimeline", () => {
   it("shows Confirm Delivery button when status is SHIPPED", () => {
     const shippedEscrow = { ...mockEscrow, status: "SHIPPED" as const };
     render(
-      <TrackingTimeline escrowId="esc_123" initialEscrow={shippedEscrow} />
+      <NetworkProvider>
+        <WalletProvider>
+          <TrackingTimeline escrowId="esc_123" initialEscrow={shippedEscrow} />
+        </WalletProvider>
+      </NetworkProvider>
     );
 
     expect(screen.getByText("Confirm Delivery")).toBeInTheDocument();
@@ -84,7 +90,11 @@ describe("TrackingTimeline", () => {
   it("shows Raise a Dispute button when status is SHIPPED", () => {
     const shippedEscrow = { ...mockEscrow, status: "SHIPPED" as const };
     render(
-      <TrackingTimeline escrowId="esc_123" initialEscrow={shippedEscrow} />
+      <NetworkProvider>
+        <WalletProvider>
+          <TrackingTimeline escrowId="esc_123" initialEscrow={shippedEscrow} />
+        </WalletProvider>
+      </NetworkProvider>
     );
 
     expect(screen.getByText("Raise a Dispute")).toBeInTheDocument();

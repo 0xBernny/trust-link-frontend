@@ -16,7 +16,6 @@ export async function generatePDFFromElement(
 ): Promise<void> {
   const {
     filename = 'export.pdf',
-    title = 'Export',
   } = options;
 
   try {

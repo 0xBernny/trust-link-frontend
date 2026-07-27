@@ -46,9 +46,10 @@ describe("downloadCsv", () => {
 
     // Capture Blob content
     let blobContent = "";
-    const BlobSpy = vi.fn((parts: BlobPart[]) => {
+    const OrigBlob = globalThis.Blob;
+    const BlobSpy = vi.fn(function (this: Blob, parts: BlobPart[]) {
       blobContent = parts.join("");
-      return new Blob(parts);
+      return new OrigBlob(parts);
     });
     vi.stubGlobal("Blob", BlobSpy);
 
@@ -76,9 +77,10 @@ describe("downloadCsv", () => {
     ];
 
     let blobContent = "";
-    const BlobSpy = vi.fn((parts: BlobPart[]) => {
+    const OrigBlob = globalThis.Blob;
+    const BlobSpy = vi.fn(function (this: Blob, parts: BlobPart[]) {
       blobContent = parts.join("");
-      return new Blob(parts);
+      return new OrigBlob(parts);
     });
     vi.stubGlobal("Blob", BlobSpy);
 

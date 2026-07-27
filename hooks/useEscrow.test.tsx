@@ -81,6 +81,7 @@ describe("useEscrow", () => {
   });
 
   it("should poll for data at specified interval", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.mocked(api.getEscrow).mockResolvedValue(mockEscrow);
 
     const { result } = renderHook(() => useEscrow("escrow-1", { refreshInterval: 100 }), { wrapper });
@@ -91,9 +92,12 @@ describe("useEscrow", () => {
     
     expect(api.getEscrow).toHaveBeenCalledTimes(1);
 
-    // Wait for the next poll to happen naturally without fake timers if they are problematic
+    await vi.advanceTimersByTimeAsync(500);
+
     await waitFor(() => {
       expect(api.getEscrow).toHaveBeenCalledTimes(2);
-    }, { timeout: 1000 });
+    }, { timeout: 3000 });
+
+    vi.useRealTimers();
   });
 });

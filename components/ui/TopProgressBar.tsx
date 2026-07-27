@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, startTransition } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 export default function TopProgressBar() {
@@ -13,7 +13,7 @@ export default function TopProgressBar() {
   // When pathname or search params change, complete the progress bar
   useEffect(() => {
     if (isNavigating) {
-      setProgress(100);
+      startTransition(() => setProgress(100));
       const timer = setTimeout(() => {
         setIsNavigating(false);
         setProgress(0);

@@ -6,7 +6,6 @@ import { useWallet } from "@/components/providers/WalletProvider";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { useEffect } from "react";
 import userEvent from "@testing-library/user-event";
 
 // Mock matchMedia for tests
@@ -40,6 +39,7 @@ vi.mock("next/font/google", () => ({
 // Mock Next.js router and other hooks if needed
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -65,13 +65,6 @@ const ThemeConsumer = () => {
 const QueryConsumer = () => {
   const { data } = useQuery({ queryKey: ["test"], queryFn: () => "Query Ready", staleTime: 0 });
   return <div data-testid="query-consumer">{data || "Loading"}</div>;
-};
-
-const ToastConsumer = () => {
-  useEffect(() => {
-    toast.success("Toast Ready");
-  }, []);
-  return <div data-testid="toast-consumer">Toast Triggered</div>;
 };
 
 describe("RootLayout & AppProviders", () => {

@@ -15,5 +15,6 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["**/e2e/**", "**/tests/e2e/**", "**/node_modules/**"],
   },
 });

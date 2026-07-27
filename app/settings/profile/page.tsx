@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { useWallet } from "@/components/providers/WalletProvider";
 
 const STORAGE_KEY = "vendor.profile";
@@ -31,7 +31,7 @@ export default function VendorProfileSettingsPage() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setValues(JSON.parse(stored));
+      if (stored) startTransition(() => setValues(JSON.parse(stored)));
     } catch {
       // ignore malformed storage
     }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { WifiOff } from "lucide-react";
 
 export default function OfflineBanner() {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    setIsOnline(navigator.onLine);
+    startTransition(() => setIsOnline(navigator.onLine));
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);

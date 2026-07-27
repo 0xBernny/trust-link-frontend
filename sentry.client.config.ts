@@ -8,7 +8,7 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   integrations: [browserTracingIntegration()],
 
-  beforeSend(event, hint) {
+  beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
     const error = hint.originalException;
     const message = error instanceof Error ? error.message : String(error ?? "");
 

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, startTransition } from "react";
 import { Escrow } from "@/types";
 import { TrustBadge } from "@/components/payment/TrustBadge";
 import { useWallet } from "@/components/providers/WalletProvider";
@@ -86,7 +86,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   // Countdown logic for expiresAt
   useEffect(() => {
     if (!escrow.expiresAt) {
-      setTimeLeft(null);
+      startTransition(() => setTimeLeft(null));
       return;
     }
     const update = () => {
@@ -137,7 +137,8 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
       }
 
       await connectFreighter();
-      await connect();
+      const walletConnected = await connect();
+      if (!walletConnected) return;
       setSuccess("Freighter signature completed. Your payment authorization was captured.");
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to trigger wallet signature.";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, startTransition } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -17,8 +17,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored === "light" || stored === "dark") {
-      setThemeState(stored);
-      applyClass(stored);
+      startTransition(() => {
+        setThemeState(stored);
+        applyClass(stored);
+      });
     }
   }, []);
 

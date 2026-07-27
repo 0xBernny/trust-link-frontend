@@ -7,6 +7,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
 }));
 
+vi.mock("@/components/providers/NotificationProvider", () => ({
+  useNotifications: () => ({ unreadCount: 0 }),
+  NotificationProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock("next/link", () => ({
   default: ({ href, children, className, "aria-label": ariaLabel, "aria-current": ariaCurrent }: {
     href: string;

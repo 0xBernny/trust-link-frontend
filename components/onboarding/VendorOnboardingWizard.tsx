@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -84,8 +84,10 @@ export default function VendorOnboardingWizard() {
       return;
     }
 
-    setState(loadWizardState());
-    setHydrated(true);
+    startTransition(() => {
+      setState(loadWizardState());
+      setHydrated(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function VendorOnboardingWizard() {
 
   useEffect(() => {
     if (wallet.isConnected && state.step === 0) {
-      setState((current) => ({ ...current, step: 1 }));
+      startTransition(() => setState((current) => ({ ...current, step: 1 })));
     }
   }, [wallet.isConnected, state.step]);
 

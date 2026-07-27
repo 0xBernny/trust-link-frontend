@@ -37,7 +37,7 @@ export default async function TrackPage({ params }: TrackPageProps) {
   let initialEscrow;
   try {
     initialEscrow = await getEscrow(escrowId);
-  } catch (error) {
+  } catch {
     return (
       <main className="min-h-screen bg-zinc-50 p-6 dark:bg-black">
         <div className="mx-auto max-w-4xl">
@@ -46,7 +46,7 @@ export default async function TrackPage({ params }: TrackPageProps) {
               Order Not Found
             </h1>
             <p className="text-red-700 dark:text-red-300">
-              We couldn't find an order with ID: {escrowId}
+              We couldn&apos;t find an order with ID: {escrowId}
             </p>
           </div>
         </div>

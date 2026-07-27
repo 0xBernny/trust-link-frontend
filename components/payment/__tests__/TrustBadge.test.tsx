@@ -80,10 +80,10 @@ describe("TrustBadge", () => {
   });
 
   it("is responsive with standard mobile flex layout classes", () => {
-    renderWithProvider(<TrustBadge contractAddress={contractAddress} />);
+    const { container } = renderWithProvider(<TrustBadge contractAddress={contractAddress} />);
     
-    const container = screen.getByText("Funds Protected by Smart Contract").closest('div');
-    expect(container?.className).toContain('flex-col');
-    expect(container?.className).toContain('sm:flex-row');
+    const outerDiv = container.firstElementChild;
+    expect(outerDiv?.className).toContain('flex-col');
+    expect(outerDiv?.className).toContain('sm:flex-row');
   });
 });

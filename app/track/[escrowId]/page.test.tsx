@@ -10,7 +10,7 @@ vi.mock("@/lib/api", () => ({
 
 // Mock the TrackingTimeline component
 vi.mock("@/components/tracking/TrackingTimeline", () => ({
-  default: ({ escrowId, initialEscrow }: { escrowId: string; initialEscrow: Escrow }) => (
+  default: ({ escrowId }: { escrowId: string }) => (
     <div data-testid="tracking-timeline">
       Tracking Timeline for {escrowId}
     </div>
@@ -60,7 +60,7 @@ describe("TrackPage", () => {
 
     expect(screen.getByText("Order Details")).toBeInTheDocument();
     expect(screen.getByText("Wireless Headphones")).toBeInTheDocument();
-    expect(screen.getByText("$150.00")).toBeInTheDocument();
+    expect(screen.getByText("150.00 USDC")).toBeInTheDocument();
     expect(screen.getByText("PENDING")).toBeInTheDocument();
   });
 

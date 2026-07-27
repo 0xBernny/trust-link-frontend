@@ -53,7 +53,7 @@ test.describe("Buyer payment flow", () => {
       ({ publicKey, signedXdr }: { publicKey: string; signedXdr: string }) => {
         (window as Window & { freighter?: object }).freighter = {
           connect: () => Promise.resolve({ publicKey }),
-          signTransaction: (_xdr: string, _passphrase: string) =>
+          signTransaction: () =>
             Promise.resolve({ signedTransaction: signedXdr }),
         };
       },

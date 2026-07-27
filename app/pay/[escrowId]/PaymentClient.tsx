@@ -12,7 +12,7 @@ import { getStellarExpertTxUrl } from "@/lib/explorer";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PaymentClient({ escrow }: { escrow: Escrow }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { publicKey, connect, isLoading, error: walletError } = useWallet();
   const isConnected = Boolean(publicKey);
 

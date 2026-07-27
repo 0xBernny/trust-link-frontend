@@ -16,7 +16,7 @@ import {
  * }
  */
 export async function isFreighterInstalled(): Promise<boolean> {
-  return typeof window !== "undefined" && Boolean((window as any).freighter);
+  return typeof window !== "undefined" && Boolean((window as unknown as { freighter: unknown }).freighter);
 }
 
 /**
@@ -73,7 +73,7 @@ export async function signTransaction(
       throw new Error("Freighter not installed");
     }
 
-    const { signedTransaction: signedTxXdr, error } = await (freighterSignTransaction as any)(xdr, { networkPassphrase: network });
+    const { signedTransaction: signedTxXdr, error } = await (freighterSignTransaction as unknown as (xdr: string, opts: { networkPassphrase: string }) => Promise<{ signedTransaction: string; error?: string }>)(xdr, { networkPassphrase: network });
 
     if (error) {
       throw new Error(error);

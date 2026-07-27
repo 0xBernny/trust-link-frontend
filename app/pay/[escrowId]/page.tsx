@@ -68,29 +68,9 @@ const faqItems = [
 export default async function PayPage({ params }: PayPageProps) {
 	const { escrowId } = await params
 
+	let escrow: Awaited<ReturnType<typeof getEscrow>>
 	try {
-		const escrow = await getEscrow(escrowId)
-		const breadcrumbItems = [
-			{ label: "Home", href: "/" },
-			{ label: "Payment", href: "/payment" },
-			{ label: `Escrow ${escrowId.slice(0, 8)}...` },
-		]
-
-		return (
-			<main className="min-h-screen min-h-dvh bg-zinc-50 p-6 dark:bg-black">
-				<div className="mx-auto max-w-4xl">
-					<Breadcrumb items={breadcrumbItems} className="mb-4" />
-					<PaymentEscrowClient escrow={escrow} escrowId={escrowId} />
-					<HowItWorks />
-					<section className="mt-8">
-						<h2 className="mb-4 text-xl font-semibold text-zinc-950 dark:text-white">
-							Frequently Asked Questions
-						</h2>
-						<Accordion items={faqItems} />
-					</section>
-				</div>
-			</main>
-		)
+		escrow = await getEscrow(escrowId)
 	} catch {
 		return (
 			<main className="min-h-screen min-h-dvh bg-zinc-50 p-6 dark:bg-black">
@@ -113,4 +93,26 @@ export default async function PayPage({ params }: PayPageProps) {
 			</main>
 		)
 	}
+
+	const breadcrumbItems = [
+		{ label: "Home", href: "/" },
+		{ label: "Payment", href: "/payment" },
+		{ label: `Escrow ${escrowId.slice(0, 8)}...` },
+	]
+
+	return (
+		<main className="min-h-screen min-h-dvh bg-zinc-50 p-6 dark:bg-black">
+			<div className="mx-auto max-w-4xl">
+				<Breadcrumb items={breadcrumbItems} className="mb-4" />
+				<PaymentEscrowClient escrow={escrow} escrowId={escrowId} />
+				<HowItWorks />
+				<section className="mt-8">
+					<h2 className="mb-4 text-xl font-semibold text-zinc-950 dark:text-white">
+						Frequently Asked Questions
+					</h2>
+					<Accordion items={faqItems} />
+				</section>
+			</div>
+		</main>
+	)
 }

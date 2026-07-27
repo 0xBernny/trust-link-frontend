@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Escrow, EscrowStatus } from "@/types";
 import { CheckCircle2, Circle, Clock, Package, Truck, Home } from "lucide-react";
@@ -75,6 +75,30 @@ export default function TrackingTimeline({
 
   const [localError, setLocalError] = useState<Error | null>(null);
 
+  // Touch Swipe State — must be before early returns (hooks order rule)
+  const [swipeIndex, setSwipeIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const activeEscrow = escrow || initialEscrow;
+
+  const getCurrentStageIndex = (status: EscrowStatus): number => {
+    if (status === "COMPLETED" || status === "RELEASED") return 4;
+    if (status === "SHIPPED") return 2;
+    if (status === "FUNDED") return 1;
+    if (status === "PENDING") return 0;
+    return 0;
+  };
+
+  const currentStageIndex = getCurrentStageIndex(activeEscrow?.status ?? "PENDING");
+  const isShipped = activeEscrow?.status === "SHIPPED";
+
+  // Sync swipe index with the actual stage index when it changes
+  useEffect(() => {
+    startTransition(() => setSwipeIndex(currentStageIndex));
+  }, [currentStageIndex]);
+
   const handleRaiseDispute = () => {
     window.location.href = `/dispute/${escrowId}`;
   };
@@ -108,30 +132,6 @@ export default function TrackingTimeline({
       </div>
     );
   }
-
-  const activeEscrow = escrow || initialEscrow;
-
-  const getCurrentStageIndex = (status: EscrowStatus): number => {
-    if (status === "COMPLETED" || status === "RELEASED") return 4;
-    if (status === "SHIPPED") return 2;
-    if (status === "FUNDED") return 1;
-    if (status === "PENDING") return 0;
-    return 0;
-  };
-
-  const currentStageIndex = getCurrentStageIndex(activeEscrow.status);
-  const isShipped = activeEscrow.status === "SHIPPED";
-
-  // Touch Swipe State
-  const [swipeIndex, setSwipeIndex] = useState(currentStageIndex);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
-
-  // Sync swipe index with the actual stage index when it changes
-  useEffect(() => {
-    setSwipeIndex(currentStageIndex);
-  }, [currentStageIndex]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);

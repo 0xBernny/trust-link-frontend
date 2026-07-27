@@ -45,9 +45,10 @@ describe("Footer", () => {
     expect(select).toBeInTheDocument();
     
     const options = screen.getAllByRole("option");
-    expect(options).toHaveLength(2);
+    expect(options).toHaveLength(3);
     expect(options[0]).toHaveValue("en");
     expect(options[1]).toHaveValue("fr");
+    expect(options[2]).toHaveValue("pcm");
   });
 
   it("calls changeLanguage when selecting a different language", async () => {

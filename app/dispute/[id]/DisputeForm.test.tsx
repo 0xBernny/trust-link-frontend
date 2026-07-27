@@ -151,7 +151,7 @@ describe("Production DisputeForm - app/dispute/[id]/DisputeForm", () => {
     vi.mocked(createDispute).mockResolvedValueOnce({
       id: "DISP-SUCCESS",
       status: "OPEN",
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof createDispute>>);
 
     render(<DisputeForm escrowId="ESC-777" />);
 

@@ -2,6 +2,7 @@
 
 import React, {
   createContext,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -55,9 +56,11 @@ export function NotificationProvider({
   }, []);
 
   useEffect(() => {
-    setReadIds(getReadIds());
-    setIsLoading(true);
-    fetchNotifications().finally(() => setIsLoading(false));
+    startTransition(() => {
+      setReadIds(getReadIds());
+      setIsLoading(true);
+      void fetchNotifications().finally(() => startTransition(() => setIsLoading(false)));
+    });
 
     intervalRef.current = setInterval(fetchNotifications, POLL_MS);
     return () => {

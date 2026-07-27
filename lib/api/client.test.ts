@@ -33,7 +33,7 @@ describe("api client", () => {
   });
 
   it("returns typed JSON and surfaces ApiError on failure", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse({ message: "bad" }, { ok: false, status: 400, statusText: "Bad Request" }));
+    fetchMock.mockResolvedValue(mockResponse({ message: "bad" }, { ok: false, status: 400, statusText: "Bad Request" }));
 
     const client = createApiClient();
 

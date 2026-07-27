@@ -49,7 +49,7 @@ function getAuthHeader(init: RequestInit): string | null {
   if (headers && typeof headers.get === "function") {
     return headers.get("Authorization");
   }
-  const record = headers as Record<string, string>;
+  const record = headers as unknown as Record<string, string>;
   return record?.Authorization ?? null;
 }
 

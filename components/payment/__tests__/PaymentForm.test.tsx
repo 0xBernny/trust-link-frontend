@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import PaymentForm from "../PaymentForm";
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
@@ -22,10 +22,10 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("@/lib/explorer", () => ({
-  getStellarExpertUrl: vi.fn().mockImplementation((hash, network) => {
+  getStellarExpertUrl: vi.fn().mockImplementation((hash: string) => {
     return `https://testnet.stellarexpert.io/contract/${hash}`;
   }),
-  getStellarExpertTxUrl: vi.fn().mockImplementation((hash, network) => {
+  getStellarExpertTxUrl: vi.fn().mockImplementation((hash: string) => {
     return `https://testnet.stellarexpert.io/tx/${hash}`;
   }),
 }));
@@ -49,22 +49,20 @@ const defaultProps = {
 describe("PaymentForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useWallet as any).mockReturnValue({ isConnected: true, status: "connected" });
-    vi.mocked(useWallet).mockReturnValue({ isConnected: true });
+    (useWallet as unknown as Mock).mockReturnValue({ isConnected: true, status: "connected" });
   });
 
   it("renders payment summary and shows amount/fee/total correctly", () => {
     render(<PaymentForm {...defaultProps} />);
 
     expect(screen.getByText("Payment Details")).toBeInTheDocument();
-    expect(screen.getByText("10.00 USDC")).toBeInTheDocument();
-    expect(screen.getByText("0.50 USDC")).toBeInTheDocument();
-    expect(screen.getByText("10.50 USDC")).toBeInTheDocument();
+    expect(screen.getByText("XLM 10")).toBeInTheDocument();
+    expect(screen.getByText("XLM 0.5")).toBeInTheDocument();
+    expect(screen.getByText("XLM 10.5")).toBeInTheDocument();
   });
 
   it("is disabled when wallet is disconnected", () => {
-    (useWallet as any).mockReturnValue({ isConnected: false, status: "disconnected" });
-    vi.mocked(useWallet).mockReturnValue({ isConnected: false });
+    (useWallet as unknown as Mock).mockReturnValue({ isConnected: false, status: "disconnected" });
     render(<PaymentForm {...defaultProps} />);
 
     const button = screen.getByRole("button", { name: /Pay with Freighter/i });

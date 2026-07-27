@@ -8,6 +8,7 @@ import {
   buildContractDeployment,
   isContractSuccess,
   ContractCallOptions,
+  ContractArg,
   fundEscrow,
   confirmDelivery,
   raiseDispute,
@@ -34,7 +35,7 @@ vi.mock("@stellar/stellar-sdk", () => {
     return buildTx();
   }
   const MockTxBuilder = vi.fn().mockImplementation(MockTxBuilderFn);
-  MockTxBuilder.fromXDR = function () {
+  (MockTxBuilder as unknown as { fromXDR: () => unknown }).fromXDR = function () {
     return buildTx();
   };
 
@@ -288,7 +289,7 @@ describe("lib/stellar/contract.ts", () => {
     });
 
     it("rejects non-array arguments", () => {
-      const result = validateContractMethodCall("transfer", "not-an-array" as unknown as unknown[]);
+      const result = validateContractMethodCall("transfer", "not-an-array" as unknown as ContractArg[]);
       expect(result.valid).toBe(false);
       expect(result.error).toContain("Arguments must be an array");
     });

@@ -72,7 +72,7 @@ describe("DisputeDetailsClient", () => {
     render(<DisputeDetailsClient dispute={mockDispute} />);
 
     expect(screen.getByText("High-end Headphones")).toBeInTheDocument();
-    expect(screen.getByText("100 USDC")).toBeInTheDocument();
+    expect(screen.getByText("100.00 USDC")).toBeInTheDocument();
     expect(screen.getByText("Item not as described")).toBeInTheDocument();
     expect(screen.getByText("View Attachment 1")).toBeInTheDocument();
     expect(screen.getByText("View Attachment 2")).toBeInTheDocument();

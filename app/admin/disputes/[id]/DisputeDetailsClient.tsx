@@ -136,7 +136,7 @@ export function DisputeDetailsClient({ dispute }: DisputeDetailsClientProps) {
           </div>
           <div className="p-6">
             <div className="relative border-l-2 border-zinc-100 dark:border-zinc-800 ml-3 space-y-8">
-              {dispute.escrow.history.map((event, index) => (
+              {dispute.escrow.history.map((event) => (
                 <div key={event.id} className="relative pl-8">
                   <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700" />
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">

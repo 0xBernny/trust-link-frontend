@@ -14,6 +14,7 @@ import OfflineBanner from "@/components/layout/OfflineBanner";
 import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
+import Script from "next/script";
 import TopProgressBar from "@/components/ui/TopProgressBar";
 import CommandPalette from "@/components/ui/CommandPalette";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -67,11 +68,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://horizon-testnet.stellar.org" />
       </head>
       {/* Inline script runs before paint to apply stored theme class without flash */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light');}catch(e){}})();`,
-        }}
-      />
+      <Script id="theme-init" strategy="beforeInteractive">
+        {`(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light');}catch(e){}})();`}
+      </Script>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
         <Suspense fallback={null}>

@@ -101,7 +101,7 @@ function PricingContent() {
             Simple, transparent pricing
           </h1>
           <p className="mt-4 text-base text-zinc-500 dark:text-zinc-400">
-            Start free. Upgrade when you're ready to grow.
+            Start free. Upgrade when you&apos;re ready to grow.
           </p>
         </div>
 

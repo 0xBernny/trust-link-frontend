@@ -22,7 +22,7 @@ interface WalletContextType {
   isConnected: boolean;
   isInstalled: boolean;
   status: WalletStatus;
-  connect: () => Promise<void>;
+  connect: () => Promise<boolean>;
   disconnect: () => void;
   signTransaction: (xdr: string, network?: string) => Promise<string>;
   isLoading: boolean;
@@ -60,6 +60,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const signedXdr = await freighterSignTransaction(challengeXdr, net);
       const jwt = await verifyChallenge(signedXdr);
       setToken(jwt);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(TOKEN_STORAGE_KEY, jwt);
+      }
       return jwt;
     } catch (err: unknown) {
       console.error("Authentication failed:", err);
@@ -104,14 +107,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     return () => { isMounted = false; };
   }, [authenticate]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     try {
       const installed = await isFreighterInstalled();
       if (!installed) {
         toast.error("Freighter is not installed");
-        throw new Error("Freighter not installed");
+        setError("Freighter is not installed");
+        return false;
       }
 
       const pubKey = await connectFreighter();
@@ -124,11 +128,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       await authenticate(pubKey);
       
       toast.success("Wallet connected");
+      return true;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to connect wallet";
       setError(message);
       toast.error(message);
-      throw err;
+      return false;
     } finally {
       setIsLoading(false);
     }

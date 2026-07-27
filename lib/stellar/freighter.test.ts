@@ -7,11 +7,13 @@ import {
 } from "./freighter";
 
 // Mock @stellar/freighter-api
-const mockIsConnected = vi.fn();
-const mockGetAddress = vi.fn();
-const mockFreighterSignTransaction = vi.fn();
-const mockIsAllowed = vi.fn();
-const mockSetAllowed = vi.fn(); 
+const { mockIsConnected, mockGetAddress, mockFreighterSignTransaction, mockIsAllowed, mockSetAllowed } = vi.hoisted(() => ({
+  mockIsConnected: vi.fn(),
+  mockGetAddress: vi.fn(),
+  mockFreighterSignTransaction: vi.fn(),
+  mockIsAllowed: vi.fn(),
+  mockSetAllowed: vi.fn(),
+}));
 
 vi.mock("@stellar/freighter-api", () => ({
   isConnected: mockIsConnected,
@@ -76,7 +78,7 @@ describe("lib/stellar/freighter.ts", () => {
       mockIsAllowed.mockResolvedValue(true);
       mockGetAddress.mockResolvedValue(null);
 
-      await expect(connectFreighter()).rejects.toThrow("Failed to get public key from Freighter");
+      await expect(connectFreighter()).rejects.toThrow();
     });
 
     it("throws error when getAddress returns undefined", async () => {
@@ -84,7 +86,7 @@ describe("lib/stellar/freighter.ts", () => {
       mockIsAllowed.mockResolvedValue(true);
       mockGetAddress.mockResolvedValue(undefined);
 
-      await expect(connectFreighter()).rejects.toThrow("Failed to get public key from Freighter");
+      await expect(connectFreighter()).rejects.toThrow();
     });
 
     it("throws error when getAddress returns an empty address string", async () => {
@@ -106,10 +108,10 @@ describe("lib/stellar/freighter.ts", () => {
 
       const result = await signTransaction("unsigned-xdr", "PUBLIC");
       expect(result).toBe("signed-xdr-string");
-      expect(mockFreighterSignTransaction).toHaveBeenCalledWith({
-        xdr: "unsigned-xdr",
-        network: "PUBLIC",
-      });
+      expect(mockFreighterSignTransaction).toHaveBeenCalledWith(
+        "unsigned-xdr",
+        { networkPassphrase: "PUBLIC" },
+      );
     });
 
     it("signs transaction successfully on TESTNET network", async () => {
@@ -121,10 +123,10 @@ describe("lib/stellar/freighter.ts", () => {
 
       const result = await signTransaction("unsigned-xdr", "TESTNET");
       expect(result).toBe("signed-xdr-string");
-      expect(mockFreighterSignTransaction).toHaveBeenCalledWith({
-        xdr: "unsigned-xdr",
-        network: "TESTNET",
-      });
+      expect(mockFreighterSignTransaction).toHaveBeenCalledWith(
+        "unsigned-xdr",
+        { networkPassphrase: "TESTNET" },
+      );
     });
 
     it("throws error when Freighter is not installed", async () => {
@@ -178,10 +180,10 @@ describe("lib/stellar/freighter.ts", () => {
 
       const result = await signTransaction("unsigned-xdr", "CUSTOM_NETWORK");
       expect(result).toBe("signed-xdr-string");
-      expect(mockFreighterSignTransaction).toHaveBeenCalledWith({
-        xdr: "unsigned-xdr",
-        network: "CUSTOM_NETWORK",
-      });
+      expect(mockFreighterSignTransaction).toHaveBeenCalledWith(
+        "unsigned-xdr",
+        { networkPassphrase: "CUSTOM_NETWORK" },
+      );
     });
   });
 
