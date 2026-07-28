@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowRight, Star, ShieldCheck, MapPin } from "lucide-react";
 import Link from "next/link";
 import OptimizedImage from "@/components/ui/OptimizedImage";
