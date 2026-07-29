@@ -26,6 +26,7 @@ Missing required environment variable: ${key}
 
 const nextConfig: NextConfig = {
   compress: true,
+  experimental: { testProxy: true },
   turbopack: {
     root: process.cwd(),
   },

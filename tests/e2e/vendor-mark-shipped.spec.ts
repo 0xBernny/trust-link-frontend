@@ -1,68 +1,29 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "next/experimental/testmode/playwright";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 
-test("vendor mark shipped updates vendor and buyer status", async ({ page }) => {
+const mockEscrow = {
+  id: escrowId,
+  vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
+  buyerId: "GCBUYER8TESTING1234567890ABCDEF",
+  item: "Vintage Camera",
+  amount: 249.99,
+  status: "FUNDED",
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-01T00:00:00Z",
+  history: [],
+};
+
+test("vendor mark shipped updates vendor and buyer status", async ({ page, next }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  await page.route("**/vendor/escrows", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        {
-          id: escrowId,
-          vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-          buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-          item: "Vintage Camera",
-          amount: 249.99,
-          status: "FUNDED",
-          createdAt: "2026-01-01T00:00:00Z",
-          updatedAt: "2026-01-01T00:00:00Z",
-          history: [],
-        },
-      ]),
-    });
-  });
-
-  await page.route(`**/escrow/${escrowId}/ship`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        id: escrowId,
-        vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-        buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-        item: "Vintage Camera",
-        amount: 249.99,
-        status: "SHIPPED",
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-02T00:00:00Z",
-        history: [],
-        trackingId: "TRACK-123",
-        carrier: "Terminal Africa",
-      }),
-    });
-  });
-
-  await page.route(`**/escrow/${escrowId}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        id: escrowId,
-        vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-        buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-        item: "Vintage Camera",
-        amount: 249.99,
-        status: "SHIPPED",
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-02T00:00:00Z",
-        history: [],
-      }),
-    });
+  await setupNetworkMocks(page, next, {
+    escrowId,
+    mockEscrow: { ...mockEscrow, status: "SHIPPED" },
+    mockEscrowsList: [mockEscrow]
   });
 
   await page.goto("/dashboard");

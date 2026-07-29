@@ -73,7 +73,16 @@ export async function signTransaction(
       throw new Error("Freighter not installed");
     }
 
-    const { signedTransaction: signedTxXdr, error } = await (freighterSignTransaction as unknown as (xdr: string, opts: { networkPassphrase: string }) => Promise<{ signedTransaction: string; error?: string }>)(xdr, { networkPassphrase: network });
+    const response = (await freighterSignTransaction(xdr, {
+      networkPassphrase: network,
+    })) as {
+      signedTxXdr?: string;
+      signedTransaction?: string;
+      error?: string;
+    };
+
+    const error = response?.error;
+    const signedTxXdr = response?.signedTxXdr || response?.signedTransaction;
 
     if (error) {
       throw new Error(error);

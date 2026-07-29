@@ -6,7 +6,12 @@ vi.mock("@/lib/escrowStore", () => ({
   shipEscrow: vi.fn(),
 }));
 
+vi.mock("@/lib/rateLimit", () => ({
+  enforceRateLimit: vi.fn().mockResolvedValue(null),
+}));
+
 import { shipEscrow } from "@/lib/escrowStore";
+
 
 describe("PATCH /api/escrow/:id/ship", () => {
   beforeEach(() => {

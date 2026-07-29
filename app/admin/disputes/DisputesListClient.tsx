@@ -183,13 +183,12 @@ export function DisputesListClient() {
                 <p className="text-xs text-zinc-500">
                   Evidence links: <span className="font-medium">{dispute.evidence.length}</span>
                 </p>
-                <Link href={`/admin/disputes/${dispute.id}`}>
-                  <a
-                    className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                    aria-label={`View dispute for ${dispute.escrow.item}`}
-                  >
-                    View Dispute
-                  </a>
+                <Link 
+                  href={`/admin/disputes/${dispute.id}`}
+                  className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                  aria-label={`View dispute for ${dispute.escrow.item}`}
+                >
+                  View Dispute
                 </Link>
               </div>
             </article>

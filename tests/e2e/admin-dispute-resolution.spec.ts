@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "next/experimental/testmode/playwright";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
@@ -10,6 +11,8 @@ const mockDispute = {
   reason: "Item not received",
   evidence: ["https://example.com/evidence.jpg"],
   status: "OPEN",
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-02T00:00:00Z",
   escrow: {
     id: "escrow-42",
     vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
@@ -23,39 +26,58 @@ const mockDispute = {
   },
 };
 
-test("admin can resolve a dispute and the dispute list updates", async ({ page }) => {
+test("admin can resolve a dispute and the dispute list updates", async ({ page, next }) => {
+  isResolved = false;
+
   await page.addInitScript(() => {
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  await page.route("**/disputes?status=OPEN,UNDER_REVIEW", async (route) => {
-    const body = isResolved ? [] : [mockDispute];
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    });
+  await setupNetworkMocks(page, next);
+  
+  await page.route("**/api/disputes**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    // Client-side fetch for dispute list
+    if (url.searchParams.has("status")) {
+      const body = isResolved ? [] : [mockDispute];
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+    }
+
+    // Client-side resolve action
+    if (url.pathname.includes(`/disputes/${disputeId}/resolve`)) {
+      isResolved = true;
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...mockDispute,
+          status: "RESOLVED",
+          resolution: "RELEASE_TO_VENDOR",
+        }),
+      });
+    }
+
+    return route.continue();
   });
 
-  await page.route(`**/disputes/${disputeId}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockDispute),
-    });
-  });
+  next.onFetch(async (request) => {
+    const url = new URL(request.url);
 
-  await page.route(`**/disputes/${disputeId}/resolve`, async (route) => {
-    isResolved = true;
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        ...mockDispute,
-        status: "RESOLVED",
-        resolution: "RELEASE_TO_VENDOR",
-      }),
-    });
+    // Server-side fetch for the dispute detail page
+    if (url.pathname === `/disputes/${disputeId}`) {
+      return new Response(JSON.stringify(mockDispute), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return "continue";
   });
 
   await page.goto("/admin/disputes");
@@ -63,9 +85,9 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page }
   await expect(page.getByText("Admin Disputes")).toBeVisible();
   await page.getByRole("link", { name: /view dispute/i }).click();
 
-  await expect(page.getByText(/release to vendor/i)).toBeVisible();
+  await expect(page.getByText(/release to vendor/i)).toBeVisible({ timeout: 10_000 });
   await page.getByRole("button", { name: /release to vendor/i }).click();
   await page.getByRole("button", { name: /confirm/i }).click();
 
-  await expect(page.getByText(/no open disputes right now/i)).toBeVisible();
+  await expect(page.getByText(/no open disputes right now/i)).toBeVisible({ timeout: 10_000 });
 });

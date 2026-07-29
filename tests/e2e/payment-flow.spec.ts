@@ -1,12 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { mockFreighter } from "./helpers/mock-freighter";
+import { test, expect } from "next/experimental/testmode/playwright";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const MOCK_TX_HASH = "abc123def456tx789hash_mock_payment_confirmed";
-const MOCK_CHALLENGE_XDR = "AAAAAQAAAA...mock_challenge_xdr";
 const MOCK_SIGNED_XDR = "AAAAAQAAAA...mock_signed_xdr";
-const MOCK_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQlRFU1QiLCJleHAiOjk5OTk5OTk5OTl9.mock";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const mockEscrow = {
   id: TEST_ESCROW_ID,
@@ -21,44 +20,11 @@ const mockEscrow = {
 };
 
 test.describe("Buyer payment flow", () => {
-  test.beforeEach(async ({ page }) => {
-    // Mock escrow data API
-    await page.route(`${API_URL}/escrows/${TEST_ESCROW_ID}`, (route) => {
-      route.fulfill({ json: mockEscrow });
-    });
-
-    // Mock SEP-10 auth challenge
-    await page.route(`${API_URL}/auth/challenge*`, (route) => {
-      route.fulfill({ json: { transaction: MOCK_CHALLENGE_XDR } });
-    });
-
-    // Mock SEP-10 auth verify
-    await page.route(`${API_URL}/auth/verify`, (route) => {
-      route.fulfill({ json: { token: MOCK_JWT } });
-    });
-
-    // Mock fund escrow
-    await page.route(`${API_URL}/escrows/${TEST_ESCROW_ID}/fund`, (route) => {
-      route.fulfill({
-        json: {
-          txHash: MOCK_TX_HASH,
-          escrowId: TEST_ESCROW_ID,
-          status: "FUNDED",
-        },
-      });
-    });
+  test.beforeEach(async ({ page, next }) => {
+    await setupNetworkMocks(page, next, { escrowId: TEST_ESCROW_ID, mockEscrow });
 
     // Inject mock Freighter wallet into window before page load
-    await page.addInitScript(
-      ({ publicKey, signedXdr }: { publicKey: string; signedXdr: string }) => {
-        (window as Window & { freighter?: object }).freighter = {
-          connect: () => Promise.resolve({ publicKey }),
-          signTransaction: () =>
-            Promise.resolve({ signedTransaction: signedXdr }),
-        };
-      },
-      { publicKey: MOCK_PUBLIC_KEY, signedXdr: MOCK_SIGNED_XDR }
-    );
+    await mockFreighter(page, MOCK_PUBLIC_KEY, MOCK_SIGNED_XDR);
   });
 
   test("navigates to /pay/:escrowId with a test escrow", async ({ page }) => {
@@ -112,7 +78,10 @@ test.describe("Buyer payment flow", () => {
     await expect(txHashEl).toContainText(MOCK_TX_HASH);
   });
 
-  test("asserts tracking page is linked after confirmation", async ({ page }) => {
+  test("asserts tracking page is linked after confirmation", async ({ page, next }) => {
+    setupNextOnFetch(next, { escrowId: TEST_ESCROW_ID, mockEscrow: { ...mockEscrow, status: "FUNDED" } });
+
+
     await page.goto(`/pay/${TEST_ESCROW_ID}`);
 
     await page.getByTestId("connect-wallet-btn").click();
