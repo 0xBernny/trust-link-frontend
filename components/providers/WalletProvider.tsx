@@ -10,7 +10,7 @@ import {
 import { getChallenge, verifyChallenge } from "@/lib/stellar";
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
-import * as Sentry from "@sentry/nextjs";
+import { captureError, setLoggerUser } from "@/lib/logger";
 import { useNetwork } from "@/components/providers/NetworkProvider";
 
 type WalletStatus = "loading" | "connected" | "disconnected" | "not-installed" | "error";
@@ -66,7 +66,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return jwt;
     } catch (err: unknown) {
       console.error("Authentication failed:", err);
-      Sentry.captureException(err);
+      captureError(err, { scope: "auth", action: "authenticate", tags: { network } });
       toast.error("Authentication failed");
       throw err;
     }
@@ -87,7 +87,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           if (!isMounted) return;
           if (connected) {
             setPublicKey(storedPublicKey);
-            Sentry.setUser({ id: storedPublicKey });
+            setLoggerUser(storedPublicKey);
             await authenticate(storedPublicKey);
           } else {
             if (typeof window !== "undefined") {
@@ -96,7 +96,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch (e) {
-          Sentry.captureException(e);
+          captureError(e, { scope: "wallet", action: "restoreSession" });
         }
       }
       if (!isMounted) return;
@@ -120,7 +120,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       const pubKey = await connectFreighter();
       setPublicKey(pubKey);
-      Sentry.setUser({ id: pubKey });
+      setLoggerUser(pubKey);
       if (typeof window !== "undefined") {
         localStorage.setItem(PUBLIC_KEY_STORAGE_KEY, pubKey);
       }
@@ -142,7 +142,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const disconnect = useCallback(() => {
     setPublicKey(null);
     setToken(null);
-    Sentry.setUser(null);
+    setLoggerUser(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem(PUBLIC_KEY_STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -183,7 +183,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       return () => clearTimeout(timeout);
     } catch (err) {
-      Sentry.captureException(err);
+      captureError(err, { scope: "auth", action: "decodeSessionToken" });
       setToken(null);
     }
   }, [token, publicKey, authenticate]);

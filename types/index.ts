@@ -30,6 +30,7 @@ export interface Dispute {
   escrow: Escrow;
   buyerId: string;
   reason: string;
+  description?: string; // Free-text detail submitted with the dispute
   evidence: string[]; // URLs to evidence
   status: DisputeStatus;
   resolution?: 'RELEASE_TO_VENDOR' | 'REFUND_BUYER';

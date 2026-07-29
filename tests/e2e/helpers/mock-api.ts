@@ -1,14 +1,31 @@
 import { NextFixture } from "next/experimental/testmode/playwright";
+import { Page } from "@playwright/test";
+import type { Dispute, Escrow } from "@/types";
+import type { EscrowInput } from "@/lib/api";
+
+/**
+ * Issue #426 — fixtures are typed against the real domain models instead of
+ * `Record<string, unknown>`, so a mock that drifts from the API schema (a wrong
+ * `status` literal, a renamed field) fails type-check rather than silently
+ * rendering a screen the production app could never receive.
+ *
+ * They stay `Partial` on purpose: a spec should only declare the fields the
+ * screen under test reads, not a full escrow every time.
+ */
+export type MockEscrow = Partial<Escrow>;
+
+/** `escrow` is re-declared so a nested escrow fixture can be partial too. */
+export type MockDispute = Partial<Omit<Dispute, "escrow">> & {
+  escrow?: MockEscrow;
+};
 
 export interface MockApiOptions {
   escrowId?: string;
-  mockEscrow?: Record<string, unknown>;
-  mockDispute?: Record<string, unknown>;
-  mockEscrowsList?: Record<string, unknown>[];
-  mockDisputesList?: Record<string, unknown>[];
+  mockEscrow?: MockEscrow;
+  mockDispute?: MockDispute;
+  mockEscrowsList?: MockEscrow[];
+  mockDisputesList?: MockDispute[];
 }
-
-import { Page } from "@playwright/test";
 
 export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
   next.onFetch(async (request) => {
@@ -23,17 +40,17 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
     
     // Create Escrow special case (requires reading request body)
     if (url.pathname.endsWith("/escrow") && request.method === "POST") {
-      let payload: Record<string, unknown> = {};
+      let payload: Partial<EscrowInput> = {};
       try {
         const body = await request.clone().text();
-        if (body) payload = JSON.parse(body);
+        if (body) payload = JSON.parse(body) as Partial<EscrowInput>;
       } catch {
         // ignore JSON parse error
       }
       return new Response(
         JSON.stringify({
           url: `https://trustlink.example.com/escrow/${encodeURIComponent(
-            (payload.itemName as string) || "ESCROW-12345"
+            payload.itemName || "ESCROW-12345"
           )}`,
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
@@ -64,10 +81,10 @@ export async function setupNetworkMocks(page: Page, next: NextFixture, options?:
     
     // Create Escrow special case
     if (url.pathname.endsWith("/escrow") && request.method() === "POST") {
-      let payload: Record<string, unknown> = {};
+      let payload: Partial<EscrowInput> = {};
       try {
         const postData = request.postData();
-        if (postData) payload = JSON.parse(postData);
+        if (postData) payload = JSON.parse(postData) as Partial<EscrowInput>;
       } catch {
         // ignore JSON parse error
       }
@@ -76,7 +93,7 @@ export async function setupNetworkMocks(page: Page, next: NextFixture, options?:
         contentType: "application/json",
         body: JSON.stringify({
           url: `https://trustlink.example.com/escrow/${encodeURIComponent(
-            (payload.itemName as string) || "ESCROW-12345"
+            payload.itemName || "ESCROW-12345"
           )}`,
         }),
       });
