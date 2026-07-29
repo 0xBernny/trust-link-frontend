@@ -1,5 +1,6 @@
 import { mockFreighter } from "./helpers/mock-freighter";
 import { test, expect } from "next/experimental/testmode/playwright";
+import { setupNextOnFetch } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -22,47 +23,7 @@ const mockEscrow = {
 
 test.describe("Buyer payment flow", () => {
   test.beforeEach(async ({ page, next }) => {
-    // Intercept server-side escrow fetch in /pay/[escrowId] page component
-    // getEscrow() tries /escrow/:id first, then falls back to /escrows/:id on 404
-    next.onFetch(async (request) => {
-      const url = new URL(request.url);
-      if (
-        url.pathname === `/escrow/${TEST_ESCROW_ID}` ||
-        url.pathname === `/escrows/${TEST_ESCROW_ID}`
-      ) {
-        return new Response(JSON.stringify(mockEscrow), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      return "continue";
-    });
-
-    // Mock client-side API calls via page.route()
-    await page.route(`**/escrows/${TEST_ESCROW_ID}`, (route) => {
-      route.fulfill({ json: mockEscrow });
-    });
-
-    // Mock SEP-10 auth challenge
-    await page.route(`**/auth/challenge*`, (route) => {
-      route.fulfill({ json: { transaction: MOCK_CHALLENGE_XDR } });
-    });
-
-    // Mock SEP-10 auth verify
-    await page.route(`**/auth/verify`, (route) => {
-      route.fulfill({ json: { token: MOCK_JWT } });
-    });
-
-    // Mock fund escrow
-    await page.route(`**/escrows/${TEST_ESCROW_ID}/fund`, (route) => {
-      route.fulfill({
-        json: {
-          txHash: MOCK_TX_HASH,
-          escrowId: TEST_ESCROW_ID,
-          status: "FUNDED",
-        },
-      });
-    });
+    setupNextOnFetch(next, { escrowId: TEST_ESCROW_ID, mockEscrow });
 
     // Inject mock Freighter wallet into window before page load
     await mockFreighter(page, MOCK_PUBLIC_KEY, MOCK_SIGNED_XDR);
@@ -120,17 +81,8 @@ test.describe("Buyer payment flow", () => {
   });
 
   test("asserts tracking page is linked after confirmation", async ({ page, next }) => {
-    // Also intercept the server-side fetch on /track/[escrowId] page for when we navigate there
-    next.onFetch(async (request) => {
-      const url = new URL(request.url);
-      if (url.pathname === `/escrows/${TEST_ESCROW_ID}`) {
-        return new Response(JSON.stringify({ ...mockEscrow, status: "FUNDED" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      return "continue";
-    });
+    setupNextOnFetch(next, { escrowId: TEST_ESCROW_ID, mockEscrow: { ...mockEscrow, status: "FUNDED" } });
+
 
     await page.goto(`/pay/${TEST_ESCROW_ID}`);
 

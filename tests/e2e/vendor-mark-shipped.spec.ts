@@ -1,4 +1,5 @@
 import { expect, test } from "next/experimental/testmode/playwright";
+import { setupNextOnFetch } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 
@@ -19,53 +20,10 @@ test("vendor mark shipped updates vendor and buyer status", async ({ page, next 
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  // Intercept server-side escrow fetch (for /track/[escrowId] page component)
-  // getEscrow() tries /escrow/:id first, then falls back to /escrows/:id on 404
-  next.onFetch(async (request) => {
-    const url = new URL(request.url);
-    if (
-      url.pathname === `/escrow/${escrowId}` ||
-      url.pathname === `/escrows/${escrowId}`
-    ) {
-      return new Response(
-        JSON.stringify({ ...mockEscrow, status: "SHIPPED" }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-    return "continue";
-  });
-
-  // Client-side mocks for vendor dashboard data
-  await page.route("**/vendor/escrows", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([mockEscrow]),
-    });
-  });
-
-  await page.route(`**/escrow/${escrowId}/ship`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        ...mockEscrow,
-        status: "SHIPPED",
-        trackingId: "TRACK-123",
-        carrier: "Terminal Africa",
-      }),
-    });
-  });
-
-  await page.route(`**/escrow/${escrowId}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ ...mockEscrow, status: "SHIPPED" }),
-    });
+  setupNextOnFetch(next, {
+    escrowId,
+    mockEscrow: { ...mockEscrow, status: "SHIPPED" },
+    mockEscrowsList: [mockEscrow]
   });
 
   await page.goto("/dashboard");

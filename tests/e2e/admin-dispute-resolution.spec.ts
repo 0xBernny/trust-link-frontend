@@ -1,4 +1,5 @@
 import { expect, test } from "next/experimental/testmode/playwright";
+import { setupNextOnFetch } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
@@ -32,40 +33,44 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  // Intercept client-side fetches (DisputesListClient uses client-side fetch)
-  await page.route("**/disputes?status=OPEN,UNDER_REVIEW", async (route) => {
-    const body = isResolved ? [] : [mockDispute];
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    });
-  });
+  setupNextOnFetch(next);
 
-  // Intercept client-side resolve action
-  await page.route(`**/disputes/${disputeId}/resolve`, async (route) => {
-    isResolved = true;
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        ...mockDispute,
-        status: "RESOLVED",
-        resolution: "RELEASE_TO_VENDOR",
-      }),
-    });
-  });
-
-  // Intercept server-side fetch for the dispute detail page
-  // (app/admin/disputes/[id]/page.tsx fetches data server-side)
   next.onFetch(async (request) => {
     const url = new URL(request.url);
+
+    // Client-side fetch for dispute list
+    if (url.pathname.includes("/disputes") && url.searchParams.has("status")) {
+      const body = isResolved ? [] : [mockDispute];
+      return new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Client-side resolve action
+    if (url.pathname.includes(`/disputes/${disputeId}/resolve`)) {
+      isResolved = true;
+      return new Response(
+        JSON.stringify({
+          ...mockDispute,
+          status: "RESOLVED",
+          resolution: "RELEASE_TO_VENDOR",
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Server-side fetch for the dispute detail page
     if (url.pathname === `/disputes/${disputeId}`) {
       return new Response(JSON.stringify(mockDispute), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
+
     return "continue";
   });
 

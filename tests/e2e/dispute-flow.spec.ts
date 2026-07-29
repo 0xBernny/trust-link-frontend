@@ -1,4 +1,5 @@
 import { test, expect } from "next/experimental/testmode/playwright";
+import { setupNextOnFetch } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
 
@@ -27,18 +28,11 @@ const mockDisputeResponse = {
 };
 
 test.describe("Dispute submission flow", () => {
-  test.beforeEach(async ({ page }) => {
-    // Mock escrow API (both singular and plural endpoints)
-    await page.route(`**/escrow/${TEST_ESCROW_ID}`, (route) => {
-      route.fulfill({ json: mockEscrow });
-    });
-    await page.route(`**/escrows/${TEST_ESCROW_ID}`, (route) => {
-      route.fulfill({ json: mockEscrow });
-    });
-
-    // Mock dispute creation API
-    await page.route(`**/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
-      route.fulfill({ json: mockDisputeResponse });
+  test.beforeEach(async ({ page, next }) => {
+    setupNextOnFetch(next, {
+      escrowId: TEST_ESCROW_ID,
+      mockEscrow,
+      mockDispute: mockDisputeResponse,
     });
   });
 
@@ -145,14 +139,18 @@ test.describe("Dispute submission flow", () => {
     await expect(page.getByText("What's the issue?")).toBeVisible();
   });
 
-  test("shows error toast when dispute creation fails", async ({ page }) => {
+  test("shows error toast when dispute creation fails", async ({ page, next }) => {
     // Override the dispute API to return an error
-    await page.route(`**/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
-      route.fulfill({
-        status: 500,
-        contentType: "application/json",
-        body: JSON.stringify({ message: "Internal server error" }),
-      });
+    setupNextOnFetch(next, { escrowId: TEST_ESCROW_ID, mockEscrow });
+    next.onFetch(async (request) => {
+      const url = new URL(request.url);
+      if (url.pathname.includes(`/escrows/${TEST_ESCROW_ID}/dispute`)) {
+        return new Response(JSON.stringify({ message: "Internal server error" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return "continue";
     });
 
     await page.goto(`/dispute/${TEST_ESCROW_ID}`);

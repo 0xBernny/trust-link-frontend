@@ -2,27 +2,11 @@ import { mockFreighter } from "./helpers/mock-freighter";
 import { expect, test } from "next/experimental/testmode/playwright";
 
 
-test("vendor onboarding wizard persists state between reloads", async ({ page }) => {
+import { setupNextOnFetch } from "./helpers/mock-api";
+
+test("vendor onboarding wizard persists state between reloads", async ({ page, next }) => {
+  setupNextOnFetch(next);
   await mockFreighter(page);
-
-  await page.route("**/auth/challenge", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        transaction: "challenge-xdr",
-        network_passphrase: "Test SDF Network ; September 2015",
-      }),
-    });
-  });
-
-  await page.route("**/auth/verify", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ token: "jwt-token" }),
-    });
-  });
 
   await page.goto("/onboarding");
 
