@@ -28,7 +28,7 @@ const mockDisputeResponse = {
 };
 
 test.describe("Dispute submission flow", () => {
-  test.beforeEach(async ({ page, next }) => {
+  test.beforeEach(async ({ next }) => {
     setupNextOnFetch(next, {
       escrowId: TEST_ESCROW_ID,
       mockEscrow,

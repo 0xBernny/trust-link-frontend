@@ -5,9 +5,7 @@ import { setupNextOnFetch } from "./helpers/mock-api";
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const MOCK_TX_HASH = "abc123def456tx789hash_mock_payment_confirmed";
-const MOCK_CHALLENGE_XDR = "AAAAAQAAAA...mock_challenge_xdr";
 const MOCK_SIGNED_XDR = "AAAAAQAAAA...mock_signed_xdr";
-const MOCK_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQlRFU1QiLCJleHAiOjk5OTk5OTk5OTl9.mock";
 
 const mockEscrow = {
   id: TEST_ESCROW_ID,
