@@ -5,6 +5,10 @@ vi.mock("@/lib/escrowStore", () => ({
   getEscrowItems: vi.fn(),
 }));
 
+vi.mock("@/lib/rateLimit", () => ({
+  enforceRateLimit: vi.fn().mockResolvedValue(null),
+}));
+
 import { getEscrowItems } from "@/lib/escrowStore";
 
 describe("GET /api/escrow", () => {
