@@ -16,7 +16,10 @@ import {
  * }
  */
 export async function isFreighterInstalled(): Promise<boolean> {
-  return typeof window !== "undefined" && Boolean((window as unknown as { freighter: unknown }).freighter);
+  return (
+    typeof window !== "undefined" &&
+    Boolean((window as unknown as { freighter: unknown }).freighter)
+  );
 }
 
 /**
@@ -77,16 +80,10 @@ export async function signTransaction(
       networkPassphrase: network,
     })) as {
       signedTxXdr?: string;
-      signedTransaction?: string;
-      error?: string;
+      signerAddress?: string;
     };
 
-    const error = response?.error;
-    const signedTxXdr = response?.signedTxXdr || response?.signedTransaction;
-
-    if (error) {
-      throw new Error(error);
-    }
+    const signedTxXdr = response?.signedTxXdr;
 
     if (!signedTxXdr) {
       throw new Error("Failed to sign transaction");
