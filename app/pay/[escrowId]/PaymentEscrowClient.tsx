@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, startTransition } from "react";
-import { Escrow } from "@/types";
+import { Escrow, EscrowStatusConst } from "@/types";
 import { TrustBadge } from "@/components/payment/TrustBadge";
 import { useWallet } from "@/components/providers/WalletProvider";
 import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
@@ -80,8 +80,8 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   const total = useMemo(() => Number((amount + fee).toFixed(2)), [amount, fee]);
   const contractAddress = escrow.contractAddress ?? process.env.NEXT_PUBLIC_CONTRACT_ID ?? escrow.id;
 
-  const isFunded = escrow.status === "FUNDED";
-  const isExpired = escrow.status === "EXPIRED";
+  const isFunded = escrow.status === EscrowStatusConst.FUNDED;
+  const isExpired = escrow.status === EscrowStatusConst.EXPIRED;
 
   // Countdown logic for expiresAt
   useEffect(() => {

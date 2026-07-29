@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import DisputeForm from "./DisputeForm";
+import { DisputeStatusConst } from "@/types";
 import { createDispute } from "@/lib/api";
 
 // Mock the API client and analytics
@@ -150,7 +151,7 @@ describe("Production DisputeForm - app/dispute/[id]/DisputeForm", () => {
   it("submits the form successfully when all inputs and files are valid", async () => {
     vi.mocked(createDispute).mockResolvedValueOnce({
       id: "DISP-SUCCESS",
-      status: "OPEN",
+      status: DisputeStatusConst.OPEN,
     } as unknown as Awaited<ReturnType<typeof createDispute>>);
 
     render(<DisputeForm escrowId="ESC-777" />);

@@ -11,12 +11,13 @@ import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryE
 import { getVendorEscrows } from "@/lib/api";
 import { downloadCsv } from "@/utils/exportCsv";
 import type { Escrow } from "@/types";
+import { EscrowStatusConst } from "@/types";
 import EmptyVendorState from "./EmptyVendorState";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
 import { formatUSDC } from "@/utils/currency";
 import { formatTimeAgo } from "@/lib/utils";
 
-const STATUS_TABS = ["ALL", "PENDING", "FUNDED", "SHIPPED", "COMPLETED", "DISPUTED", "RELEASED", "REFUNDED", "EXPIRED"] as const;
+const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
 const ITEMS_PER_PAGE = 10;
 
 export default function VendorDashboardList({ loading = false }: { loading?: boolean }) {
@@ -88,7 +89,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   const handleShipmentSuccess = (escrowId: string) => {
     setEscrows((current) =>
       current?.map((item) =>
-        item.id === escrowId ? { ...item, status: "SHIPPED" } : item
+        item.id === escrowId ? { ...item, status: EscrowStatusConst.SHIPPED } : item
       ) ?? current
     );
   };
@@ -314,12 +315,12 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                       type="button"
                       onClick={() => setSelectedEscrow(escrow)}
                       onKeyDown={(e) => {
-                        if ((e.key === "Enter" || e.key === " ") && escrow.status === "FUNDED") {
+                        if ((e.key === "Enter" || e.key === " ") && escrow.status === EscrowStatusConst.FUNDED) {
                           e.preventDefault();
                           setSelectedEscrow(escrow);
                         }
                       }}
-                      disabled={escrow.status !== "FUNDED"}
+                      disabled={escrow.status !== EscrowStatusConst.FUNDED}
                       className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                     >
                       Mark Shipped

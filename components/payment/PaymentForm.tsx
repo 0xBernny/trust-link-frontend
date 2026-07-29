@@ -7,6 +7,7 @@ import { getStellarExpertTxUrl } from "@/lib/explorer";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useNetwork } from "@/components/providers/NetworkProvider";
+import { EscrowStatusConst } from "@/types";
 
 
 export interface PaymentFormProps {
@@ -59,7 +60,7 @@ export default function PaymentForm({
       return;
     }
 
-    if (status !== "PENDING" && status !== "Active") {
+    if (status !== EscrowStatusConst.PENDING && status !== "Active") {
       setErrorMessage("Escrow is no longer payable");
       setFormState("error");
       toast.error("Escrow is no longer payable");

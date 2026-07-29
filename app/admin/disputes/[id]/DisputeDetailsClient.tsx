@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dispute } from "@/types";
+import { Dispute, EscrowStatusConst, DisputeStatusConst } from "@/types";
 import { resolveDispute } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ export function DisputeDetailsClient({ dispute }: DisputeDetailsClientProps) {
               Escrow Summary
             </h2>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              dispute.escrow.status === 'DISPUTED' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+              dispute.escrow.status === EscrowStatusConst.DISPUTED ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
             }`}>
               {dispute.escrow.status}
             </span>
@@ -159,7 +159,7 @@ export function DisputeDetailsClient({ dispute }: DisputeDetailsClientProps) {
           <div className="space-y-4">
             <button
               onClick={() => setShowConfirm('RELEASE_TO_VENDOR')}
-              disabled={isResolving || dispute.status === 'RESOLVED'}
+              disabled={isResolving || dispute.status === DisputeStatusConst.RESOLVED}
               className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <CheckCircle className="w-5 h-5" />
@@ -167,7 +167,7 @@ export function DisputeDetailsClient({ dispute }: DisputeDetailsClientProps) {
             </button>
             <button
               onClick={() => setShowConfirm('REFUND_BUYER')}
-              disabled={isResolving || dispute.status === 'RESOLVED'}
+              disabled={isResolving || dispute.status === DisputeStatusConst.RESOLVED}
               className="w-full py-3 px-4 bg-white hover:bg-zinc-50 border border-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-900 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <XCircle className="w-5 h-5 text-destructive" />

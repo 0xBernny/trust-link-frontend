@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Escrow } from "@/types";
+import { EscrowStatusConst } from "@/types";
 
 // Mock the API so the list renders deterministic escrows with known dates.
 const getVendorEscrows = vi.fn();
@@ -26,7 +27,7 @@ function escrow(id: string, item: string, createdAt: string): Escrow {
     buyerId: "buyer-1",
     amount: 100,
     item,
-    status: "FUNDED",
+    status: EscrowStatusConst.FUNDED,
     createdAt,
     updatedAt: createdAt,
     history: [],

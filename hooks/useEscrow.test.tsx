@@ -2,7 +2,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import { useEscrow } from "./useEscrow";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as api from "@/lib/api";
-import { Escrow } from "@/types";
+import { Escrow, EscrowStatusConst } from "@/types";
 import { SWRConfig } from "swr";
 import React from "react";
 
@@ -15,7 +15,7 @@ const mockEscrow: Escrow = {
   vendorId: "vendor-1",
   amount: 100,
   item: "Test Item",
-  status: "FUNDED",
+  status: EscrowStatusConst.FUNDED,
   createdAt: "2023-01-01T00:00:00Z",
   updatedAt: "2023-01-01T00:00:00Z",
   history: [],
@@ -70,14 +70,14 @@ describe("useEscrow", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    const updatedEscrow = { ...mockEscrow, status: "COMPLETED" as const };
+    const updatedEscrow = { ...mockEscrow, status: EscrowStatusConst.COMPLETED as const };
     vi.mocked(api.getEscrow).mockResolvedValue(updatedEscrow);
 
     await act(async () => {
       await result.current.refetch();
     });
 
-    expect(result.current.escrow?.status).toBe("COMPLETED");
+    expect(result.current.escrow?.status).toBe(EscrowStatusConst.COMPLETED);
   });
 
   it("should poll for data at specified interval", async () => {

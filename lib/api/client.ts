@@ -5,6 +5,7 @@ import {
   Tracking,
   type VendorNotificationPreferences,
   type VendorAnalyticsResponse,
+  DisputeStatusConst,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -102,8 +103,8 @@ export async function getDispute(id: string, token?: string): Promise<Dispute> {
 }
 
 export async function getAdminDisputes(token?: string): Promise<Dispute[]> {
-  const disputes = await request<Dispute[]>("/disputes?status=OPEN,UNDER_REVIEW", {}, token);
-  return disputes.filter((dispute) => dispute.status === "OPEN" || dispute.status === "UNDER_REVIEW");
+  const disputes = await request<Dispute[]>(`/disputes?status=${DisputeStatusConst.OPEN},${DisputeStatusConst.UNDER_REVIEW}`, {}, token);
+  return disputes.filter((dispute) => dispute.status === DisputeStatusConst.OPEN || dispute.status === DisputeStatusConst.UNDER_REVIEW);
 }
 
 export async function resolveDispute(id: string, resolution: "RELEASE_TO_VENDOR" | "REFUND_BUYER", token?: string): Promise<Dispute> {

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import PaymentForm from "../PaymentForm";
+import { EscrowStatusConst } from "@/types";
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
 import { toast } from "sonner";
@@ -43,7 +44,7 @@ const defaultProps = {
   total: 10.5,
   sellerAddress: "GSELLER...",
   escrowContractId: "C123...",
-  status: "PENDING",
+  status: EscrowStatusConst.PENDING,
 };
 
 describe("PaymentForm", () => {
@@ -127,7 +128,7 @@ describe("PaymentForm", () => {
   });
 
   it("shows error if escrow is not payable", async () => {
-    render(<PaymentForm {...defaultProps} status="COMPLETED" />);
+    render(<PaymentForm {...defaultProps} status={EscrowStatusConst.COMPLETED} />);
     const button = screen.getByRole("button", { name: /Pay with Freighter/i });
 
     fireEvent.click(button);

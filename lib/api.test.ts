@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { DisputeStatusConst } from "@/types";
 import {
   getEscrow,
   getVendorEscrows,
@@ -146,9 +147,9 @@ describe("getAdminDisputes", () => {
   it("filters out resolved disputes client-side", async () => {
     fetchMock.mockResolvedValueOnce(
       mockResponse([
-        { id: "1", status: "OPEN" },
-        { id: "2", status: "RESOLVED" },
-        { id: "3", status: "UNDER_REVIEW" },
+        { id: "1", status: DisputeStatusConst.OPEN },
+        { id: "2", status: DisputeStatusConst.RESOLVED },
+        { id: "3", status: DisputeStatusConst.UNDER_REVIEW },
       ])
     );
 
@@ -159,7 +160,7 @@ describe("getAdminDisputes", () => {
 
 describe("resolveDispute", () => {
   it("PATCHes the resolution with a JSON body", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse({ id: "d1", status: "RESOLVED" }));
+    fetchMock.mockResolvedValueOnce(mockResponse({ id: "d1", status: DisputeStatusConst.RESOLVED }));
 
     await resolveDispute("d1", "REFUND_BUYER", "tok");
     const { url, init } = lastCall();
