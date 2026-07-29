@@ -1,16 +1,11 @@
-import { expect, test } from "@playwright/test";
+import { mockFreighter } from "./helpers/mock-freighter";
+import { expect, test } from "next/experimental/testmode/playwright";
 
 
 test("vendor onboarding wizard persists state between reloads", async ({ page }) => {
-  await page.addInitScript(() => {
-    (window as Window & { freighter?: Record<string, unknown> }).freighter = {
-      connect: async () => ({ publicKey: "GCFM4VENDOR8TESTING1234567890ABCDEF" }),
-      signTransaction: async () => ({ signedTransaction: "signed-challenge-xdr" }),
-      isConnected: async () => true,
-    };
-  });
+  await mockFreighter(page);
 
-  await page.route("**/stellar/sep10/challenge", async (route) => {
+  await page.route("**/auth/challenge", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -21,7 +16,7 @@ test("vendor onboarding wizard persists state between reloads", async ({ page })
     });
   });
 
-  await page.route("**/stellar/sep10/token", async (route) => {
+  await page.route("**/auth/verify", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -31,7 +26,7 @@ test("vendor onboarding wizard persists state between reloads", async ({ page })
 
   await page.goto("/onboarding");
 
-  await page.getByRole("button", { name: /connect wallet/i }).click();
+  await page.getByRole("button", { name: "Connect Wallet", exact: true }).click();
   await expect(page.getByText(/connected/i)).toBeVisible();
 
   await page.getByLabel("Shop name").fill("Stellar Studio");
@@ -39,8 +34,8 @@ test("vendor onboarding wizard persists state between reloads", async ({ page })
   await page.getByLabel("Website").fill("https://stellar.example.com");
   await page.getByLabel("Shipping destinations").fill("Worldwide");
 
-  await page.getByRole("button", { name: /next/i }).click();
-  await expect(page.getByText(/review your store/i)).toBeVisible();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /review your store/i })).toBeVisible();
   await expect(page.getByText(/Stellar Studio/i)).toBeVisible();
 
   await page.reload();

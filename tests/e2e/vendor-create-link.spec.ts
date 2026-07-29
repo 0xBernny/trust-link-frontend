@@ -1,15 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { mockFreighter } from "./helpers/mock-freighter";
+import { expect, test } from "next/experimental/testmode/playwright";
 
 test("vendor can connect Freighter, create an escrow link, and see the QR code", async ({ page }) => {
-  await page.addInitScript(() => {
-    (window as Window & { freighter?: Record<string, unknown> }).freighter = {
-      connect: async () => ({ publicKey: "GCFM4VENDOR8TESTING1234567890ABCDEF" }),
-      signTransaction: async () => ({ signedTransaction: "signed-challenge-xdr" }),
-      isConnected: async () => true,
-    };
-  });
+  await mockFreighter(page);
 
-  await page.route("**/stellar/sep10/challenge**", async (route) => {
+  await page.route("**/auth/challenge**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -20,7 +15,7 @@ test("vendor can connect Freighter, create an escrow link, and see the QR code",
     });
   });
 
-  await page.route("**/stellar/sep10/token", async (route) => {
+  await page.route("**/auth/verify", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",

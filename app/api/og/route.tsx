@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
                 padding: '10px 20px',
                 borderRadius: '20px',
                 display: 'flex',
-                width: 'fit-content'
+                width: 'auto'
               }}>
                 Status: {status}
               </div>

@@ -1,7 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "next/experimental/testmode/playwright";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const mockEscrow = {
   id: TEST_ESCROW_ID,
@@ -30,15 +29,15 @@ const mockDisputeResponse = {
 test.describe("Dispute submission flow", () => {
   test.beforeEach(async ({ page }) => {
     // Mock escrow API (both singular and plural endpoints)
-    await page.route(`${API_URL}/escrow/${TEST_ESCROW_ID}`, (route) => {
+    await page.route(`**/escrow/${TEST_ESCROW_ID}`, (route) => {
       route.fulfill({ json: mockEscrow });
     });
-    await page.route(`${API_URL}/escrows/${TEST_ESCROW_ID}`, (route) => {
+    await page.route(`**/escrows/${TEST_ESCROW_ID}`, (route) => {
       route.fulfill({ json: mockEscrow });
     });
 
     // Mock dispute creation API
-    await page.route(`${API_URL}/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
+    await page.route(`**/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
       route.fulfill({ json: mockDisputeResponse });
     });
   });
@@ -49,7 +48,7 @@ test.describe("Dispute submission flow", () => {
     // Page header should be visible
     await expect(page.getByText("Raise a Dispute")).toBeVisible();
     // Escrow item name should appear
-    await expect(page.getByText("Wireless Headphones")).toBeVisible();
+    await expect(page.getByText("Wireless Headphones", { exact: true })).toBeVisible();
     // Step 1 should show reason selection
     await expect(page.getByText("What's the issue?")).toBeVisible();
   });
@@ -148,7 +147,7 @@ test.describe("Dispute submission flow", () => {
 
   test("shows error toast when dispute creation fails", async ({ page }) => {
     // Override the dispute API to return an error
-    await page.route(`${API_URL}/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
+    await page.route(`**/escrows/${TEST_ESCROW_ID}/dispute`, (route) => {
       route.fulfill({
         status: 500,
         contentType: "application/json",

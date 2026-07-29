@@ -1,29 +1,49 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "next/experimental/testmode/playwright";
 
 const escrowId = "escrow-ship-1";
 
-test("vendor mark shipped updates vendor and buyer status", async ({ page }) => {
+const mockEscrow = {
+  id: escrowId,
+  vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
+  buyerId: "GCBUYER8TESTING1234567890ABCDEF",
+  item: "Vintage Camera",
+  amount: 249.99,
+  status: "FUNDED",
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-01T00:00:00Z",
+  history: [],
+};
+
+test("vendor mark shipped updates vendor and buyer status", async ({ page, next }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
+  // Intercept server-side escrow fetch (for /track/[escrowId] page component)
+  // getEscrow() tries /escrow/:id first, then falls back to /escrows/:id on 404
+  next.onFetch(async (request) => {
+    const url = new URL(request.url);
+    if (
+      url.pathname === `/escrow/${escrowId}` ||
+      url.pathname === `/escrows/${escrowId}`
+    ) {
+      return new Response(
+        JSON.stringify({ ...mockEscrow, status: "SHIPPED" }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+    return "continue";
+  });
+
+  // Client-side mocks for vendor dashboard data
   await page.route("**/vendor/escrows", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify([
-        {
-          id: escrowId,
-          vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-          buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-          item: "Vintage Camera",
-          amount: 249.99,
-          status: "FUNDED",
-          createdAt: "2026-01-01T00:00:00Z",
-          updatedAt: "2026-01-01T00:00:00Z",
-          history: [],
-        },
-      ]),
+      body: JSON.stringify([mockEscrow]),
     });
   });
 
@@ -32,15 +52,8 @@ test("vendor mark shipped updates vendor and buyer status", async ({ page }) => 
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        id: escrowId,
-        vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-        buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-        item: "Vintage Camera",
-        amount: 249.99,
+        ...mockEscrow,
         status: "SHIPPED",
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-02T00:00:00Z",
-        history: [],
         trackingId: "TRACK-123",
         carrier: "Terminal Africa",
       }),
@@ -51,17 +64,7 @@ test("vendor mark shipped updates vendor and buyer status", async ({ page }) => 
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({
-        id: escrowId,
-        vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-        buyerId: "GCBUYER8TESTING1234567890ABCDEF",
-        item: "Vintage Camera",
-        amount: 249.99,
-        status: "SHIPPED",
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-02T00:00:00Z",
-        history: [],
-      }),
+      body: JSON.stringify({ ...mockEscrow, status: "SHIPPED" }),
     });
   });
 
