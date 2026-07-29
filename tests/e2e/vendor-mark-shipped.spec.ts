@@ -1,5 +1,5 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNextOnFetch } from "./helpers/mock-api";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 
@@ -20,7 +20,7 @@ test("vendor mark shipped updates vendor and buyer status", async ({ page, next 
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  setupNextOnFetch(next, {
+  await setupNetworkMocks(page, next, {
     escrowId,
     mockEscrow: { ...mockEscrow, status: "SHIPPED" },
     mockEscrowsList: [mockEscrow]

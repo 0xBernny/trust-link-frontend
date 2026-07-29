@@ -1,5 +1,5 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNextOnFetch } from "./helpers/mock-api";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
@@ -33,35 +33,41 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
     window.localStorage.setItem("wallet.jwt", "jwt-token");
   });
 
-  setupNextOnFetch(next);
-
-  next.onFetch(async (request) => {
-    const url = new URL(request.url);
+  await setupNetworkMocks(page, next);
+  
+  await page.route("**/api/disputes**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
 
     // Client-side fetch for dispute list
-    if (url.pathname.includes("/disputes") && url.searchParams.has("status")) {
+    if (url.searchParams.has("status")) {
       const body = isResolved ? [] : [mockDispute];
-      return new Response(JSON.stringify(body), {
+      return route.fulfill({
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        contentType: "application/json",
+        body: JSON.stringify(body),
       });
     }
 
     // Client-side resolve action
     if (url.pathname.includes(`/disputes/${disputeId}/resolve`)) {
       isResolved = true;
-      return new Response(
-        JSON.stringify({
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
           ...mockDispute,
           status: "RESOLVED",
           resolution: "RELEASE_TO_VENDOR",
         }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      });
     }
+
+    return route.continue();
+  });
+
+  next.onFetch(async (request) => {
+    const url = new URL(request.url);
 
     // Server-side fetch for the dispute detail page
     if (url.pathname === `/disputes/${disputeId}`) {

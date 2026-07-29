@@ -1,6 +1,6 @@
 import { mockFreighter } from "./helpers/mock-freighter";
 import { test, expect } from "next/experimental/testmode/playwright";
-import { setupNextOnFetch } from "./helpers/mock-api";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -21,7 +21,7 @@ const mockEscrow = {
 
 test.describe("Buyer payment flow", () => {
   test.beforeEach(async ({ page, next }) => {
-    setupNextOnFetch(next, { escrowId: TEST_ESCROW_ID, mockEscrow });
+    await setupNetworkMocks(page, next, { escrowId: TEST_ESCROW_ID, mockEscrow });
 
     // Inject mock Freighter wallet into window before page load
     await mockFreighter(page, MOCK_PUBLIC_KEY, MOCK_SIGNED_XDR);

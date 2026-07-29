@@ -2,10 +2,10 @@ import { mockFreighter } from "./helpers/mock-freighter";
 import { expect, test } from "next/experimental/testmode/playwright";
 
 
-import { setupNextOnFetch } from "./helpers/mock-api";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 test("vendor onboarding wizard persists state between reloads", async ({ page, next }) => {
-  setupNextOnFetch(next);
+  await setupNetworkMocks(page, next);
   await mockFreighter(page);
 
   await page.goto("/onboarding");

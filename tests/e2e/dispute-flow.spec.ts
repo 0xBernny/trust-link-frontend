@@ -1,5 +1,5 @@
 import { test, expect } from "next/experimental/testmode/playwright";
-import { setupNextOnFetch } from "./helpers/mock-api";
+import { setupNetworkMocks } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
 
@@ -28,8 +28,8 @@ const mockDisputeResponse = {
 };
 
 test.describe("Dispute submission flow", () => {
-  test.beforeEach(async ({ next }) => {
-    setupNextOnFetch(next, {
+  test.beforeEach(async ({ page, next }) => {
+    await setupNetworkMocks(page, next, {
       escrowId: TEST_ESCROW_ID,
       mockEscrow,
       mockDispute: mockDisputeResponse,

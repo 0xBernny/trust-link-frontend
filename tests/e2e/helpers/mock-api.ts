@@ -8,90 +8,20 @@ export interface MockApiOptions {
   mockDisputesList?: Record<string, unknown>[];
 }
 
+import { Page } from "@playwright/test";
+
 export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
   next.onFetch(async (request) => {
     const url = new URL(request.url);
-
-    // Auth
-    if (url.pathname.includes("/auth/challenge")) {
-      return new Response(
-        JSON.stringify({
-          transaction: "challenge-xdr",
-          network_passphrase: "Test SDF Network ; September 2015",
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    if (url.pathname.includes("/auth/verify")) {
-      return new Response(JSON.stringify({ token: "jwt-token" }), {
-        status: 200,
+    const mock = getMockResponse(url.pathname, request.method, options);
+    if (mock) {
+      return new Response(JSON.stringify(mock.body), {
+        status: mock.status,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    // Single Escrow (GET/POST/PUT)
-    if (
-      options?.escrowId &&
-      (url.pathname.endsWith(`/escrow/${options.escrowId}`) ||
-        url.pathname.endsWith(`/escrows/${options.escrowId}`))
-    ) {
-      return new Response(JSON.stringify(options.mockEscrow), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Fund Escrow
-    if (
-      options?.escrowId &&
-      url.pathname.includes(`/escrows/${options.escrowId}/fund`)
-    ) {
-      return new Response(
-        JSON.stringify({
-          txHash: "abc123def456tx789hash_mock_payment_confirmed",
-          escrowId: options.escrowId,
-          status: "FUNDED",
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Ship Escrow
-    if (
-      options?.escrowId &&
-      url.pathname.includes(`/escrow/${options.escrowId}/ship`)
-    ) {
-      return new Response(
-        JSON.stringify({
-          ...(options.mockEscrow || {}),
-          status: "SHIPPED",
-          trackingId: "TRACK-123",
-          carrier: "Terminal Africa",
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Dispute Escrow (Create or Fetch)
-    if (
-      options?.escrowId &&
-      url.pathname.includes(`/escrows/${options.escrowId}/dispute`)
-    ) {
-      return new Response(JSON.stringify(options.mockDispute), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Vendor Dashboard Escrows
-    if (url.pathname.includes("/vendor/escrows") && options?.mockEscrowsList) {
-      return new Response(JSON.stringify(options.mockEscrowsList), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Create Escrow
+    
+    // Create Escrow special case (requires reading request body)
     if (url.pathname.endsWith("/escrow") && request.method === "POST") {
       let payload: Record<string, unknown> = {};
       try {
@@ -100,7 +30,6 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
       } catch {
         // ignore JSON parse error
       }
-
       return new Response(
         JSON.stringify({
           url: `https://trustlink.example.com/escrow/${encodeURIComponent(
@@ -110,34 +39,131 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
         { status: 200, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    // Disputes List
-    if (url.pathname.includes("/disputes") && request.method === "GET") {
-      // If asking for a specific dispute by ID
-      if (options?.mockDispute && url.pathname.match(/\/disputes\/[^?]+$/)) {
-        return new Response(JSON.stringify(options.mockDispute), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      
-      // If asking for a list
-      if (options?.mockDisputesList) {
-        return new Response(JSON.stringify(options.mockDisputesList), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-    }
-
-    // Resolve Dispute
-    if (url.pathname.includes("/resolve") && request.method === "POST") {
-      return new Response(
-        JSON.stringify({ ...(options?.mockDispute || {}), status: "RESOLVED" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
+    
     return "continue";
   });
+}
+
+export async function setupNetworkMocks(page: Page, next: NextFixture, options?: MockApiOptions) {
+  // 1. Setup SSR Mocks using next.onFetch (for Node.js fetches)
+  setupNextOnFetch(next, options);
+  
+  // 2. Setup CSR Mocks using page.route (for Browser fetches)
+  await page.route("**/api/**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const mock = getMockResponse(url.pathname, request.method(), options);
+    
+    if (mock) {
+      return route.fulfill({
+        status: mock.status,
+        contentType: "application/json",
+        body: JSON.stringify(mock.body),
+      });
+    }
+    
+    // Create Escrow special case
+    if (url.pathname.endsWith("/escrow") && request.method() === "POST") {
+      let payload: Record<string, unknown> = {};
+      try {
+        const postData = request.postData();
+        if (postData) payload = JSON.parse(postData);
+      } catch {
+        // ignore JSON parse error
+      }
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          url: `https://trustlink.example.com/escrow/${encodeURIComponent(
+            (payload.itemName as string) || "ESCROW-12345"
+          )}`,
+        }),
+      });
+    }
+
+    return route.continue();
+  });
+}
+
+function getMockResponse(pathname: string, method: string, options?: MockApiOptions) {
+  // Auth
+  if (pathname.includes("/auth/challenge")) {
+    return {
+      status: 200,
+      body: {
+        transaction: "challenge-xdr",
+        network_passphrase: "Test SDF Network ; September 2015",
+      },
+    };
+  }
+  if (pathname.includes("/auth/verify")) {
+    return { status: 200, body: { token: "jwt-token" } };
+  }
+
+  // Single Escrow (GET/POST/PUT)
+  if (
+    options?.escrowId &&
+    (pathname.endsWith(`/escrow/${options.escrowId}`) ||
+      pathname.endsWith(`/escrows/${options.escrowId}`))
+  ) {
+    return { status: 200, body: options.mockEscrow };
+  }
+
+  // Fund Escrow
+  if (options?.escrowId && pathname.includes(`/escrows/${options.escrowId}/fund`)) {
+    return {
+      status: 200,
+      body: {
+        txHash: "abc123def456tx789hash_mock_payment_confirmed",
+        escrowId: options.escrowId,
+        status: "FUNDED",
+      },
+    };
+  }
+
+  // Ship Escrow
+  if (options?.escrowId && pathname.includes(`/escrow/${options.escrowId}/ship`)) {
+    return {
+      status: 200,
+      body: {
+        ...(options.mockEscrow || {}),
+        status: "SHIPPED",
+        trackingId: "TRACK-123",
+        carrier: "Terminal Africa",
+      },
+    };
+  }
+
+  // Dispute Escrow (Create or Fetch)
+  if (options?.escrowId && pathname.includes(`/escrows/${options.escrowId}/dispute`)) {
+    return { status: 200, body: options.mockDispute };
+  }
+
+  // Vendor Dashboard Escrows
+  if (pathname.includes("/vendor/escrows") && options?.mockEscrowsList) {
+    return { status: 200, body: options.mockEscrowsList };
+  }
+
+  // Disputes List
+  if (pathname.includes("/disputes") && method === "GET") {
+    // If asking for a specific dispute by ID
+    if (options?.mockDispute && pathname.match(/\/disputes\/[^?]+$/)) {
+      return { status: 200, body: options.mockDispute };
+    }
+    // If asking for a list
+    if (options?.mockDisputesList) {
+      return { status: 200, body: options.mockDisputesList };
+    }
+  }
+
+  // Resolve Dispute
+  if (pathname.includes("/resolve") && method === "POST") {
+    return {
+      status: 200,
+      body: { ...(options?.mockDispute || {}), status: "RESOLVED" },
+    };
+  }
+
+  return null;
 }
