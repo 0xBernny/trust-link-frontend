@@ -69,11 +69,11 @@ describe("TrackingTimeline", () => {
       );
     });
 
-    expect(screen.getByText("Order Placed")).toBeInTheDocument();
-    expect(screen.getByText("Payment Confirmed")).toBeInTheDocument();
-    expect(screen.getByText("Shipped")).toBeInTheDocument();
-    expect(screen.getByText("Out for Delivery")).toBeInTheDocument();
-    expect(screen.getByText("Delivered")).toBeInTheDocument();
+    expect(screen.getByText("tracking.orderPlaced")).toBeInTheDocument();
+    expect(screen.getByText("tracking.paymentConfirmed")).toBeInTheDocument();
+    expect(screen.getByText("tracking.shipped")).toBeInTheDocument();
+    expect(screen.getByText("tracking.outForDelivery")).toBeInTheDocument();
+    expect(screen.getByText("tracking.delivered")).toBeInTheDocument();
   });
 
   it("highlights current stage for PENDING status", async () => {
@@ -83,7 +83,7 @@ describe("TrackingTimeline", () => {
       );
     });
 
-    const orderPlaced = screen.getByText("Order Placed");
+    const orderPlaced = screen.getByText("tracking.orderPlaced");
     expect(orderPlaced).toBeInTheDocument();
   });
 
@@ -114,7 +114,7 @@ describe("TrackingTimeline", () => {
       );
     });
 
-    expect(screen.getByText("Raise a Dispute")).toBeInTheDocument();
+    expect(screen.getByText("tracking.raiseDispute")).toBeInTheDocument();
   });
 
   it("does not show action buttons when status is PENDING", async () => {
@@ -136,7 +136,7 @@ describe("TrackingTimeline", () => {
       );
     });
 
-    expect(screen.getByText("Dispute in Progress")).toBeInTheDocument();
+    expect(screen.getByText("tracking.disputeInProgress")).toBeInTheDocument();
   });
 
   it("highlights completed stages correctly for FUNDED status", async () => {
@@ -148,8 +148,8 @@ describe("TrackingTimeline", () => {
     });
 
     // Order Placed should be completed, Payment Confirmed should be current
-    expect(screen.getByText("Order Placed")).toBeInTheDocument();
-    expect(screen.getByText("Payment Confirmed")).toBeInTheDocument();
+    expect(screen.getByText("tracking.orderPlaced")).toBeInTheDocument();
+    expect(screen.getByText("tracking.paymentConfirmed")).toBeInTheDocument();
   });
 
   it("highlights all stages as completed for COMPLETED status", async () => {
