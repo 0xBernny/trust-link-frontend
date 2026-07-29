@@ -5,11 +5,19 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/Skeleton";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, X, MessageCircle, Image as ImageIcon } from "lucide-react";
+import {
+  Copy,
+  Download,
+  X,
+  MessageCircle,
+  Image as ImageIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatUSDC } from "@/utils/currency";
 import { track } from "@/lib/analytics";
-import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import FetchErrorState, {
+  getFetchErrorMessage,
+} from "@/components/ui/FetchErrorState";
 
 const QRCodeSVG = dynamic(
   () => import("qrcode.react").then((m) => m.QRCodeSVG),
@@ -61,7 +69,9 @@ export default function EscrowLinkCard({
   } | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isCopying, setIsCopying] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
+    "idle"
+  );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const showQRCode = true;
 
@@ -94,7 +104,10 @@ export default function EscrowLinkCard({
     return (
       <FetchErrorState
         title="We couldn't load your shareable link"
-        message={getFetchErrorMessage(error, "Failed to load escrow link details.")}
+        message={getFetchErrorMessage(
+          error,
+          "Failed to load escrow link details."
+        )}
         onRetry={loadLink}
       />
     );
@@ -104,16 +117,16 @@ export default function EscrowLinkCard({
 
   const handleCopy = async () => {
     if (isCopying) return;
-    
+
     try {
       setIsCopying(true);
       setErrorMsg(null);
-      
+
       if (!navigator.clipboard || !navigator.clipboard.writeText) {
         throw new Error("Clipboard not supported");
       }
-      
-      await navigator.clipboard.writeText(link!.url);
+
+      await navigator.clipboard.writeText(link.url);
       setCopyStatus("success");
       onCopySuccess?.();
       track("link_copied", { method: "copy_button" });
@@ -135,7 +148,7 @@ export default function EscrowLinkCard({
   // Share functions for WhatsApp, Instagram, Twitter/X, and QR code download
   const shareWhatsApp = async () => {
     const text = `Check out this secure escrow payment link: ${link.url}`;
-    
+
     // Track analytics
     await track("link_share_attempt", { platform: "whatsapp" });
 
@@ -160,13 +173,16 @@ export default function EscrowLinkCard({
     // Fallback: Open WhatsApp web/app
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
-    await track("link_shared", { platform: "whatsapp", method: "whatsapp_web" });
+    await track("link_shared", {
+      platform: "whatsapp",
+      method: "whatsapp_web",
+    });
     toast.success("Opening WhatsApp...");
   };
 
   const shareInstagram = async () => {
     const igText = `Secure payment link via TrustLink: ${link.url}\n\nCopy and paste in your bio or story!`;
-    
+
     // Track analytics
     await track("link_share_attempt", { platform: "instagram" });
 
@@ -231,7 +247,9 @@ export default function EscrowLinkCard({
       )}
 
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">{link.title}</h2>
+        <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">
+          {link.title}
+        </h2>
         <span className="rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
           {link.status}
         </span>
@@ -239,7 +257,9 @@ export default function EscrowLinkCard({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">Amount</p>
-          <p className="mt-1 text-base font-medium text-zinc-900 dark:text-zinc-100">{formatUSDC(link.amount)}</p>
+          <p className="mt-1 text-base font-medium text-zinc-900 dark:text-zinc-100">
+            {formatUSDC(link.amount)}
+          </p>
         </div>
         <div>
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">
@@ -263,9 +283,9 @@ export default function EscrowLinkCard({
         </div>
 
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             onClick={handleCopy}
             disabled={isCopying}
             aria-label="Copy URL"
@@ -273,39 +293,39 @@ export default function EscrowLinkCard({
           >
             <Copy className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={shareWhatsApp} 
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={shareWhatsApp}
             aria-label="Share on WhatsApp"
             title="Share on WhatsApp"
             className="hover:bg-green-50 dark:hover:bg-green-950"
           >
             <MessageCircle className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={shareInstagram} 
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={shareInstagram}
             aria-label="Share on Instagram"
             title="Share on Instagram"
             className="hover:bg-pink-50 dark:hover:bg-pink-950"
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={copyTwitter} 
-            aria-label="Copy for Twitter/X" 
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={copyTwitter}
+            aria-label="Copy for Twitter/X"
             title="Copy for Twitter/X"
           >
             <X className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={downloadQR} 
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={downloadQR}
             aria-label="Download QR"
             title="Download QR code"
           >
