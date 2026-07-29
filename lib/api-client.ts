@@ -13,13 +13,13 @@ export class ApiClientError extends Error {
 }
 
 interface ApiClientOptions {
-  token?: string;
+  token?: string | null;
   baseUrl?: string;
 }
 
 export function createApiClient(opts?: ApiClientOptions) {
   const baseUrl = opts?.baseUrl ?? API_URL;
-  const token = opts?.token;
+  const token = opts?.token ?? undefined;
 
   async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const headers = new Headers(init.headers ?? {});
