@@ -1,3 +1,5 @@
+import type { AuthChallengeResponse, AuthVerifyResponse } from '@/types/api';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getChallenge(publicKey: string): Promise<string> {
@@ -9,7 +11,7 @@ export async function getChallenge(publicKey: string): Promise<string> {
   if (!res.ok) {
     throw new Error('Failed to get auth challenge');
   }
-  const { transaction } = await res.json();
+  const { transaction } = (await res.json()) as AuthChallengeResponse;
   return transaction;
 }
 
@@ -24,6 +26,6 @@ export async function verifyChallenge(signedXdr: string): Promise<string> {
   if (!res.ok) {
     throw new Error('Failed to verify challenge');
   }
-  const { token } = await res.json();
+  const { token } = (await res.json()) as AuthVerifyResponse;
   return token;
 }

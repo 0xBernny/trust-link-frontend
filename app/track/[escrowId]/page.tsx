@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import * as Sentry from "@sentry/nextjs";
+import { setEscrowContext } from "@/lib/logger";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import TrackingTimeline from "@/components/tracking/TrackingTimeline";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getEscrow } from "@/lib/api";
+import type { GetEscrowResponse } from "@/types/api";
 import { formatUSDC } from "@/utils/currency";
 
 interface TrackPageProps {
@@ -30,11 +31,10 @@ export async function generateMetadata({ params }: TrackPageProps): Promise<Meta
 export default async function TrackPage({ params }: TrackPageProps) {
   const { escrowId } = await params;
   
-  Sentry.setTag("escrow.id", escrowId);
-  Sentry.setContext("tracking", { escrowId });
-  
+  setEscrowContext(escrowId);
+
   // Fetch initial escrow data
-  let initialEscrow;
+  let initialEscrow: GetEscrowResponse;
   try {
     initialEscrow = await getEscrow(escrowId);
   } catch {

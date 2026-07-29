@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getDispute } from "@/lib/api";
+import type { GetDisputeResponse } from "@/types/api";
 import { DisputeDetailsClient } from "./DisputeDetailsClient";
 import { notFound } from "next/navigation";
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function DisputeDetailsPage({ params }: PageProps) {
   const { id } = await params;
 
-  let dispute: Awaited<ReturnType<typeof getDispute>>;
+  let dispute: GetDisputeResponse;
   try {
     dispute = await getDispute(id);
   } catch (error) {

@@ -1,10 +1,10 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks } from "./helpers/mock-api";
+import { setupNetworkMocks, type MockDispute } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
 
-const mockDispute = {
+const mockDispute: MockDispute = {
   id: disputeId,
   escrowId: "escrow-42",
   buyerId: "GBUYER8TESTING1234567890ABCDEF",

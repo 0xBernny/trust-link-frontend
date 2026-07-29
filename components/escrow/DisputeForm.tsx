@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
+import type { SubmitDisputeFormResponse } from '@/types/api';
 
 // Types
 interface DisputeFormData {
@@ -23,7 +24,7 @@ interface DisputeFormData {
 interface DisputeFormProps {
   onSubmit?: (data: DisputeFormData) => Promise<void>;
   apiEndpoint?: string;
-  onSuccess?: (response: Record<string, unknown>) => void;
+  onSuccess?: (response: SubmitDisputeFormResponse) => void;
   onError?: (error: Error) => void;
 }
 
@@ -219,8 +220,8 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const responseData = await response.json();
-        
+        const responseData = (await response.json()) as SubmitDisputeFormResponse;
+
         if (onSuccess) {
           onSuccess(responseData);
         }
