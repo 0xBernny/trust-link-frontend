@@ -2,10 +2,10 @@ import { NextFixture } from "next/experimental/testmode/playwright";
 
 export interface MockApiOptions {
   escrowId?: string;
-  mockEscrow?: any;
-  mockDispute?: any;
-  mockEscrowsList?: any[];
-  mockDisputesList?: any[];
+  mockEscrow?: Record<string, unknown>;
+  mockDispute?: Record<string, unknown>;
+  mockEscrowsList?: Record<string, unknown>[];
+  mockDisputesList?: Record<string, unknown>[];
 }
 
 export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
@@ -93,11 +93,13 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
 
     // Create Escrow
     if (url.pathname.endsWith("/escrow") && request.method === "POST") {
-      let payload: any = {};
+      let payload: Record<string, unknown> = {};
       try {
         const body = await request.clone().text();
         if (body) payload = JSON.parse(body);
-      } catch (e) {}
+      } catch {
+        // ignore JSON parse error
+      }
 
       return new Response(
         JSON.stringify({
