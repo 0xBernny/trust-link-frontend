@@ -4,8 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import useWallet from "@/hooks/useWallet";
 import FocusTrap from "@/components/ui/FocusTrap";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { createApiClient } from "@/lib/api-client";
 
 interface ConfirmDeliveryButtonProps {
   escrowId: string;
@@ -31,15 +30,8 @@ export function ConfirmDeliveryButton({
   async function handleConfirm() {
     setIsPending(true);
     try {
-      const headers: HeadersInit = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const res = await fetch(`${API_URL}/escrows/${escrowId}/confirm`, {
-        method: "POST",
-        headers,
-      });
-
-      if (!res.ok) throw new Error("Failed to confirm delivery");
+      const api = createApiClient({ token });
+      await api.post(`/escrows/${escrowId}/confirm`);
 
       closeDialog();
       toast.success("Delivery confirmed — funds released.");
