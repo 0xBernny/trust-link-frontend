@@ -104,7 +104,7 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
       return new Response(
         JSON.stringify({
           url: `https://trustlink.example.com/escrow/${encodeURIComponent(
-            payload.itemName || "ESCROW-12345"
+            (payload.itemName as string) || "ESCROW-12345"
           )}`,
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
