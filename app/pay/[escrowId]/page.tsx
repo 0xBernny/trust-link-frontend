@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { getEscrow } from "@/lib/api"
+import type { GetEscrowResponse } from "@/types/api"
 import { PaymentEscrowClient } from "./PaymentEscrowClient"
 import { Breadcrumb } from "@/components/ui/Breadcrumb"
 import { Accordion } from "@/components/ui/Accordion"
@@ -68,7 +69,7 @@ const faqItems = [
 export default async function PayPage({ params }: PayPageProps) {
 	const { escrowId } = await params
 
-	let escrow: Awaited<ReturnType<typeof getEscrow>>
+	let escrow: GetEscrowResponse
 	try {
 		escrow = await getEscrow(escrowId)
 	} catch {

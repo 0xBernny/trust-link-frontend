@@ -1,9 +1,9 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks } from "./helpers/mock-api";
+import { setupNetworkMocks, type MockEscrow } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 
-const mockEscrow = {
+const mockEscrow: MockEscrow = {
   id: escrowId,
   vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
   buyerId: "GCBUYER8TESTING1234567890ABCDEF",

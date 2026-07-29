@@ -1,9 +1,14 @@
 import { test, expect } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks } from "./helpers/mock-api";
+import {
+  setupNetworkMocks,
+  setupNextOnFetch,
+  type MockDispute,
+  type MockEscrow,
+} from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
 
-const mockEscrow = {
+const mockEscrow: MockEscrow = {
   id: TEST_ESCROW_ID,
   vendorId: "vendor_test_1",
   buyerId: "buyer_test_1",
@@ -15,7 +20,7 @@ const mockEscrow = {
   history: [],
 };
 
-const mockDisputeResponse = {
+const mockDisputeResponse: MockDispute = {
   id: "dispute-001",
   escrowId: TEST_ESCROW_ID,
   buyerId: "buyer_test_1",
