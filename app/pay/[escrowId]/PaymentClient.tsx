@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Escrow } from "@/types";
+import type { FundEscrowResponse } from "@/types/api";
 import { useWallet } from "@/components/providers/WalletProvider";
 import { useTranslation } from "react-i18next";
 import { formatUSDC } from "@/utils/currency";
@@ -31,7 +32,7 @@ export default function PaymentClient({ escrow }: { escrow: Escrow }) {
         body: JSON.stringify({ buyerPublicKey: publicKey }),
       });
       if (!res.ok) throw new Error("Payment submission failed");
-      const data = await res.json();
+      const data = (await res.json()) as FundEscrowResponse;
       setTxHash(data.txHash ?? data.transactionHash ?? data.hash ?? "mock_tx_hash");
       track("payment_completed", { escrowId: escrow.id });
     } catch (e: unknown) {
