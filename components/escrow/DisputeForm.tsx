@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import type { SubmitDisputeFormResponse } from '@/types/api';
-import { DisputeFormSchema } from '@/lib/validations/dispute';
+import React, { useCallback, useEffect,useRef, useState } from 'react';
+
 import type { DisputeFormValues } from '@/lib/validations/dispute';
+import { DisputeFormSchema } from '@/lib/validations/dispute';
+import type { SubmitDisputeFormResponse } from '@/types/api';
 
 type DisputeFormData = DisputeFormValues;
 
@@ -136,6 +137,16 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
 
     return Object.keys(newErrors).length === 0;
   }, [formData]);
+
+  const validateStep = useCallback((step: Step): boolean => {
+    const validators: Record<Step, () => boolean> = {
+      1: validateStep1,
+      2: validateStep2,
+      3: validateStep3,
+      4: validateStep4,
+    };
+    return validators[step]();
+  }, [validateStep1, validateStep2, validateStep3, validateStep4]);
 
   // Navigation handlers
   const handleNext = useCallback(() => {
