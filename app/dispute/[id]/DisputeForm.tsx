@@ -1,10 +1,11 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useState } from "react";
 import { AlertCircle, CheckCircle2, FileText, Upload, X } from "lucide-react";
-import { createDispute } from "@/lib/api";
-import { track } from "@/lib/analytics";
+import { ChangeEvent, DragEvent, useState } from "react";
 import { toast } from "sonner";
+
+import { track } from "@/lib/analytics";
+import { createDispute } from "@/lib/api";
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB

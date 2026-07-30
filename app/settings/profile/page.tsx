@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, startTransition } from "react";
+import { startTransition,useEffect, useState } from "react";
+
 import { useWallet } from "@/components/providers/WalletProvider";
 
 const STORAGE_KEY = "vendor.profile";

@@ -8,6 +8,6 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-export { setEscrowContext, captureWalletError, captureError, setLoggerUser } from "@/lib/logger";
+export { captureError, captureWalletError, setEscrowContext, setLoggerUser } from "@/lib/logger";
 
 export default Sentry;

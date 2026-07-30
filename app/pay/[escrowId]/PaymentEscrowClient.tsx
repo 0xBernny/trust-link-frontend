@@ -1,14 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState, useEffect, startTransition } from "react";
-import { Escrow } from "@/types";
+import { startTransition,useEffect, useMemo, useState } from "react";
+
 import { TrustBadge } from "@/components/payment/TrustBadge";
 import { useWallet } from "@/components/providers/WalletProvider";
-import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
-import { patchBuyerContact } from "@/lib/api";
-import { formatUSDC } from "@/utils/currency";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { patchBuyerContact } from "@/lib/api";
+import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
+import { Escrow } from "@/types";
+import { formatUSDC } from "@/utils/currency";
 
 function TrackingTimelineSkeleton() {
   return (

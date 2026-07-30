@@ -1,5 +1,6 @@
-import { render, screen, cleanup } from "@testing-library/react";
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { cleanup,render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import TrackingTimeline, { type ShipmentStage } from "../TrackingTimeline";
 
 vi.mock("react-i18next", () => ({

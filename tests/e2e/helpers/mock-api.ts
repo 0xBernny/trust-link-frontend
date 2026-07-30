@@ -1,7 +1,11 @@
-import { NextFixture } from "next/experimental/testmode/playwright";
 import { Page } from "@playwright/test";
-import type { Dispute, Escrow } from "@/types";
+import { NextFixture } from "next/experimental/testmode/playwright";
+
 import type { EscrowInput } from "@/lib/api";
+import type { Dispute, Escrow } from "@/types";
+
+import disputesFixture from "../fixtures/disputes.json";
+import escrowsFixture from "../fixtures/escrows.json";
 
 /**
  * Issue #426 — fixtures are typed against the real domain models instead of
@@ -47,6 +51,8 @@ export function setupNextOnFetch(next: NextFixture, options?: MockApiOptions) {
       } catch {
         // ignore JSON parse error
       }
+      const itemName = encodeURIComponent((payload.itemName as string) || "ESCROW-12345");
+      const url = escrowsFixture.createEscrow.urlTemplate.replace("{itemName}", itemName);
       return new Response(
         JSON.stringify({
           url: `https://trustlink.example.com/escrow/${encodeURIComponent(
@@ -88,6 +94,8 @@ export async function setupNetworkMocks(page: Page, next: NextFixture, options?:
       } catch {
         // ignore JSON parse error
       }
+      const itemName = encodeURIComponent((payload.itemName as string) || "ESCROW-12345");
+      const url = escrowsFixture.createEscrow.urlTemplate.replace("{itemName}", itemName);
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -106,16 +114,10 @@ export async function setupNetworkMocks(page: Page, next: NextFixture, options?:
 function getMockResponse(pathname: string, method: string, options?: MockApiOptions) {
   // Auth
   if (pathname.includes("/auth/challenge")) {
-    return {
-      status: 200,
-      body: {
-        transaction: "challenge-xdr",
-        network_passphrase: "Test SDF Network ; September 2015",
-      },
-    };
+    return { status: 200, body: escrowsFixture.authChallenge };
   }
   if (pathname.includes("/auth/verify")) {
-    return { status: 200, body: { token: "jwt-token" } };
+    return { status: 200, body: escrowsFixture.authVerify };
   }
 
   // Single Escrow (GET/POST/PUT)
@@ -131,11 +133,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
   if (options?.escrowId && pathname.includes(`/escrows/${options.escrowId}/fund`)) {
     return {
       status: 200,
-      body: {
-        txHash: "abc123def456tx789hash_mock_payment_confirmed",
-        escrowId: options.escrowId,
-        status: "FUNDED",
-      },
+      body: { ...escrowsFixture.fundEscrow, escrowId: options.escrowId },
     };
   }
 
@@ -145,9 +143,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
       status: 200,
       body: {
         ...(options.mockEscrow || {}),
-        status: "SHIPPED",
-        trackingId: "TRACK-123",
-        carrier: "Terminal Africa",
+        ...escrowsFixture.shipEscrow,
       },
     };
   }
@@ -178,7 +174,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
   if (pathname.includes("/resolve") && method === "POST") {
     return {
       status: 200,
-      body: { ...(options?.mockDispute || {}), status: "RESOLVED" },
+      body: { ...(options?.mockDispute || {}), ...disputesFixture.resolveDispute },
     };
   }
 

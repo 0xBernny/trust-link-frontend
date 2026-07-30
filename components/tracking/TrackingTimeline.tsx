@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, startTransition } from "react";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { Escrow, EscrowStatus } from "@/types";
-import { CheckCircle2, Circle, Clock, Package, Truck, Home } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Home,Package, Truck } from "lucide-react";
+import { startTransition,useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useEscrow } from "@/hooks/useEscrow";
+
 import { ConfirmDeliveryButton } from "@/components/escrow/ConfirmDeliveryButton";
-import { track } from "@/lib/analytics";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useEscrow } from "@/hooks/useEscrow";
+import { track } from "@/lib/analytics";
+import { Escrow, EscrowStatus } from "@/types";
 
 interface TrackingStage {
   id: string;

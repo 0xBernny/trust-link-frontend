@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
 import { getDispute } from "@/lib/api";
 import type { GetDisputeResponse } from "@/types/api";
+
 import { DisputeDetailsClient } from "./DisputeDetailsClient";
-import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 

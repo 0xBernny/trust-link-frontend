@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import Navbar from "../Navbar";
-import TestnetBanner from "../TestnetBanner";
+import { describe, expect, it, vi } from "vitest";
+
 import { NetworkProvider } from "@/components/providers/NetworkProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+import Navbar from "../Navbar";
+import TestnetBanner from "../TestnetBanner";
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,

@@ -1,12 +1,12 @@
-import React from "react";
 import { render } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
 import { axe, toHaveNoViolations } from "jest-axe";
+import React from "react";
+import { describe, expect,it } from "vitest";
 
+import EmptyVendorState from "@/components/dashboard/EmptyVendorState";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/Skeleton";
-import EmptyVendorState from "@/components/dashboard/EmptyVendorState";
 
 expect.extend(toHaveNoViolations);
 

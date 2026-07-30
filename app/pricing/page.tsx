@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Check, Sparkles, X } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
-import { upgradeSubscription } from "@/lib/api";
+
 import { clearSubscriptionCache, useSubscription } from "@/components/providers/SubscriptionProvider";
+import { upgradeSubscription } from "@/lib/api";
 
 const FREE_FEATURES = [
   { label: "Up to 10 escrows per month", included: true },

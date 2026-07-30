@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect,test } from "@playwright/test";
 
 test.describe("EscrowStatusBadge visual regression", () => {
   test("renders all badge variants and matches baseline snapshot", async ({ page }) => {

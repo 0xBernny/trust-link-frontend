@@ -1,5 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks, type MockEscrow } from "./helpers/mock-api";
+
+import { authenticatePage } from "./helpers/auth";
+import { type MockEscrow,setupNetworkMocks } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 
@@ -16,9 +18,7 @@ const mockEscrow: MockEscrow = {
 };
 
 test("vendor mark shipped updates vendor and buyer status", async ({ page, next }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem("wallet.jwt", "jwt-token");
-  });
+  await authenticatePage(page);
 
   await setupNetworkMocks(page, next, {
     escrowId,

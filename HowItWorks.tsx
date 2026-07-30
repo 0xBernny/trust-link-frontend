@@ -1,5 +1,6 @@
+import { CheckCircle2,ShieldCheck, Truck } from "lucide-react";
 import React, { memo } from "react";
-import { ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
+
 import i18n from "@/lib/i18n";
 
 export const HowItWorks = memo(function HowItWorks() {
