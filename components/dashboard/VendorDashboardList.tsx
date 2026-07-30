@@ -333,6 +333,11 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                 </div>
               </div>
             </div>
+            <EscrowTableRow
+              key={escrow.id}
+              escrow={escrow}
+              onMarkShipped={handleMarkShipped}
+            />
           ))}
         </div>
       )}
