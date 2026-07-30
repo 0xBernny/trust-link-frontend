@@ -1,3 +1,4 @@
+import { JWT, TRACKING_ID, NETWORK_PASSPHRASE, MOCK_TX_HASH } from "./constants";
 import { NextFixture } from "next/experimental/testmode/playwright";
 import { Page } from "@playwright/test";
 import type { Dispute, Escrow } from "@/types";
@@ -110,12 +111,12 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
       status: 200,
       body: {
         transaction: "challenge-xdr",
-        network_passphrase: "Test SDF Network ; September 2015",
+        network_passphrase: NETWORK_PASSPHRASE,
       },
     };
   }
   if (pathname.includes("/auth/verify")) {
-    return { status: 200, body: { token: "jwt-token" } };
+    return { status: 200, body: { token: JWT } };
   }
 
   // Single Escrow (GET/POST/PUT)
@@ -132,7 +133,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
     return {
       status: 200,
       body: {
-        txHash: "abc123def456tx789hash_mock_payment_confirmed",
+        txHash: MOCK_TX_HASH,
         escrowId: options.escrowId,
         status: "FUNDED",
       },
@@ -146,7 +147,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
       body: {
         ...(options.mockEscrow || {}),
         status: "SHIPPED",
-        trackingId: "TRACK-123",
+        trackingId: TRACKING_ID,
         carrier: "Terminal Africa",
       },
     };
