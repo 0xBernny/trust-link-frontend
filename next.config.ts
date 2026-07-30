@@ -1,6 +1,6 @@
-import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 import { loadEnvConfig } from "@next/env";
+import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 
 loadEnvConfig(process.cwd());
 
@@ -115,7 +115,10 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://stellarexpert.io https://testnet.stellarexpert.io https://*.s3.amazonaws.com https://*.s3.*.amazonaws.com https://images.unsplash.com https://*.cloudinary.com https://*.imgix.net",
       "font-src 'self' data:",
       `connect-src ${connectSrc.join(" ")}`,
-      "frame-ancestors 'none'",
+      // Modern clickjacking defence. Kept in lockstep with the X-Frame-Options
+      // header below so browsers converge on the same framing policy: only
+      // pages served from this origin may embed the app in a frame/iframe.
+      "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
@@ -156,7 +159,11 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          { key: "X-Frame-Options", value: "DENY" },
+          // Prevents UI redress / clickjacking attacks: third-party sites cannot
+          // load TrustLink in a frame and trick users into clicking through to
+          // escrow or dispute actions. Legacy fallback for browsers that do not
+          // support the CSP `frame-ancestors` directive above.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Content-Security-Policy", value: csp },

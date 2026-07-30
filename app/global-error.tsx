@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { captureError } from "@/lib/logger";
 
 export default function GlobalError({

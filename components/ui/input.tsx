@@ -1,6 +1,6 @@
 "use client";
 
-import { InputHTMLAttributes, forwardRef } from "react";
+import { forwardRef,InputHTMLAttributes } from "react";
 
 /**
  * Props for the Input component.

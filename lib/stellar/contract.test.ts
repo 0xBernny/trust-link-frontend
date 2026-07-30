@@ -1,20 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { rpc } from "@stellar/stellar-sdk";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import {
+  buildContractDeployment,
   buildContractInvocation,
+  confirmDelivery,
+  ContractArg,
+  ContractCallOptions,
+  fundEscrow,
+  isContractSuccess,
   isValidContractId,
   parseContractError,
   parseContractResult,
-  validateContractMethodCall,
-  buildContractDeployment,
-  isContractSuccess,
-  ContractCallOptions,
-  ContractArg,
-  fundEscrow,
-  confirmDelivery,
   raiseDispute,
+  validateContractMethodCall,
 } from "./contract";
 import * as freighter from "./freighter";
-import { rpc } from "@stellar/stellar-sdk";
 
 vi.mock("./freighter", () => ({
   signTransaction: vi.fn(),

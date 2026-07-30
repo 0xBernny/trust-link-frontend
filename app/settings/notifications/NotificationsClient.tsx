@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { Skeleton } from "@/components/ui/Skeleton";
+import useWallet from "@/hooks/useWallet";
 import {
   getVendorNotificationPreferences,
   patchVendorNotifications,
   VendorNotificationPreferences,
 } from "@/lib/api";
-import useWallet from "@/hooks/useWallet";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 type EventKey = keyof VendorNotificationPreferences;
 

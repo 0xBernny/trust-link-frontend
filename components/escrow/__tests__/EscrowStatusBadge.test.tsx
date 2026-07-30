@@ -1,8 +1,9 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
-import { EscrowStatusBadge } from "../EscrowStatusBadge";
+import React from "react";
+import { describe, expect,it } from "vitest";
+
 import { ESCROW_STATUS_MAP, EscrowState } from "../escrow-status";
+import { EscrowStatusBadge } from "../EscrowStatusBadge";
 
 const VARIANT_CLASSES: Record<string, string> = {
   default: "bg-zinc-900",

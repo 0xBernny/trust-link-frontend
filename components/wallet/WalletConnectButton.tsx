@@ -1,10 +1,11 @@
 "use client";
 
+import { ChevronDown, ExternalLink,LogOut, Wallet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+import { Skeleton } from "@/components/ui/Skeleton";
 import useWallet from "@/hooks/useWallet";
 import { truncateAddress } from "@/utils/truncateAddress";
-import { ChevronDown, LogOut, Wallet, ExternalLink } from "lucide-react";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function WalletConnectButton() {
   const { isConnected, publicKey, isInstalled, connect, disconnect, isLoading, walletReady, error } = useWallet();

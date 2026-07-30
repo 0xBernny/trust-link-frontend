@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef, startTransition } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { startTransition,useEffect, useRef, useState } from "react";
 
 export default function TopProgressBar() {
   const [isNavigating, setIsNavigating] = useState(false);

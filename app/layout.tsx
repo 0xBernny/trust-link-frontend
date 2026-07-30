@@ -1,22 +1,24 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { NetworkProvider } from "@/components/providers/NetworkProvider";
-import { WalletProvider } from "@/components/providers/WalletProvider";
-import { SubscriptionProvider } from "@/components/providers/SubscriptionProvider";
-import { NotificationProvider } from "@/components/providers/NotificationProvider";
-import I18nProvider from "@/components/providers/I18nProvider";
+import { Suspense } from "react";
+import { Toaster } from "sonner";
+
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-import TestnetBanner from "@/components/layout/TestnetBanner";
 import OfflineBanner from "@/components/layout/OfflineBanner";
+import TestnetBanner from "@/components/layout/TestnetBanner";
+import I18nProvider from "@/components/providers/I18nProvider";
+import { NetworkProvider } from "@/components/providers/NetworkProvider";
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
-import { Toaster } from "sonner";
-import { Suspense } from "react";
-import TopProgressBar from "@/components/ui/TopProgressBar";
-import CommandPalette from "@/components/ui/CommandPalette";
+import { SubscriptionProvider } from "@/components/providers/SubscriptionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { WalletProvider } from "@/components/providers/WalletProvider";
+import CommandPalette from "@/components/ui/CommandPalette";
+import TopProgressBar from "@/components/ui/TopProgressBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -98,7 +100,7 @@ export default function RootLayout({
                   </main>
                   <Footer />
                   <BottomNav />
-                  <Toaster richColors position="top-right" />
+                  <Toaster richColors position="top-right" visibleToasts={3} />
                 </NotificationProvider>
               </I18nProvider>
             </SubscriptionProvider>

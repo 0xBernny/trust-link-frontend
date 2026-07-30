@@ -1,6 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { VENDOR_KEY, BUYER_KEY, JWT } from "./helpers/constants";
-import { setupNetworkMocks, type MockDispute } from "./helpers/mock-api";
+
+import { authenticatePage } from "./helpers/auth";
+import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
@@ -30,9 +31,7 @@ const mockDispute: MockDispute = {
 test("admin can resolve a dispute and the dispute list updates", async ({ page, next }) => {
   isResolved = false;
 
-  await page.addInitScript(() => {
-    window.localStorage.setItem("wallet.jwt", JWT);
-  });
+  await authenticatePage(page);
 
   await setupNetworkMocks(page, next);
   
@@ -50,9 +49,11 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
       });
     }
 
-    // Client-side resolve action
+    // Client-side resolve action — deliberately slow so the assertions below
+    // prove the badge updates optimistically rather than after the response.
     if (url.pathname.includes(`/disputes/${disputeId}/resolve`)) {
       isResolved = true;
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -87,8 +88,14 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
   await page.getByRole("link", { name: /view dispute/i }).click();
 
   await expect(page.getByText(/release to vendor/i)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId("dispute-status-badge")).toHaveText("OPEN");
+
   await page.getByRole("button", { name: /release to vendor/i }).click();
-  await page.getByRole("button", { name: /confirm/i }).click();
+  await page.getByRole("button", { name: "Confirm" }).click();
+
+  // Optimistic update: badges flip while the 1.5s resolve request is still in flight.
+  await expect(page.getByTestId("dispute-status-badge")).toHaveText("RESOLVED", { timeout: 1_000 });
+  await expect(page.getByTestId("escrow-status-badge")).toHaveText("RELEASED", { timeout: 1_000 });
 
   await expect(page.getByText(/no open disputes right now/i)).toBeVisible({ timeout: 10_000 });
 });

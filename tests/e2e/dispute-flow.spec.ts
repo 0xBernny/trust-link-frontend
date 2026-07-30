@@ -1,10 +1,10 @@
-import { test, expect } from "next/experimental/testmode/playwright";
-import { VENDOR_ID, BUYER_ID } from "./helpers/constants";
+import { expect,test } from "next/experimental/testmode/playwright";
+
 import {
-  setupNetworkMocks,
-  setupNextOnFetch,
   type MockDispute,
   type MockEscrow,
+  setupNetworkMocks,
+  setupNextOnFetch,
 } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
