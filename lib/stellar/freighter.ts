@@ -1,9 +1,9 @@
 import {
-  isConnected,
   getAddress,
-  signTransaction as freighterSignTransaction,
   isAllowed,
+  isConnected,
   setAllowed,
+  signTransaction as freighterSignTransaction,
 } from "@stellar/freighter-api";
 
 /**
@@ -96,4 +96,4 @@ export async function signTransaction(
   }
 }
 
-export { isConnected, getAddress };
+export { getAddress,isConnected };

@@ -1,7 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { authenticatePage } from "./helpers/auth";
 
-import { setupNetworkMocks, type MockDispute } from "./helpers/mock-api";
+import { authenticatePage } from "./helpers/auth";
+import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;

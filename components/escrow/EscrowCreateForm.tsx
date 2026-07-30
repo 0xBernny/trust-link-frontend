@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
-import { createEscrow, type EscrowInput } from "@/lib/api";
-import { track } from "@/lib/analytics";
+import { type FormEvent,useRef, useState } from "react";
 import { toast } from "sonner";
+
+import { track } from "@/lib/analytics";
+import { createEscrow, type EscrowInput } from "@/lib/api";
 
 const shippingOptions = ["Same day", "1-3 days", "1 week", "Custom"] as const;
 

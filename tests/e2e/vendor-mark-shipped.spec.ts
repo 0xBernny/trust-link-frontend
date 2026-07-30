@@ -1,6 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
+
 import { authenticatePage } from "./helpers/auth";
-import { setupNetworkMocks, type MockEscrow } from "./helpers/mock-api";
+import { type MockEscrow,setupNetworkMocks } from "./helpers/mock-api";
 
 const escrowId = "escrow-ship-1";
 

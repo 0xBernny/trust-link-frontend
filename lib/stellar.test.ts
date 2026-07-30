@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import { getChallenge, verifyChallenge } from "./stellar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;

@@ -1,7 +1,8 @@
-import React from "react";
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import React from "react";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
 import EscrowLinkCard from '../EscrowLinkCard';
 
 vi.mock('qrcode.react', () => ({

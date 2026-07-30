@@ -1,9 +1,11 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import PaymentForm from "../PaymentForm";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
+import { beforeEach, describe, expect, it, type Mock,vi } from "vitest";
+
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
-import { toast } from "sonner";
+
+import PaymentForm from "../PaymentForm";
 
 // Mock dependencies
 vi.mock("@/hooks/useWallet", () => ({

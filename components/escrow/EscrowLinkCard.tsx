@@ -1,23 +1,24 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/Skeleton";
-import OptimizedImage from "@/components/ui/OptimizedImage";
-import { Button } from "@/components/ui/button";
 import {
   Copy,
   Download,
-  X,
-  MessageCircle,
   Image as ImageIcon,
+  MessageCircle,
+  X,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useCallback,useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { formatUSDC } from "@/utils/currency";
-import { track } from "@/lib/analytics";
+
+import { Button } from "@/components/ui/button";
 import FetchErrorState, {
   getFetchErrorMessage,
 } from "@/components/ui/FetchErrorState";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { track } from "@/lib/analytics";
+import { formatUSDC } from "@/utils/currency";
 
 const QRCodeSVG = dynamic(
   () => import("qrcode.react").then((m) => m.QRCodeSVG),

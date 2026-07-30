@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useCallback,useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { useNetwork } from "@/components/providers/NetworkProvider";
+import { captureError, setLoggerUser } from "@/lib/logger";
+import { getChallenge, verifyChallenge } from "@/lib/stellar";
 import {
-  signTransaction as freighterSignTransaction,
+  connectFreighter,
   isConnected as freighterIsConnected,
   isFreighterInstalled,
-  connectFreighter,
+  signTransaction as freighterSignTransaction,
 } from "@/lib/stellar/freighter";
-import { getChallenge, verifyChallenge } from "@/lib/stellar";
-import { toast } from "sonner";
-import { jwtDecode } from "jwt-decode";
-import * as Sentry from "@sentry/nextjs";
-import { useNetwork } from "@/components/providers/NetworkProvider";
 
 export type WalletStatus = "loading" | "connected" | "disconnected" | "not-installed" | "error";
 
@@ -60,7 +61,7 @@ export function useStellarWallet() {
       return jwt;
     } catch (err: unknown) {
       console.error("Authentication failed:", err);
-      Sentry.captureException(err);
+      captureError(err, { scope: "auth", action: "authenticate" });
       toast.error("Authentication failed");
       throw err;
     }
@@ -81,7 +82,7 @@ export function useStellarWallet() {
           if (!isMounted) return;
           if (connected) {
             setPublicKey(storedPublicKey);
-            Sentry.setUser({ id: storedPublicKey });
+            setLoggerUser(storedPublicKey);
             await authenticate(storedPublicKey);
           } else {
             if (typeof window !== "undefined") {
@@ -90,7 +91,7 @@ export function useStellarWallet() {
             }
           }
         } catch (e) {
-          Sentry.captureException(e);
+          captureError(e, { scope: "wallet", action: "restoreSession" });
         }
       }
       if (!isMounted) return;
@@ -114,7 +115,7 @@ export function useStellarWallet() {
 
       const pubKey = await connectFreighter();
       setPublicKey(pubKey);
-      Sentry.setUser({ id: pubKey });
+      setLoggerUser(pubKey);
       if (typeof window !== "undefined") {
         localStorage.setItem(PUBLIC_KEY_STORAGE_KEY, pubKey);
       }
@@ -136,7 +137,7 @@ export function useStellarWallet() {
   const disconnect = useCallback(() => {
     setPublicKey(null);
     setToken(null);
-    Sentry.setUser(null);
+    setLoggerUser(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem(PUBLIC_KEY_STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -176,7 +177,7 @@ export function useStellarWallet() {
 
       return () => clearTimeout(timeout);
     } catch (err) {
-      Sentry.captureException(err);
+      captureError(err, { scope: "auth", action: "decodeSessionToken" });
       setTimeout(() => setToken(null), 0);
     }
   }, [token, publicKey, authenticate]);

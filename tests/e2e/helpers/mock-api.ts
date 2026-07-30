@@ -1,9 +1,11 @@
-import { NextFixture } from "next/experimental/testmode/playwright";
-import escrowsFixture from "../fixtures/escrows.json";
-import disputesFixture from "../fixtures/disputes.json";
 import { Page } from "@playwright/test";
-import type { Dispute, Escrow } from "@/types";
+import { NextFixture } from "next/experimental/testmode/playwright";
+
 import type { EscrowInput } from "@/lib/api";
+import type { Dispute, Escrow } from "@/types";
+
+import disputesFixture from "../fixtures/disputes.json";
+import escrowsFixture from "../fixtures/escrows.json";
 
 /**
  * Issue #426 — fixtures are typed against the real domain models instead of
