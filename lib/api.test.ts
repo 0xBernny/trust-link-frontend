@@ -16,6 +16,7 @@ import {
   upgradeSubscription,
   type VendorNotificationPreferences,
 } from "@/lib/api";
+import { DisputeStatusConst } from "@/types";
 
 function mockResponse(
   body: unknown,

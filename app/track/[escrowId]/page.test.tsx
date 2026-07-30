@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Escrow } from "@/types";
+import { Escrow, EscrowStatusConst } from "@/types";
 
 import TrackPage from "./page";
 

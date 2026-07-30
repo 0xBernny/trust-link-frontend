@@ -9,7 +9,7 @@ import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErro
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useEscrow } from "@/hooks/useEscrow";
 import { track } from "@/lib/analytics";
-import { Escrow, EscrowStatus } from "@/types";
+import { Escrow, EscrowStatus, EscrowStatusConst } from "@/types";
 
 interface TrackingStage {
   id: string;

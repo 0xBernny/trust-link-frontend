@@ -5,21 +5,9 @@ import { toast } from "sonner";
 
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
+import { EscrowCreateSchema, EscrowCreateValues, shippingOptions, type ShippingWindow } from "@/lib/validations";
 
-const shippingOptions = ["Same day", "1-3 days", "1 week", "Custom"] as const;
-
-type ShippingWindow = (typeof shippingOptions)[number];
-
-type FormValues = {
-  itemName: string;
-  priceUSDC: string;
-  description: string;
-  shippingWindow: ShippingWindow;
-};
-
-type FormErrors = Partial<Record<keyof FormValues, string>>;
-
-const defaultValues: FormValues = {
+const defaultValues: EscrowCreateValues = {
   itemName: "",
   priceUSDC: "",
   description: "",
@@ -88,36 +76,21 @@ function QrCode({ value }: { value: string }) {
   );
 }
 
-function validate(values: FormValues): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!values.itemName.trim()) {
-    errors.itemName = "Item name is required.";
-  }
-
-  if (!values.priceUSDC.trim()) {
-    errors.priceUSDC = "Price is required.";
-  } else if (Number.isNaN(Number(values.priceUSDC)) || Number(values.priceUSDC) <= 0) {
-    errors.priceUSDC = "Price must be a positive number.";
-  }
-
-  if (!values.description.trim()) {
-    errors.description = "Description is required.";
-  }
-
-  return errors;
-}
-
 export default function EscrowCreateForm() {
-  const [values, setValues] = useState<FormValues>(defaultValues);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [values, setValues] = useState<EscrowCreateValues>({
+    itemName: "",
+    priceUSDC: "",
+    description: "",
+    shippingWindow: shippingOptions[0],
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof EscrowCreateValues, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const updateField = <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
+  const updateField = <K extends keyof EscrowCreateValues>(field: K, value: EscrowCreateValues[K]) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
@@ -136,9 +109,16 @@ export default function EscrowCreateForm() {
     setCopyStatus(null);
     setSubmitError(null);
 
-    const nextErrors = validate(values);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
+    const result = EscrowCreateSchema.safeParse(values);
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof EscrowCreateValues, string>> = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof EscrowCreateValues;
+        if (!fieldErrors[key]) {
+          fieldErrors[key] = issue.message;
+        }
+      }
+      setErrors(fieldErrors);
       return;
     }
 
