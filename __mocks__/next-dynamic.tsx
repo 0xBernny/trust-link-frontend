@@ -31,7 +31,7 @@ export default function dynamic<T extends React.ComponentType<any>>(
     React.createElement(
       React.Suspense,
       { fallback: React.createElement("div", null, "Loading...") },
-      React.createElement(LazyComponent as React.ComponentType, props)
+      React.createElement(LazyComponent as unknown as React.ComponentType, props)
     );
 
   return Wrapper as unknown as T;

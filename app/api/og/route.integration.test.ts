@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { describe, expect, it, vi } from "vitest";
+
 import { GET } from "./route";
 
 // Mock next/og ImageResponse for test environment if WASM resvg engine is uninitialized

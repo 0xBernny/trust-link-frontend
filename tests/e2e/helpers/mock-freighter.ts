@@ -1,4 +1,3 @@
-import { VENDOR_KEY, NETWORK_PASSPHRASE } from "./constants";
 import { Page } from "@playwright/test";
 
 import { NETWORK_PASSPHRASE,VENDOR_KEY } from "./constants";

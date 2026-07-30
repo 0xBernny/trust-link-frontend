@@ -7,15 +7,13 @@ import { useTranslation } from "react-i18next";
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
-import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getVendorEscrows } from "@/lib/api";
-import { formatTimeAgo } from "@/lib/utils";
 import { type Escrow,EscrowStatusConst } from "@/types";
-import { formatUSDC } from "@/utils/currency";
 import { downloadCsv } from "@/utils/exportCsv";
 
 import EmptyVendorState from "./EmptyVendorState";
+import EscrowTableRow from "./EscrowTableRow";
 
 const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
 const ITEMS_PER_PAGE = 10;
@@ -278,61 +276,6 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       ) : (
         <div className="space-y-4">
           {paginatedEscrows.map((escrow) => (
-            <div key={escrow.id} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-4">
-                  {escrow.imageUrl && (
-                    <div className="flex-shrink-0 overflow-hidden rounded-xl">
-                      <OptimizedImage
-                        src={escrow.imageUrl}
-                        alt={`${escrow.item} thumbnail`}
-                        width={80}
-                        height={80}
-                        className="h-20 w-20 object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-base font-semibold text-zinc-950 dark:text-zinc-100">{escrow.item}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span>Buyer: {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : "Unknown"}</span>
-                      <span>•</span>
-                      <span>Amount: {formatUSDC(escrow.amount)}</span>
-                      <span>•</span>
-                      <span>Created: {formatTimeAgo(escrow.createdAt, i18n.language)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                    {escrow.status}
-                  </span>
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/escrow/${escrow.id}`}
-                      className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-white dark:hover:bg-zinc-900"
-                    >
-                      View
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedEscrow(escrow)}
-                      onKeyDown={(e) => {
-                        if ((e.key === "Enter" || e.key === " ") && escrow.status === EscrowStatusConst.FUNDED) {
-                          e.preventDefault();
-                          setSelectedEscrow(escrow);
-                        }
-                      }}
-                      disabled={escrow.status !== EscrowStatusConst.FUNDED}
-                      className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                    >
-                      Mark Shipped
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
             <EscrowTableRow
               key={escrow.id}
               escrow={escrow}

@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Integration tests for the Open Graph image generation route (GET /api/og).
@@ -8,7 +8,6 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
  * content-type. This lets us verify the handler's HTTP contract without
  * requiring the Edge runtime image renderer.
  */
-
 import { GET } from "./route";
 
 describe("GET /api/og", () => {

@@ -1,6 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
 
 import { authenticatePage } from "./helpers/auth";
+import { BUYER_KEY, VENDOR_KEY } from "./helpers/constants";
 import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
