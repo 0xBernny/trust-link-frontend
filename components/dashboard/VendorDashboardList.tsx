@@ -8,13 +8,15 @@ import { useTranslation } from "react-i18next";
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getVendorEscrows } from "@/lib/api";
-import type { Escrow } from "@/types";
+import { formatTimeAgo } from "@/lib/utils";
+import { type Escrow,EscrowStatusConst } from "@/types";
+import { formatUSDC } from "@/utils/currency";
 import { downloadCsv } from "@/utils/exportCsv";
 
 import EmptyVendorState from "./EmptyVendorState";
-import EscrowTableRow from "./EscrowTableRow";
 
 const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
 const ITEMS_PER_PAGE = 10;
@@ -332,11 +334,6 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                 </div>
               </div>
             </div>
-            <EscrowTableRow
-              key={escrow.id}
-              escrow={escrow}
-              onMarkShipped={handleMarkShipped}
-            />
           ))}
         </div>
       )}

@@ -1,6 +1,6 @@
-import type { EscrowStatus, DisputeStatus } from "./status";
-export type { EscrowStatus, DisputeStatus };
-export { EscrowStatus as EscrowStatusConst, DisputeStatus as DisputeStatusConst } from "./status";
+import type { DisputeStatus,EscrowStatus } from "./status";
+export type { DisputeStatus,EscrowStatus };
+export { DisputeStatus as DisputeStatusConst,EscrowStatus as EscrowStatusConst } from "./status";
 
 export interface Escrow {
   id: string;
