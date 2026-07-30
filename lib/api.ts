@@ -41,6 +41,7 @@ export {
   type CreateDisputeInput,
   type ShipEscrowInput,
   type ApiErrorShape,
+  type ApiClient,
 } from "@/lib/api/client";
 
 // Re-export types that were historically defined here but now live in @/types
