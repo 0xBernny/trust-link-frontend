@@ -1,7 +1,6 @@
 "use client";
 
 import { Download,Search } from "lucide-react";
-import Link from "next/link";
 import { startTransition, useCallback,useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,7 +9,7 @@ import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryE
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getVendorEscrows } from "@/lib/api";
-import type { Escrow } from "@/types";
+import { type Escrow,EscrowStatusConst } from "@/types";
 import { downloadCsv } from "@/utils/exportCsv";
 
 import EmptyVendorState from "./EmptyVendorState";
@@ -20,7 +19,7 @@ const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED,
 const ITEMS_PER_PAGE = 10;
 
 export default function VendorDashboardList({ loading = false }: { loading?: boolean }) {
-  const { i18n } = useTranslation();
+  useTranslation();
   const [escrows, setEscrows] = useState<Escrow[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(null);

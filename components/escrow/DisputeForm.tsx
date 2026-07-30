@@ -4,6 +4,16 @@ import React, { useCallback, useEffect,useRef, useState } from 'react';
 
 import type { SubmitDisputeFormResponse } from '@/types/api';
 
+interface DisputeFormValues {
+  name: string;
+  email: string;
+  orderNumber: string;
+  reason: string;
+  description: string;
+  files: File[];
+  agreeToTerms: boolean;
+}
+
 type DisputeFormData = DisputeFormValues;
 
 interface DisputeFormProps {
@@ -71,7 +81,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -94,7 +104,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -112,7 +122,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -130,7 +140,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -167,7 +177,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     field: K,
     value: DisputeFormData[K]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: DisputeFormData) => ({ ...prev, [field]: value }));
     // Clear error for this field when user types
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -198,7 +208,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   }, [formData.files, updateField]);
 
   const removeFile = useCallback((index: number) => {
-    const newFiles = formData.files.filter((_, i) => i !== index);
+    const newFiles = formData.files.filter((_: File, i: number) => i !== index);
     updateField('files', newFiles);
   }, [formData.files, updateField]);
 
@@ -217,7 +227,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         orderNumber: formData.orderNumber,
         reason: formData.reason,
         description: formData.description,
-        files: formData.files.map(file => ({
+        files: formData.files.map((file: File) => ({
           name: file.name,
           type: file.type,
           size: file.size

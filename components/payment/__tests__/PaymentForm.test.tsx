@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, type Mock,vi } from "vitest";
 
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
+import { EscrowStatusConst } from "@/types";
 
 import PaymentForm from "../PaymentForm";
 

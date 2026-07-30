@@ -5,21 +5,9 @@ import { toast } from "sonner";
 
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
+import { EscrowCreateSchema, EscrowCreateValues, shippingOptions, type ShippingWindow } from "@/lib/validations";
 
-const shippingOptions = ["Same day", "1-3 days", "1 week", "Custom"] as const;
-
-type ShippingWindow = (typeof shippingOptions)[number];
-
-type FormValues = {
-  itemName: string;
-  priceUSDC: string;
-  description: string;
-  shippingWindow: ShippingWindow;
-};
-
-type FormErrors = Partial<Record<keyof FormValues, string>>;
-
-const defaultValues: FormValues = {
+const defaultValues: EscrowCreateValues = {
   itemName: "",
   priceUSDC: "",
   description: "",

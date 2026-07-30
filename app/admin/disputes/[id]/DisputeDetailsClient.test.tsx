@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveDispute } from "@/lib/api";
-import { Dispute } from "@/types";
+import { Dispute, DisputeStatusConst, EscrowStatusConst } from "@/types";
 
 import { DisputeDetailsClient } from "./DisputeDetailsClient";
 
