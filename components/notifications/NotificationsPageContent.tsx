@@ -37,7 +37,7 @@ function StatusIcon({ type }: { type: EscrowStatus }) {
   return <>{map[type] ?? <Package className={cls} />}</>;
 }
 
-const STATUS_BG: Record<EscrowStatus, string> = {
+const STATUS_BG: Record<string, string> = {
   PENDING:   "bg-zinc-100 text-zinc-500 dark:bg-zinc-800",
   FUNDED:    "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
   SHIPPED:   "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",

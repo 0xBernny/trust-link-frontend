@@ -7,7 +7,6 @@ import {
   type VendorAnalyticsResponse,
   DisputeStatusConst,
 } from "@/types";
-import type { VendorNotificationPreferences } from "@/types";
 import type {
   ApiErrorResponse,
   CreateDisputeResponse,

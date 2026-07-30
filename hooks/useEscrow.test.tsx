@@ -70,7 +70,7 @@ describe("useEscrow", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    const updatedEscrow = { ...mockEscrow, status: EscrowStatusConst.COMPLETED as const };
+    const updatedEscrow = { ...mockEscrow, status: EscrowStatusConst.COMPLETED };
     vi.mocked(api.getEscrow).mockResolvedValue(updatedEscrow);
 
     await act(async () => {

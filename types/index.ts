@@ -1,4 +1,5 @@
-export type { EscrowStatus, DisputeStatus } from "./status";
+import type { EscrowStatus, DisputeStatus } from "./status";
+export type { EscrowStatus, DisputeStatus };
 export { EscrowStatus as EscrowStatusConst, DisputeStatus as DisputeStatusConst } from "./status";
 
 export interface Escrow {
