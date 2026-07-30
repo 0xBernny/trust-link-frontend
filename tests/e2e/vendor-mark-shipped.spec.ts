@@ -7,7 +7,7 @@ const escrowId = "escrow-ship-1";
 
 const mockEscrow: MockEscrow = {
   id: escrowId,
-  vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
+  vendorId: VENDOR_KEY,
   buyerId: "GCBUYER8TESTING1234567890ABCDEF",
   item: "Vintage Camera",
   amount: 249.99,
@@ -29,7 +29,7 @@ test("vendor mark shipped updates vendor and buyer status", async ({ page, next 
   await page.goto("/dashboard");
 
   await page.getByRole("button", { name: /mark shipped/i }).click();
-  await page.getByLabel("Tracking ID").fill("TRACK-123");
+  await page.getByLabel("Tracking ID").fill(TRACKING_ID);
   await page.getByRole("button", { name: /submit/i }).click();
 
   await expect(page.getByText("SHIPPED")).toBeVisible();

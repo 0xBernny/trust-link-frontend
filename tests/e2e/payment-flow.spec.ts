@@ -5,7 +5,6 @@ import { mockFreighter } from "./helpers/mock-freighter";
 
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const MOCK_TX_HASH = "abc123def456tx789hash_mock_payment_confirmed";
 const MOCK_SIGNED_XDR = "AAAAAQAAAA...mock_signed_xdr";
 
 const mockEscrow: MockEscrow = {

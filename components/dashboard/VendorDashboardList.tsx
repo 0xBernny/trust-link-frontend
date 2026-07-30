@@ -1,7 +1,6 @@
 "use client";
 
 import { Download,Search } from "lucide-react";
-import Link from "next/link";
 import { startTransition, useCallback,useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -22,7 +21,7 @@ const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED,
 const ITEMS_PER_PAGE = 10;
 
 export default function VendorDashboardList({ loading = false }: { loading?: boolean }) {
-  const { i18n } = useTranslation();
+  useTranslation();
   const [escrows, setEscrows] = useState<Escrow[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(null);

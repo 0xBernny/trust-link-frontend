@@ -9,7 +9,7 @@ let isResolved = false;
 const mockDispute: MockDispute = {
   id: disputeId,
   escrowId: "escrow-42",
-  buyerId: "GBUYER8TESTING1234567890ABCDEF",
+  buyerId: BUYER_KEY,
   reason: "Item not received",
   evidence: ["https://example.com/evidence.jpg"],
   status: "OPEN",
@@ -17,8 +17,8 @@ const mockDispute: MockDispute = {
   updatedAt: "2026-01-02T00:00:00Z",
   escrow: {
     id: "escrow-42",
-    vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-    buyerId: "GBUYER8TESTING1234567890ABCDEF",
+    vendorId: VENDOR_KEY,
+    buyerId: BUYER_KEY,
     item: "Gold Necklace",
     amount: 180.0,
     status: "DISPUTED",
