@@ -1,7 +1,9 @@
-import { render, screen, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import TrackingTimeline from "./TrackingTimeline";
+import { act,render, screen } from "@testing-library/react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import { Escrow, EscrowStatusConst } from "@/types";
+
+import TrackingTimeline from "./TrackingTimeline";
 
 // Mock the API
 vi.mock("@/lib/api", () => ({
@@ -19,9 +21,9 @@ vi.mock("@/hooks/useEscrow", () => ({
   useEscrow: vi.fn(),
 }));
 
-import { useEscrow } from "@/hooks/useEscrow";
-import { WalletProvider } from "@/components/providers/WalletProvider";
 import { NetworkProvider } from "@/components/providers/NetworkProvider";
+import { WalletProvider } from "@/components/providers/WalletProvider";
+import { useEscrow } from "@/hooks/useEscrow";
 
 const mockEscrow: Escrow = {
   id: "esc_123",

@@ -14,38 +14,36 @@
 
 // Re-export every function + interface from the canonical client
 export {
+  type ApiClient,
   // client class & helpers
   ApiError,
+  type ApiErrorShape,
   createApiClient,
-
+  createDispute,
+  type CreateDisputeInput,
   // functions
   createEscrow,
-  getEscrow,
-  getVendorEscrows,
-  getDispute,
-  getAdminDisputes,
-  resolveDispute,
-  createDispute,
-  shipEscrow,
-  getTracking,
-  getSubscription,
-  upgradeSubscription,
-  getVendorNotificationPreferences,
-  patchVendorNotifications,
-  patchBuyerContact,
-  getVendorAnalytics,
-
   // input / response interfaces
   type EscrowInput,
   type EscrowResponse,
-  type CreateDisputeInput,
+  getAdminDisputes,
+  getDispute,
+  getEscrow,
+  getSubscription,
+  getTracking,
+  getVendorAnalytics,
+  getVendorEscrows,
+  getVendorNotificationPreferences,
+  patchBuyerContact,
+  patchVendorNotifications,
+  resolveDispute,
+  shipEscrow,
   type ShipEscrowInput,
-  type ApiErrorShape,
-  type ApiClient,
+  upgradeSubscription,
 } from "@/lib/api/client";
 
 // Re-export types that were historically defined here but now live in @/types
-export type { VendorNotificationPreferences, VendorAnalyticsPoint, VendorAnalyticsResponse } from "@/types";
+export type { VendorAnalyticsPoint, VendorAnalyticsResponse,VendorNotificationPreferences } from "@/types";
 
 /**
  * BuyerContactInput — kept for backward-compatibility.

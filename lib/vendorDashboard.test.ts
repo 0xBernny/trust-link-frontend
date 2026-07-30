@@ -1,12 +1,13 @@
-import { describe, it, expect } from "vitest";
-import type { Escrow } from "@/types";
-import { EscrowStatusConst } from "@/types";
+import { describe, expect,it } from "vitest";
+
 import {
   filterEscrows,
-  sortEscrows,
-  paginate,
   getTotalPages,
+  paginate,
+  sortEscrows,
 } from "@/lib/vendorDashboard";
+import type { Escrow } from "@/types";
+import { EscrowStatusConst } from "@/types";
 
 function makeEscrow(overrides: Partial<Escrow> = {}): Escrow {
   return {

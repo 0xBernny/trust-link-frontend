@@ -1,15 +1,16 @@
 "use client";
 
+import { AlertCircle, Calendar, CheckCircle, DollarSign, ExternalLink, Package, User,XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dispute, EscrowStatusConst, DisputeStatusConst } from "@/types";
-import { resolveDispute } from "@/lib/api";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
 import { useWallet } from "@/components/providers/WalletProvider";
-import { ExternalLink, CheckCircle, XCircle, AlertCircle, Calendar, Package, DollarSign, User } from "lucide-react";
-import { formatUSDC } from "@/utils/currency";
+import { resolveDispute } from "@/lib/api";
 import { formatTimeAgo } from "@/lib/utils";
+import { Dispute, DisputeStatusConst,EscrowStatusConst } from "@/types";
+import { formatUSDC } from "@/utils/currency";
 
 interface DisputeDetailsClientProps {
   dispute: Dispute;

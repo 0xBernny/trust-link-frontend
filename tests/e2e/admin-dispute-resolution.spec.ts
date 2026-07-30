@@ -1,6 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { VENDOR_KEY, BUYER_KEY, JWT } from "./helpers/constants";
-import { setupNetworkMocks, type MockDispute } from "./helpers/mock-api";
+
+import { BUYER_KEY, JWT,VENDOR_KEY } from "./helpers/constants";
+import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;

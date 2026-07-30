@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import {
-  isFreighterInstalled,
   connectFreighter,
-  signTransaction,
   isConnected,
+  isFreighterInstalled,
+  signTransaction,
 } from "./freighter";
 
 // Mock @stellar/freighter-api

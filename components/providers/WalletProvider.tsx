@@ -1,17 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { jwtDecode } from "jwt-decode";
+import React, { createContext, useCallback,useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { useNetwork } from "@/components/providers/NetworkProvider";
+import { captureError, setLoggerUser } from "@/lib/logger";
+import { getChallenge, verifyChallenge } from "@/lib/stellar";
 import { 
-  signTransaction as freighterSignTransaction, 
+  connectFreighter, 
   isConnected as freighterIsConnected, 
   isFreighterInstalled, 
-  connectFreighter 
-} from "@/lib/stellar/freighter";
-import { getChallenge, verifyChallenge } from "@/lib/stellar";
-import { toast } from "sonner";
-import { jwtDecode } from "jwt-decode";
-import { captureError, setLoggerUser } from "@/lib/logger";
-import { useNetwork } from "@/components/providers/NetworkProvider";
+  signTransaction as freighterSignTransaction} from "@/lib/stellar/freighter";
 
 type WalletStatus = "loading" | "connected" | "disconnected" | "not-installed" | "error";
 

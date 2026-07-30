@@ -1,9 +1,10 @@
 "use client";
 
 import { FileDown } from "lucide-react";
-import type { Escrow } from "@/types";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import type { Escrow } from "@/types";
 
 export interface TransactionHistoryExportProps {
   escrows: Escrow[];

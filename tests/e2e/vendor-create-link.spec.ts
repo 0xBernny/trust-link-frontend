@@ -1,7 +1,7 @@
-import { mockFreighter } from "./helpers/mock-freighter";
 import { expect, test } from "next/experimental/testmode/playwright";
 
 import { setupNetworkMocks } from "./helpers/mock-api";
+import { mockFreighter } from "./helpers/mock-freighter";
 
 test("vendor can connect Freighter, create an escrow link, and see the QR code", async ({ page, next }) => {
   await setupNetworkMocks(page, next);

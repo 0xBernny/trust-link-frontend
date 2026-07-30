@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
+
 import { captureError } from "@/lib/logger";
 
 interface ErrorBoundaryState {

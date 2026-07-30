@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { DisputeDetailsClient } from "./DisputeDetailsClient";
+import { fireEvent,render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
 import { Dispute, DisputeStatusConst, EscrowStatusConst } from "@/types";
-import { describe, it, expect, vi } from "vitest";
+
+import { DisputeDetailsClient } from "./DisputeDetailsClient";
 
 // Mock the router
 vi.mock("next/navigation", () => ({

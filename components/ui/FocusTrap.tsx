@@ -1,10 +1,10 @@
 "use client";
 
 import {
+  type KeyboardEvent,
+  type ReactNode,
   useEffect,
   useRef,
-  type ReactNode,
-  type KeyboardEvent,
 } from "react";
 
 // All standard HTML elements that can receive keyboard focus.

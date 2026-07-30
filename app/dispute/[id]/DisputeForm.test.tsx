@@ -1,9 +1,12 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
-import DisputeForm from "./DisputeForm";
-import { DisputeStatusConst } from "@/types";
+
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import { createDispute } from "@/lib/api";
+import { DisputeStatusConst } from "@/types";
+
+import DisputeForm from "./DisputeForm";
 
 // Mock the API client and analytics
 vi.mock("@/lib/api", () => ({

@@ -1,21 +1,22 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { DisputeStatusConst } from "@/types";
+import { afterEach,beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
-  getEscrow,
-  getVendorEscrows,
-  createEscrow,
-  getDispute,
-  getAdminDisputes,
-  resolveDispute,
-  createDispute,
-  getTracking,
-  getSubscription,
-  upgradeSubscription,
-  patchVendorNotifications,
-  patchBuyerContact,
   ApiError,
+  createDispute,
+  createEscrow,
+  getAdminDisputes,
+  getDispute,
+  getEscrow,
+  getSubscription,
+  getTracking,
+  getVendorEscrows,
+  patchBuyerContact,
+  patchVendorNotifications,
+  resolveDispute,
+  upgradeSubscription,
   type VendorNotificationPreferences,
 } from "@/lib/api";
+import { DisputeStatusConst } from "@/types";
 
 function mockResponse(
   body: unknown,

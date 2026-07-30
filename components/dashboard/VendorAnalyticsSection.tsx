@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   ArrowLeft,
   BarChart3,
@@ -10,6 +8,10 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -19,12 +21,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatUSDC } from "@/utils/currency";
-import { cn } from "@/lib/utils";
+
 import { getVendorAnalytics, type VendorAnalyticsPoint, type VendorAnalyticsResponse } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { formatUSDC } from "@/utils/currency";
+
 import VendorAnalyticsSkeleton from "./VendorAnalyticsSkeleton";
-import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
 
 function formatRate(value: number): string {
   return `${value.toFixed(1)}%`;

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
-import { createEscrow, type EscrowInput } from "@/lib/api";
-import { track } from "@/lib/analytics";
+import { type FormEvent,useRef, useState } from "react";
 import { toast } from "sonner";
-import { EscrowCreateSchema, shippingOptions } from "@/lib/validations/escrow";
+
+import { track } from "@/lib/analytics";
+import { createEscrow, type EscrowInput } from "@/lib/api";
 import type { EscrowCreateValues, ShippingWindow } from "@/lib/validations/escrow";
+import { EscrowCreateSchema, shippingOptions } from "@/lib/validations/escrow";
 
 function buildQrMatrix(value: string) {
   const size = 21;

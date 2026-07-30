@@ -1,7 +1,9 @@
 import React from "react";
+
 import { Badge } from "@/components/ui/Badge";
-import { ESCROW_STATUS_MAP, EscrowState } from "./escrow-status";
 import { cn } from "@/lib/utils";
+
+import { ESCROW_STATUS_MAP, EscrowState } from "./escrow-status";
 
 interface EscrowStatusBadgeProps {
   status: string;

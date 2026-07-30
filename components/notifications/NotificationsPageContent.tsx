@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import type { JSX } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -17,10 +13,15 @@ import {
   ShieldAlert,
   Truck,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { JSX } from "react";
+import { Suspense, useEffect, useState } from "react";
+
 import { useNotifications } from "@/components/providers/NotificationProvider";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { relativeTime, statusLabel } from "@/lib/notifications";
 import type { AppNotification, EscrowStatus } from "@/types";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 function StatusIcon({ type }: { type: EscrowStatus }) {
   const cls = "h-5 w-5 shrink-0";

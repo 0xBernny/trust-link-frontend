@@ -1,11 +1,11 @@
 import {
   Dispute,
+  DisputeStatusConst,
   Escrow,
   Subscription,
   Tracking,
-  type VendorNotificationPreferences,
   type VendorAnalyticsResponse,
-  DisputeStatusConst,
+  type VendorNotificationPreferences,
 } from "@/types";
 import type {
   ApiErrorResponse,

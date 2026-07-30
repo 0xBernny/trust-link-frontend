@@ -1,7 +1,8 @@
 "use client";
 
-import { formatTimeAgo } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+
+import { formatTimeAgo } from "@/lib/utils";
 
 export type ShipmentStage =
   | "ORDER_PLACED"

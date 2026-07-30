@@ -1,10 +1,12 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { useEscrow } from "./useEscrow";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { act,renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { SWRConfig } from "swr";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import * as api from "@/lib/api";
 import { Escrow, EscrowStatusConst } from "@/types";
-import { SWRConfig } from "swr";
-import React from "react";
+
+import { useEscrow } from "./useEscrow";
 
 vi.mock("@/lib/api", () => ({
   getEscrow: vi.fn(),

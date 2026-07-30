@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
+
+import { HowItWorks } from "@/components/payment/HowItWorks"
+import { Accordion } from "@/components/ui/Accordion"
+import { Breadcrumb } from "@/components/ui/Breadcrumb"
 import { getEscrow } from "@/lib/api"
 import type { GetEscrowResponse } from "@/types/api"
+
 import { PaymentEscrowClient } from "./PaymentEscrowClient"
-import { Breadcrumb } from "@/components/ui/Breadcrumb"
-import { Accordion } from "@/components/ui/Accordion"
-import { HowItWorks } from "@/components/payment/HowItWorks"
 
 interface PayPageProps {
 	params: Promise<{ escrowId: string }>
