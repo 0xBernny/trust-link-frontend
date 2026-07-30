@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Escrow } from "@/types";
-import type { FundEscrowResponse } from "@/types/api";
-import { useWallet } from "@/components/providers/WalletProvider";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatUSDC } from "@/utils/currency";
+
+import { useWallet } from "@/components/providers/WalletProvider";
 import { track } from "@/lib/analytics";
 import { getStellarExpertTxUrl } from "@/lib/explorer";
+import { Escrow } from "@/types";
+import type { FundEscrowResponse } from "@/types/api";
+import { formatUSDC } from "@/utils/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 

@@ -1,14 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Sparkles, X } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, X } from "lucide-react";
-import ErrorBoundary from "@/components/layout/ErrorBoundary";
+import { Suspense, useEffect, useRef, useState } from "react";
+
 import DashboardSection from "@/components/dashboard/DashboardSection";
-import { Skeleton } from "@/components/ui/Skeleton";
+import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import { BarChart3 } from "lucide-react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
   return (

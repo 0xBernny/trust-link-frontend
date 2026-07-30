@@ -1,12 +1,13 @@
 "use client";
 
-import React, { memo } from "react";
 import Link from "next/link";
+import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
+
 import OptimizedImage from "@/components/ui/OptimizedImage";
+import { formatTimeAgo } from "@/lib/utils";
 import type { Escrow } from "@/types";
 import { formatUSDC } from "@/utils/currency";
-import { formatTimeAgo } from "@/lib/utils";
 
 interface EscrowTableRowProps {
   escrow: Escrow;

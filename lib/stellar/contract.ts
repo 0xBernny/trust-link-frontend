@@ -2,15 +2,16 @@
 "use client";
 
 import {
+  BASE_FEE,
   Contract,
-  TransactionBuilder,
   Networks,
   Operation,
-  xdr,
-  BASE_FEE,
-  StrKey,
   rpc,
+  StrKey,
+  TransactionBuilder,
+  xdr,
 } from "@stellar/stellar-sdk";
+
 import { signTransaction } from "./freighter";
 
 /**

@@ -1,7 +1,8 @@
 "use client";
 
+import { ArrowRight,Lock, Shield, Zap } from "lucide-react";
 import Link from "next/link";
-import { Shield, Zap, Lock, ArrowRight } from "lucide-react";
+
 import FeaturedArtistSection from "@/components/featured/FeaturedArtistSection";
 import FaqAccordion from "@/components/ui/FaqAccordion";
 

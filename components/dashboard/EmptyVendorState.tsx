@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import { Inbox } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
 export interface EmptyVendorStateProps {
   title?: string;

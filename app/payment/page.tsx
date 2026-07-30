@@ -1,8 +1,9 @@
 import { Suspense } from "react";
+
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import PaymentSection from "@/components/payment/PaymentSection";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Accordion } from "@/components/ui/Accordion";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export const metadata = {

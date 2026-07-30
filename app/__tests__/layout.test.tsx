@@ -1,12 +1,14 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeAll, afterAll, type Mock } from "vitest";
-import RootLayout from "../layout";
-import { AppProviders } from "@/components/providers/AppProviders";
-import { useWallet } from "@/components/providers/WalletProvider";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import userEvent from "@testing-library/user-event";
+import { afterAll, beforeAll, describe, expect, it, type Mock,vi } from "vitest";
+
+import { AppProviders } from "@/components/providers/AppProviders";
+import { useWallet } from "@/components/providers/WalletProvider";
+
+import RootLayout from "../layout";
 
 // Mock matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {

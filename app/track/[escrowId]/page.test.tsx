@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import { Escrow } from "@/types";
+
 import TrackPage from "./page";
-import { Escrow, EscrowStatusConst } from "@/types";
 
 // Mock the API
 vi.mock("@/lib/api", () => ({
