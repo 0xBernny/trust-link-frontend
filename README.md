@@ -209,6 +209,9 @@ npm run test
 # End-to-end tests (Playwright)
 npm run test:e2e
 
+# End-to-end tests in Playwright UI mode (interactive debugging)
+npm run test:e2e:ui
+
 # Type checking
 npm run type-check
 
