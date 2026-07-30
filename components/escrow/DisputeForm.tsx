@@ -2,27 +2,13 @@
 
 import React, { useState, useCallback } from 'react';
 import type { SubmitDisputeFormResponse } from '@/types/api';
+import { DisputeFormSchema } from '@/lib/validations/dispute';
+import type { DisputeFormValues } from '@/lib/validations/dispute';
 
-// Types
-interface DisputeFormData {
-  // Step 1: Personal Info
-  name: string;
-  email: string;
-  orderNumber: string;
-  
-  // Step 2: Dispute Details
-  reason: string;
-  description: string;
-  
-  // Step 3: Evidence
-  files: File[];
-  
-  // Additional
-  agreeToTerms: boolean;
-}
+type DisputeFormData = DisputeFormValues;
 
 interface DisputeFormProps {
-  onSubmit?: (data: DisputeFormData) => Promise<void>;
+  onSubmit?: (data: DisputeFormValues) => Promise<void>;
   apiEndpoint?: string;
   onSuccess?: (response: SubmitDisputeFormResponse) => void;
   onError?: (error: Error) => void;
@@ -51,88 +37,40 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
 
-  // Validation functions
-  const validateStep1 = useCallback((): boolean => {
-    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.orderNumber.trim()) {
-      newErrors.orderNumber = 'Order number is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  // Step schemas
+  const stepSchemas = {
+    1: DisputeFormSchema.pick({ name: true, email: true, orderNumber: true }),
+    2: DisputeFormSchema.pick({ reason: true, description: true }),
+    3: DisputeFormSchema.pick({ files: true }),
+    4: DisputeFormSchema.pick({ agreeToTerms: true }),
+  } as const;
 
-  const validateStep2 = useCallback((): boolean => {
-    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
-    if (!formData.reason) {
-      newErrors.reason = 'Reason is required';
+  const validateStep = useCallback((step: Step): boolean => {
+    const schema = stepSchemas[step];
+    const result = schema.safeParse(formData);
+    if (result.success) {
+      setErrors({});
+      return true;
     }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    } else if (formData.description.length < 20) {
-      newErrors.description = 'Description must be at least 20 characters';
+    const fieldErrors: Partial<Record<keyof DisputeFormData, string>> = {};
+    for (const issue of result.error.issues) {
+      const key = issue.path[0] as keyof DisputeFormData;
+      if (!fieldErrors[key]) {
+        fieldErrors[key] = issue.message;
+      }
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  const validateStep3 = useCallback((): boolean => {
-    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
-    if (formData.files.length === 0) {
-      newErrors.files = 'Please upload at least one file as evidence';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  const validateStep4 = useCallback((): boolean => {
-    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(fieldErrors);
+    return false;
   }, [formData]);
 
   // Navigation handlers
   const handleNext = useCallback(() => {
-    let isValid = false;
-    
-    switch (currentStep) {
-      case 1:
-        isValid = validateStep1();
-        break;
-      case 2:
-        isValid = validateStep2();
-        break;
-      case 3:
-        isValid = validateStep3();
-        break;
-      case 4:
-        isValid = validateStep4();
-        break;
-    }
-    
-    if (isValid && currentStep < 4) {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < 4) {
       setCurrentStep((prev) => (prev + 1) as Step);
       setErrors({});
     }
-  }, [currentStep, validateStep1, validateStep2, validateStep3, validateStep4]);
+  }, [currentStep, validateStep]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -183,7 +121,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!validateStep4()) return;
+    if (!validateStep(4)) return;
     
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -238,7 +176,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, onSubmit, apiEndpoint, onSuccess, onError, validateStep4]);
+  }, [formData, onSubmit, apiEndpoint, onSuccess, onError, validateStep]);
 
   // Reset form
   const resetForm = useCallback(() => {
