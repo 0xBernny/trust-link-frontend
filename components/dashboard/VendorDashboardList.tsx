@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo, startTransition } from "react";
+import { useEffect, useState, useMemo, startTransition, useCallback } from "react";
 import Link from "next/link";
 import { Search, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/Skeleton";
-import OptimizedImage from "@/components/ui/OptimizedImage";
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
 import { getVendorEscrows } from "@/lib/api";
@@ -14,8 +13,7 @@ import type { Escrow } from "@/types";
 import { EscrowStatusConst } from "@/types";
 import EmptyVendorState from "./EmptyVendorState";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
-import { formatUSDC } from "@/utils/currency";
-import { formatTimeAgo } from "@/lib/utils";
+import EscrowTableRow from "./EscrowTableRow";
 
 const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
 const ITEMS_PER_PAGE = 10;
@@ -34,6 +32,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   useEffect(() => {
     startTransition(() => setCurrentPage(1));
   }, [searchQuery, statusFilter, fromDate, toDate]);
+
+  const handleMarkShipped = useCallback((escrow: Escrow) => {
+    setSelectedEscrow(escrow);
+  }, []);
 
   const filteredEscrows = useMemo(() => {
     if (!escrows) return null;
@@ -94,7 +96,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
     );
   };
 
-  const handleExportCsv = () => {
+  const handleExportCsv = useCallback(() => {
     if (!filteredEscrows || filteredEscrows.length === 0) return;
     downloadCsv(
       filteredEscrows as unknown as Record<string, unknown>[],
@@ -108,7 +110,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       ],
       `trustlink-escrows-${new Date().toISOString().slice(0, 10)}.csv`
     );
-  };
+  }, [filteredEscrows]);
 
   if (error) {
     return (
@@ -329,6 +331,11 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                 </div>
               </div>
             </div>
+            <EscrowTableRow
+              key={escrow.id}
+              escrow={escrow}
+              onMarkShipped={handleMarkShipped}
+            />
           ))}
         </div>
       )}
@@ -375,10 +382,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
           vendorName={selectedEscrow.item}
           open={Boolean(selectedEscrow)}
           onClose={() => setSelectedEscrow(null)}
-          onSuccess={(escrowId) => {
-            handleShipmentSuccess(escrowId);
-            loadItems();
-          }}
+                    onSuccess={(escrowId) => {
+              handleShipmentSuccess(escrowId);
+              loadItems();
+            }}
         />
       )}
     </>
