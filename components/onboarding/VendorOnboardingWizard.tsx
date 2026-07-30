@@ -242,7 +242,7 @@ export default function VendorOnboardingWizard() {
                 onChange={(event) => updateField("shopName", event.target.value)}
                 aria-invalid={!!errors.shopName}
                 aria-describedby={errors.shopName ? "shopName-error" : undefined}
-                className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
                 placeholder="Example: Stellar Craft Co."
                 required
               />
@@ -263,7 +263,7 @@ export default function VendorOnboardingWizard() {
                 rows={5}
                 aria-invalid={!!errors.description}
                 aria-describedby={errors.description ? "description-error" : "description-hint"}
-                className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
                 placeholder="Tell buyers why they should choose your products."
                 required
               />
@@ -287,7 +287,7 @@ export default function VendorOnboardingWizard() {
                   name="website"
                   value={state.website}
                   onChange={(event) => updateField("website", event.target.value)}
-                  className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
                   placeholder="https://"
                 />
               </label>
@@ -299,7 +299,7 @@ export default function VendorOnboardingWizard() {
                   name="shippingLocations"
                   value={state.shippingLocations}
                   onChange={(event) => updateField("shippingLocations", event.target.value)}
-                  className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
                   placeholder="Worldwide, US only, EU only"
                 />
               </label>
