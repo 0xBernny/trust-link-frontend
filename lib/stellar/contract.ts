@@ -24,7 +24,10 @@ import { signTransaction } from "./freighter";
  * const txHash = await submitPayment("100", "GXXXXXX...");
  * // Use txHash for transaction tracking or UI display
  */
-export async function submitPayment(amount: string, destination: string) {
+export async function submitPayment(
+  amount: string,
+  destination: string
+): Promise<string> {
   // In a real implementation, this would involve building a transaction
   // and using signTransaction(xdr, network)
   
@@ -101,7 +104,9 @@ function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function getNetworkPassphrase(network: "TESTNET" | "PUBLIC") {
+function getNetworkPassphrase(
+  network: "TESTNET" | "PUBLIC"
+): typeof Networks.PUBLIC | typeof Networks.TESTNET {
   return network === "PUBLIC"
     ? Networks.PUBLIC
     : Networks.TESTNET;

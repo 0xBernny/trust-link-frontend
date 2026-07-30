@@ -126,7 +126,7 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder="Explain what went wrong with your order, including any delivery or item issues."
-          className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 dark:border-zinc-800 dark:text-zinc-100"
+          className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 dark:border-zinc-800 dark:text-zinc-100"
         />
         <p className="text-xs text-zinc-500 dark:text-zinc-400">Minimum 20 characters. This is the reason the support team will review.</p>
       </div>

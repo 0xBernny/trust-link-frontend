@@ -182,7 +182,46 @@ export async function getVendorAnalytics(token?: string): Promise<GetVendorAnaly
   return request<GetVendorAnalyticsResponse>("/vendor/analytics", {}, token);
 }
 
-export function createApiClient(token?: string) {
+/**
+ * Return type of {@link createApiClient}. Each method is a thin wrapper around
+ * the corresponding standalone API function, pre-bound to the supplied token.
+ */
+export interface ApiClient {
+  createEscrow: (data: EscrowInput) => Promise<CreateEscrowResponse>;
+  getEscrow: (id: string) => Promise<GetEscrowResponse>;
+  getVendorEscrows: () => Promise<GetVendorEscrowsResponse>;
+  getDispute: (id: string) => Promise<GetDisputeResponse>;
+  getAdminDisputes: () => Promise<GetDisputesResponse>;
+  resolveDispute: (
+    id: string,
+    resolution: "RELEASE_TO_VENDOR" | "REFUND_BUYER"
+  ) => Promise<ResolveDisputeResponse>;
+  createDispute: (
+    escrowId: string,
+    data: CreateDisputeInput
+  ) => Promise<CreateDisputeResponse>;
+  shipEscrow: (
+    escrowId: string,
+    data: ShipEscrowInput
+  ) => Promise<ShipEscrowResponse>;
+  getTracking: (escrowId: string) => Promise<GetTrackingResponse>;
+  getSubscription: () => Promise<GetSubscriptionResponse>;
+  upgradeSubscription: () => Promise<UpgradeSubscriptionResponse>;
+  getVendorNotificationPreferences: (
+    authToken?: string
+  ) => Promise<GetVendorNotificationPreferencesResponse>;
+  patchVendorNotifications: (
+    prefs: VendorNotificationPreferences,
+    authToken?: string
+  ) => Promise<EmptyResponse>;
+  patchBuyerContact: (
+    escrowId: string,
+    data: { email?: string; phone?: string }
+  ) => Promise<EmptyResponse>;
+  getVendorAnalytics: () => Promise<GetVendorAnalyticsResponse>;
+}
+
+export function createApiClient(token?: string): ApiClient {
   return {
     createEscrow: (data: EscrowInput) => createEscrow(data, token),
     getEscrow: (id: string) => getEscrow(id, token),

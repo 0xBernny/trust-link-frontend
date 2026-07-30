@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo, startTransition } from "react";
+import { useEffect, useState, useMemo, startTransition, useCallback } from "react";
 import Link from "next/link";
 import { Search, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/Skeleton";
-import OptimizedImage from "@/components/ui/OptimizedImage";
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
 import { getVendorEscrows } from "@/lib/api";
@@ -14,8 +13,7 @@ import type { Escrow } from "@/types";
 import { EscrowStatusConst } from "@/types";
 import EmptyVendorState from "./EmptyVendorState";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
-import { formatUSDC } from "@/utils/currency";
-import { formatTimeAgo } from "@/lib/utils";
+import EscrowTableRow from "./EscrowTableRow";
 
 const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
 const ITEMS_PER_PAGE = 10;
@@ -34,6 +32,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   useEffect(() => {
     startTransition(() => setCurrentPage(1));
   }, [searchQuery, statusFilter, fromDate, toDate]);
+
+  const handleMarkShipped = useCallback((escrow: Escrow) => {
+    setSelectedEscrow(escrow);
+  }, []);
 
   const filteredEscrows = useMemo(() => {
     if (!escrows) return null;
@@ -94,7 +96,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
     );
   };
 
-  const handleExportCsv = () => {
+  const handleExportCsv = useCallback(() => {
     if (!filteredEscrows || filteredEscrows.length === 0) return;
     downloadCsv(
       filteredEscrows as unknown as Record<string, unknown>[],
@@ -108,7 +110,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       ],
       `trustlink-escrows-${new Date().toISOString().slice(0, 10)}.csv`
     );
-  };
+  }, [filteredEscrows]);
 
   if (error) {
     return (
@@ -153,7 +155,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
             placeholder="Search escrows..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-white dark:focus:ring-white"
+            className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-white dark:focus:ring-white dark:focus-visible:ring-zinc-300"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -171,7 +173,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                 handleExportCsv();
               }
             }}
-            className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -193,7 +195,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                   setStatusFilter(s);
                 }
               }}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition ${
+              className={`rounded-full px-3 py-1 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300 ${
                 statusFilter === s
                   ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                   : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
@@ -216,7 +218,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
             value={fromDate}
             max={toDate || undefined}
             onChange={(e) => setFromDate(e.target.value)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 outline-none transition focus:border-black focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
           />
         </div>
         <div className="flex flex-col">
@@ -229,7 +231,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
             value={toDate}
             min={fromDate || undefined}
             onChange={(e) => setToDate(e.target.value)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 outline-none transition focus:border-black focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
           />
         </div>
         {(fromDate || toDate) && (
@@ -242,7 +244,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                 clearDateFilter();
               }
             }}
-            className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
           >
             Clear dates
           </button>
@@ -274,61 +276,11 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       ) : (
         <div className="space-y-4">
           {paginatedEscrows.map((escrow) => (
-            <div key={escrow.id} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-4">
-                  {escrow.imageUrl && (
-                    <div className="flex-shrink-0 overflow-hidden rounded-xl">
-                      <OptimizedImage
-                        src={escrow.imageUrl}
-                        alt={`${escrow.item} thumbnail`}
-                        width={80}
-                        height={80}
-                        className="h-20 w-20 object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-base font-semibold text-zinc-950 dark:text-zinc-100">{escrow.item}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span>Buyer: {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : "Unknown"}</span>
-                      <span>•</span>
-                      <span>Amount: {formatUSDC(escrow.amount)}</span>
-                      <span>•</span>
-                      <span>Created: {formatTimeAgo(escrow.createdAt, i18n.language)}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                    {escrow.status}
-                  </span>
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/escrow/${escrow.id}`}
-                      className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-white dark:hover:bg-zinc-900"
-                    >
-                      View
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedEscrow(escrow)}
-                      onKeyDown={(e) => {
-                        if ((e.key === "Enter" || e.key === " ") && escrow.status === EscrowStatusConst.FUNDED) {
-                          e.preventDefault();
-                          setSelectedEscrow(escrow);
-                        }
-                      }}
-                      disabled={escrow.status !== EscrowStatusConst.FUNDED}
-                      className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                    >
-                      Mark Shipped
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <EscrowTableRow
+              key={escrow.id}
+              escrow={escrow}
+              onMarkShipped={handleMarkShipped}
+            />
           ))}
         </div>
       )}
@@ -375,10 +327,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
           vendorName={selectedEscrow.item}
           open={Boolean(selectedEscrow)}
           onClose={() => setSelectedEscrow(null)}
-          onSuccess={(escrowId) => {
-            handleShipmentSuccess(escrowId);
-            loadItems();
-          }}
+                    onSuccess={(escrowId) => {
+              handleShipmentSuccess(escrowId);
+              loadItems();
+            }}
         />
       )}
     </>

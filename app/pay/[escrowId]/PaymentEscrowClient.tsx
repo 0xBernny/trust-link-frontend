@@ -219,7 +219,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
                 placeholder="you@example.com"
                 aria-invalid={Boolean(contactErrors.email)}
                 aria-describedby={contactErrors.email ? "buyer-email-error" : undefined}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:focus-visible:ring-zinc-300"
               />
               {contactErrors.email ? (
                 <p id="buyer-email-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -242,7 +242,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
                 placeholder="+12125551234"
                 aria-invalid={Boolean(contactErrors.phone)}
                 aria-describedby={contactErrors.phone ? "buyer-phone-error" : undefined}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400 dark:focus-visible:ring-zinc-300"
               />
               {contactErrors.phone ? (
                 <p id="buyer-phone-error" className="mt-1 text-sm text-red-600 dark:text-red-400">

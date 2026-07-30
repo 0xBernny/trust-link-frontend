@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { SubmitDisputeFormResponse } from '@/types/api';
 import { DisputeFormSchema } from '@/lib/validations/dispute';
 import type { DisputeFormValues } from '@/lib/validations/dispute';
@@ -37,30 +37,104 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
 
-  // Step schemas
-  const stepSchemas = {
-    1: DisputeFormSchema.pick({ name: true, email: true, orderNumber: true }),
-    2: DisputeFormSchema.pick({ reason: true, description: true }),
-    3: DisputeFormSchema.pick({ files: true }),
-    4: DisputeFormSchema.pick({ agreeToTerms: true }),
-  } as const;
+  // Ref for managing focus to the first field with a validation error.
+  const firstErrorRef = useRef<HTMLElement | null>(null);
 
-  const validateStep = useCallback((step: Step): boolean => {
-    const schema = stepSchemas[step];
-    const result = schema.safeParse(formData);
-    if (result.success) {
-      setErrors({});
-      return true;
+  // When errors appear, move focus to the first invalid field so screen-reader
+  // and keyboard users are immediately aware of what needs fixing.
+  useEffect(() => {
+    const errorKeys = Object.keys(errors).filter(
+      (key) => errors[key as keyof DisputeFormData]
+    );
+    if (errorKeys.length > 0 && firstErrorRef.current) {
+      firstErrorRef.current.focus();
     }
-    const fieldErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    for (const issue of result.error.issues) {
-      const key = issue.path[0] as keyof DisputeFormData;
-      if (!fieldErrors[key]) {
-        fieldErrors[key] = issue.message;
-      }
+  }, [errors]);
+
+  // Validation functions
+  const validateStep1 = useCallback((): boolean => {
+    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
-    setErrors(fieldErrors);
-    return false;
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    if (!formData.orderNumber.trim()) {
+      newErrors.orderNumber = 'Order number is required';
+    }
+    
+    setErrors(newErrors);
+
+    // Set focus target to the first field with an error.
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
+      firstErrorRef.current = document.getElementById(firstErrorKey);
+    }
+
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const validateStep2 = useCallback((): boolean => {
+    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
+    
+    if (!formData.reason) {
+      newErrors.reason = 'Reason is required';
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (formData.description.length < 20) {
+      newErrors.description = 'Description must be at least 20 characters';
+    }
+    
+    setErrors(newErrors);
+
+    // Set focus target to the first field with an error.
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
+      firstErrorRef.current = document.getElementById(firstErrorKey);
+    }
+
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const validateStep3 = useCallback((): boolean => {
+    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
+    
+    if (formData.files.length === 0) {
+      newErrors.files = 'Please upload at least one file as evidence';
+    }
+    
+    setErrors(newErrors);
+
+    // Set focus target to the first field with an error.
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
+      firstErrorRef.current = document.getElementById(firstErrorKey);
+    }
+
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const validateStep4 = useCallback((): boolean => {
+    const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
+    
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = 'You must agree to the terms';
+    }
+    
+    setErrors(newErrors);
+
+    // Set focus target to the first field with an error.
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
+      firstErrorRef.current = document.getElementById(firstErrorKey);
+    }
+
+    return Object.keys(newErrors).length === 0;
   }, [formData]);
 
   // Navigation handlers
@@ -428,7 +502,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   // Success state
   if (submitStatus === 'success') {
     return (
-      <div className="dispute-form success-state" data-testid="success-state">
+      <div className="dispute-form success-state" data-testid="success-state" role="status" aria-live="polite">
         <div className="success-message">
           <h2>✓ Dispute Submitted Successfully!</h2>
           <p>{submitMessage}</p>
@@ -454,7 +528,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   // Error state
   if (submitStatus === 'error') {
     return (
-      <div className="dispute-form error-state" data-testid="error-state">
+      <div className="dispute-form error-state" data-testid="error-state" role="alert" aria-live="assertive">
         <div className="error-message">
           <h2>✗ Submission Failed</h2>
           <p>{submitMessage}</p>
@@ -479,23 +553,35 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   return (
     <div className="dispute-form" data-testid="dispute-form">
       {/* Progress indicator */}
-      <div className="progress-indicator" data-testid="progress-indicator">
-        <div className={`step-indicator ${currentStep >= 1 ? 'active' : ''}`}>
+      <nav className="progress-indicator" data-testid="progress-indicator" aria-label="Form progress">
+        <div
+          className={`step-indicator ${currentStep >= 1 ? 'active' : ''}`}
+          aria-current={currentStep === 1 ? 'step' : undefined}
+        >
           Step 1: Info
         </div>
-        <div className={`step-indicator ${currentStep >= 2 ? 'active' : ''}`}>
+        <div
+          className={`step-indicator ${currentStep >= 2 ? 'active' : ''}`}
+          aria-current={currentStep === 2 ? 'step' : undefined}
+        >
           Step 2: Details
         </div>
-        <div className={`step-indicator ${currentStep >= 3 ? 'active' : ''}`}>
+        <div
+          className={`step-indicator ${currentStep >= 3 ? 'active' : ''}`}
+          aria-current={currentStep === 3 ? 'step' : undefined}
+        >
           Step 3: Evidence
         </div>
-        <div className={`step-indicator ${currentStep >= 4 ? 'active' : ''}`}>
+        <div
+          className={`step-indicator ${currentStep >= 4 ? 'active' : ''}`}
+          aria-current={currentStep === 4 ? 'step' : undefined}
+        >
           Step 4: Review
         </div>
-      </div>
+      </nav>
       
       {/* Form content */}
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form onSubmit={(e) => e.preventDefault()} aria-label="Dispute submission form" noValidate>
         {renderStep()}
         
         {/* Navigation buttons */}
