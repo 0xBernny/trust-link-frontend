@@ -8,6 +8,8 @@ import { DisputeStatusConst } from "@/types";
 
 import DisputeForm from "./DisputeForm";
 
+import DisputeForm from "./DisputeForm";
+
 // Mock the API client and analytics
 vi.mock("@/lib/api", () => ({
   createDispute: vi.fn(),

@@ -1,6 +1,5 @@
 import { expect,test } from "next/experimental/testmode/playwright";
 
-import { MOCK_TX_HASH } from "./helpers/constants";
 import { type MockEscrow,setupNetworkMocks, setupNextOnFetch } from "./helpers/mock-api";
 import { mockFreighter } from "./helpers/mock-freighter";
 

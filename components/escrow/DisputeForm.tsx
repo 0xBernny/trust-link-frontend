@@ -2,8 +2,6 @@
 
 import React, { useCallback, useEffect,useRef, useState } from 'react';
 
-import type { DisputeFormValues } from '@/lib/validations/dispute';
-import { DisputeFormSchema } from '@/lib/validations/dispute';
 import type { SubmitDisputeFormResponse } from '@/types/api';
 
 type DisputeFormData = DisputeFormValues;

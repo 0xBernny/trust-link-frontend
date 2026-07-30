@@ -7,7 +7,6 @@ import {
   sortEscrows,
 } from "@/lib/vendorDashboard";
 import type { Escrow } from "@/types";
-import { EscrowStatusConst } from "@/types";
 
 function makeEscrow(overrides: Partial<Escrow> = {}): Escrow {
   return {

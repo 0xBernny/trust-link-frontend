@@ -4,15 +4,12 @@ import { AlertCircle, Calendar, CheckCircle, DollarSign, ExternalLink, Package, 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dispute, EscrowStatus } from "@/types";
-import { resolveDispute } from "@/lib/api";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useWallet } from "@/components/providers/WalletProvider";
 import { resolveDispute } from "@/lib/api";
 import { formatTimeAgo } from "@/lib/utils";
-import { Dispute, DisputeStatusConst,EscrowStatusConst } from "@/types";
+import { Dispute, EscrowStatus } from "@/types";
 import { formatUSDC } from "@/utils/currency";
 
 interface DisputeDetailsClientProps {

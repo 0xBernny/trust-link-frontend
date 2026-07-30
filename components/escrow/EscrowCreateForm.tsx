@@ -5,8 +5,26 @@ import { toast } from "sonner";
 
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
-import type { EscrowCreateValues, ShippingWindow } from "@/lib/validations/escrow";
-import { EscrowCreateSchema, shippingOptions } from "@/lib/validations/escrow";
+
+const shippingOptions = ["Same day", "1-3 days", "1 week", "Custom"] as const;
+
+type ShippingWindow = (typeof shippingOptions)[number];
+
+type FormValues = {
+  itemName: string;
+  priceUSDC: string;
+  description: string;
+  shippingWindow: ShippingWindow;
+};
+
+type FormErrors = Partial<Record<keyof FormValues, string>>;
+
+const defaultValues: FormValues = {
+  itemName: "",
+  priceUSDC: "",
+  description: "",
+  shippingWindow: shippingOptions[0],
+};
 
 function buildQrMatrix(value: string) {
   const size = 21;

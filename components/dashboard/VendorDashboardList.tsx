@@ -11,7 +11,6 @@ import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErro
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getVendorEscrows } from "@/lib/api";
 import type { Escrow } from "@/types";
-import { EscrowStatusConst } from "@/types";
 import { downloadCsv } from "@/utils/exportCsv";
 
 import EmptyVendorState from "./EmptyVendorState";

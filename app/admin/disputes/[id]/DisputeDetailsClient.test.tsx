@@ -1,15 +1,11 @@
-import { fireEvent,render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-
-import { Dispute, DisputeStatusConst, EscrowStatusConst } from "@/types";
-
-import { DisputeDetailsClient } from "./DisputeDetailsClient";
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
-import { DisputeDetailsClient } from "./DisputeDetailsClient";
-import { Dispute } from "@/types";
-import { resolveDispute } from "@/lib/api";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
-import { beforeEach, describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { resolveDispute } from "@/lib/api";
+import { Dispute } from "@/types";
+
+import { DisputeDetailsClient } from "./DisputeDetailsClient";
 
 // Mock the router
 vi.mock("next/navigation", () => ({

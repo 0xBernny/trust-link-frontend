@@ -1,7 +1,7 @@
 import { act,render, screen } from "@testing-library/react";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
-import { Escrow, EscrowStatusConst } from "@/types";
+import { Escrow } from "@/types";
 
 import TrackingTimeline from "./TrackingTimeline";
 

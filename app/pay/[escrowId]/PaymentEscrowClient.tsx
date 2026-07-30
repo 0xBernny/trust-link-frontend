@@ -8,7 +8,7 @@ import { useWallet } from "@/components/providers/WalletProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { patchBuyerContact } from "@/lib/api";
 import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
-import { Escrow, EscrowStatusConst } from "@/types";
+import { Escrow } from "@/types";
 import { formatUSDC } from "@/utils/currency";
 
 function TrackingTimelineSkeleton() {

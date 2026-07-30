@@ -4,7 +4,7 @@ import { SWRConfig } from "swr";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
 import * as api from "@/lib/api";
-import { Escrow, EscrowStatusConst } from "@/types";
+import { Escrow } from "@/types";
 
 import { useEscrow } from "./useEscrow";
 

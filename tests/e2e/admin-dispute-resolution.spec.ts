@@ -1,6 +1,6 @@
 import { expect, test } from "next/experimental/testmode/playwright";
 
-import { BUYER_KEY, JWT,VENDOR_KEY } from "./helpers/constants";
+import { authenticatePage } from "./helpers/auth";
 import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
@@ -31,9 +31,7 @@ const mockDispute: MockDispute = {
 test("admin can resolve a dispute and the dispute list updates", async ({ page, next }) => {
   isResolved = false;
 
-  await page.addInitScript(() => {
-    window.localStorage.setItem("wallet.jwt", JWT);
-  });
+  await authenticatePage(page);
 
   await setupNetworkMocks(page, next);
   
