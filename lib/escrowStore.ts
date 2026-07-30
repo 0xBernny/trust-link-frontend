@@ -28,11 +28,15 @@ const escrowItems: EscrowItem[] = [
   },
 ];
 
-export function getEscrowItems() {
+export function getEscrowItems(): EscrowItem[] {
   return escrowItems;
 }
 
-export function shipEscrow(escrowId: string, trackingId: string, carrier: string) {
+export function shipEscrow(
+  escrowId: string,
+  trackingId: string,
+  carrier: string
+): EscrowItem {
   const item = escrowItems.find((entry) => entry.escrowId === escrowId);
   if (!item) {
     throw new Error("Escrow item not found.");

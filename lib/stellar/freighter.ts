@@ -51,7 +51,7 @@ export async function connectFreighter(): Promise<string> {
   return publicKey;
 }
 
-import { captureWalletError } from "@/lib/sentry";
+import { captureWalletError } from "@/lib/logger";
 
 /**
  * Signs a Stellar transaction using the Freighter wallet
@@ -91,10 +91,7 @@ export async function signTransaction(
 
     return signedTxXdr;
   } catch (error: unknown) {
-    captureWalletError(
-      error instanceof Error ? error : new Error(String(error)),
-      { xdr, network, action: "signTransaction" }
-    );
+    captureWalletError(error, { xdr, network, action: "signTransaction" });
     throw error;
   }
 }

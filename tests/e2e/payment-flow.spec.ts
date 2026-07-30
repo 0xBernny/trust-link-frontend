@@ -1,16 +1,17 @@
 import { mockFreighter } from "./helpers/mock-freighter";
 import { test, expect } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks } from "./helpers/mock-api";
+import { setupNetworkMocks, setupNextOnFetch, type MockEscrow } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_e2e_001";
 const MOCK_PUBLIC_KEY = "GBTEST1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const MOCK_TX_HASH = "abc123def456tx789hash_mock_payment_confirmed";
 const MOCK_SIGNED_XDR = "AAAAAQAAAA...mock_signed_xdr";
 
-const mockEscrow = {
+const mockEscrow: MockEscrow = {
   id: TEST_ESCROW_ID,
   vendorId: "vendor_test_1",
-  buyerId: null,
+  // No buyer yet — the escrow is claimed when the buyer funds it.
+  buyerId: undefined,
   amount: 150.0,
   item: "Test Product",
   status: "FUNDED",

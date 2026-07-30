@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import useWallet from "@/hooks/useWallet";
 import FocusTrap from "@/components/ui/FocusTrap";
+import type { ApiErrorResponse } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,7 +40,12 @@ export function ConfirmDeliveryButton({
         headers,
       });
 
-      if (!res.ok) throw new Error("Failed to confirm delivery");
+      if (!res.ok) {
+        const payload = (await res
+          .json()
+          .catch(() => null)) as ApiErrorResponse | null;
+        throw new Error(payload?.message ?? "Failed to confirm delivery");
+      }
 
       closeDialog();
       toast.success("Delivery confirmed — funds released.");

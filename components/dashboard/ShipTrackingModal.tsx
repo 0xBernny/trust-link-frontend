@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, FormEvent, useEffect, useRef } from "react";
+import type { ApiErrorResponse } from "@/types/api";
 
 interface ShipTrackingModalProps {
   escrowId: string;
@@ -92,7 +93,9 @@ export default function ShipTrackingModal({
       });
 
       if (!response.ok) {
-        const payload = await response.json().catch(() => null);
+        const payload = (await response
+          .json()
+          .catch(() => null)) as ApiErrorResponse | null;
         throw new Error(payload?.message ?? "Unable to submit shipment details.");
       }
 
