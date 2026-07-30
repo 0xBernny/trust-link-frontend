@@ -4,6 +4,12 @@ import { describe, expect, it, vi } from "vitest";
 import { Dispute, DisputeStatusConst, EscrowStatusConst } from "@/types";
 
 import { DisputeDetailsClient } from "./DisputeDetailsClient";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import { DisputeDetailsClient } from "./DisputeDetailsClient";
+import { Dispute } from "@/types";
+import { resolveDispute } from "@/lib/api";
+import { toast } from "sonner";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 
 // Mock the router
 vi.mock("next/navigation", () => ({
@@ -23,6 +29,14 @@ vi.mock("@/components/providers/WalletProvider", () => ({
 // Mock the API
 vi.mock("@/lib/api", () => ({
   resolveDispute: vi.fn(),
+}));
+
+// Mock the toast library used for rollback feedback
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
 }));
 
 const mockDispute: Dispute = {
@@ -70,6 +84,10 @@ const mockDispute: Dispute = {
 };
 
 describe("DisputeDetailsClient", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders dispute details correctly", () => {
     render(<DisputeDetailsClient dispute={mockDispute} />);
 
@@ -105,5 +123,56 @@ describe("DisputeDetailsClient", () => {
     fireEvent.click(screen.getByText("Cancel"));
 
     expect(screen.queryByText("Confirm Release")).not.toBeInTheDocument();
+  });
+
+  it("optimistically marks the dispute resolved before the API call settles", async () => {
+    let settleRequest!: () => void;
+    vi.mocked(resolveDispute).mockReturnValueOnce(
+      new Promise((resolve) => {
+        settleRequest = () => resolve({ ...mockDispute, status: "RESOLVED" });
+      })
+    );
+
+    render(<DisputeDetailsClient dispute={mockDispute} />);
+
+    expect(screen.getByTestId("dispute-status-badge")).toHaveTextContent("OPEN");
+    expect(screen.getByTestId("escrow-status-badge")).toHaveTextContent("DISPUTED");
+
+    fireEvent.click(screen.getByText("Release to Vendor"));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    // Badges flip and the dialog closes immediately — the request is still in flight.
+    expect(screen.getByTestId("dispute-status-badge")).toHaveTextContent("RESOLVED");
+    expect(screen.getByTestId("escrow-status-badge")).toHaveTextContent("RELEASED");
+    expect(screen.queryByText("Confirm Release")).not.toBeInTheDocument();
+    expect(screen.getByText(/confirming resolution/i)).toBeInTheDocument();
+    expect(toast.error).not.toHaveBeenCalled();
+
+    await act(async () => {
+      settleRequest();
+    });
+
+    expect(screen.getByTestId("dispute-status-badge")).toHaveTextContent("RESOLVED");
+  });
+
+  it("rolls back the optimistic update and shows a toast when the API fails", async () => {
+    vi.mocked(resolveDispute).mockRejectedValueOnce(new Error("Network unreachable"));
+
+    render(<DisputeDetailsClient dispute={mockDispute} />);
+
+    fireEvent.click(screen.getByText("Refund Buyer"));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(screen.getByTestId("dispute-status-badge")).toHaveTextContent("RESOLVED");
+    expect(screen.getByTestId("escrow-status-badge")).toHaveTextContent("REFUNDED");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dispute-status-badge")).toHaveTextContent("OPEN");
+    });
+    expect(screen.getByTestId("escrow-status-badge")).toHaveTextContent("DISPUTED");
+    expect(toast.error).toHaveBeenCalledWith("Network unreachable");
+
+    // Rolled back state re-enables the resolution actions.
+    expect(screen.getByRole("button", { name: /release to vendor/i })).toBeEnabled();
   });
 });
