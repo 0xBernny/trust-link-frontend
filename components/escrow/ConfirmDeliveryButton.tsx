@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import useWallet from "@/hooks/useWallet";
 import FocusTrap from "@/components/ui/FocusTrap";
+import { createApiClient } from "@/lib/api-client";
 import type { ApiErrorResponse } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -32,6 +33,8 @@ export function ConfirmDeliveryButton({
   async function handleConfirm() {
     setIsPending(true);
     try {
+      const api = createApiClient({ token });
+      await api.post(`/escrows/${escrowId}/confirm`);
       const headers: HeadersInit = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 

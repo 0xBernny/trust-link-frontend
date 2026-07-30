@@ -98,7 +98,7 @@ export default function RootLayout({
                   </main>
                   <Footer />
                   <BottomNav />
-                  <Toaster richColors position="top-right" />
+                  <Toaster richColors position="top-right" visibleToasts={3} />
                 </NotificationProvider>
               </I18nProvider>
             </SubscriptionProvider>
