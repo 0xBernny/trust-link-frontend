@@ -321,7 +321,7 @@ export default function VendorAnalyticsSection() {
                     tickMargin={12}
                     interval={isMobile ? 5 : 2}
                     minTickGap={isMobile ? 24 : 16}
-                    tickFormatter={(value) => formatAxisLabel(String(value), isMobile)}
+                    tickFormatter={(value: string | number) => formatAxisLabel(String(value), isMobile)}
                     tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
                   />
                   <YAxis
@@ -329,7 +329,7 @@ export default function VendorAnalyticsSection() {
                     axisLine={false}
                     tickMargin={10}
                     width={isMobile ? 44 : 64}
-                    tickFormatter={(value) => formatCompactVolume(Number(value))}
+                    tickFormatter={(value: string | number) => formatCompactVolume(Number(value))}
                     tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
                   />
                   <Tooltip content={<AnalyticsTooltip />} />

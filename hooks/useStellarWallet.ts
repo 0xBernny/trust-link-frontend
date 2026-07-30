@@ -166,8 +166,8 @@ export function useStellarWallet() {
       const timeLeft = expirationTime - now;
 
       if (timeLeft <= 0) {
-        authenticate(publicKey);
-        return;
+        const id = setTimeout(() => authenticate(publicKey), 0);
+        return () => clearTimeout(id);
       }
 
       const timeout = setTimeout(() => {
@@ -177,7 +177,7 @@ export function useStellarWallet() {
       return () => clearTimeout(timeout);
     } catch (err) {
       Sentry.captureException(err);
-      setToken(null);
+      setTimeout(() => setToken(null), 0);
     }
   }, [token, publicKey, authenticate]);
 
