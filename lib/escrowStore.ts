@@ -28,10 +28,23 @@ const escrowItems: EscrowItem[] = [
   },
 ];
 
+/**
+ * Retrieves the current list of mock escrow items.
+ * @returns Array of escrow items.
+ */
 export function getEscrowItems(): EscrowItem[] {
   return escrowItems;
 }
 
+/**
+ * Updates an escrow item's status to "Shipped" and attaches tracking info.
+ *
+ * @param escrowId - The unique identifier of the escrow item.
+ * @param trackingId - The shipment tracking identifier.
+ * @param carrier - The courier or carrier name.
+ * @returns The updated EscrowItem object.
+ * @throws {Error} If no escrow item with the specified ID is found.
+ */
 export function shipEscrow(
   escrowId: string,
   trackingId: string,

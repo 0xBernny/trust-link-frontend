@@ -1,9 +1,19 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+/**
+ * Custom error class thrown by ApiClient when HTTP requests fail.
+ * Contains the response HTTP status code and parsed body payload.
+ */
 export class ApiClientError extends Error {
   status: number;
   body?: unknown;
 
+  /**
+   * Constructs an ApiClientError.
+   * @param status - The HTTP status code returned by the server.
+   * @param message - Human-readable error message.
+   * @param body - Optional parsed error payload.
+   */
   constructor(status: number, message: string, body?: unknown) {
     super(message);
     this.name = "ApiClientError";
@@ -17,6 +27,13 @@ interface ApiClientOptions {
   baseUrl?: string;
 }
 
+/**
+ * Creates an API client instance with helper methods (get, post, patch, delete)
+ * and built-in automatic retries for server errors.
+ *
+ * @param opts - Configuration options including authentication token and base URL.
+ * @returns Object providing typed HTTP request methods.
+ */
 export function createApiClient(opts?: ApiClientOptions) {
   const baseUrl = opts?.baseUrl ?? API_URL;
   const token = opts?.token ?? undefined;
