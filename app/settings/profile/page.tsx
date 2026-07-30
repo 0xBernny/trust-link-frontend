@@ -102,7 +102,7 @@ export default function VendorProfileSettingsPage() {
                 value={values.businessName}
                 onChange={(e) => updateField("businessName", e.target.value)}
                 aria-describedby={errors.businessName ? "businessName-error" : undefined}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus-visible:ring-zinc-300"
                 placeholder="Acme Goods Ltd."
               />
               {errors.businessName && (
@@ -124,7 +124,7 @@ export default function VendorProfileSettingsPage() {
                 type="text"
                 value={values.displayName}
                 onChange={(e) => updateField("displayName", e.target.value)}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus-visible:ring-zinc-300"
                 placeholder="@acme"
               />
             </div>
@@ -142,7 +142,7 @@ export default function VendorProfileSettingsPage() {
                 value={values.email}
                 onChange={(e) => updateField("email", e.target.value)}
                 aria-describedby={errors.email ? "email-error" : undefined}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus-visible:ring-zinc-300"
                 placeholder="hello@acme.com"
               />
               {errors.email && (
@@ -164,7 +164,7 @@ export default function VendorProfileSettingsPage() {
                 rows={3}
                 value={values.bio}
                 onChange={(e) => updateField("bio", e.target.value)}
-                className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500"
+                className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-950 outline-none focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus-visible:ring-zinc-300"
                 placeholder="We sell quality goods via secure escrow."
               />
             </div>
