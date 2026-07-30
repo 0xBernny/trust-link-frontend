@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import type { JSX } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -17,10 +13,15 @@ import {
   ShieldAlert,
   Truck,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { JSX } from "react";
+import { Suspense, useEffect, useState } from "react";
+
 import { useNotifications } from "@/components/providers/NotificationProvider";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { relativeTime, statusLabel } from "@/lib/notifications";
 import type { AppNotification, EscrowStatus } from "@/types";
-import { Skeleton } from "@/components/ui/Skeleton";
 
 function StatusIcon({ type }: { type: EscrowStatus }) {
   const cls = "h-5 w-5 shrink-0";
@@ -37,7 +38,7 @@ function StatusIcon({ type }: { type: EscrowStatus }) {
   return <>{map[type] ?? <Package className={cls} />}</>;
 }
 
-const STATUS_BG: Record<EscrowStatus, string> = {
+const STATUS_BG: Record<string, string> = {
   PENDING:   "bg-zinc-100 text-zinc-500 dark:bg-zinc-800",
   FUNDED:    "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
   SHIPPED:   "bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",

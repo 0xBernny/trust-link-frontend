@@ -1,9 +1,11 @@
-import { render, screen, act } from "@testing-library/react";
-import { WalletProvider, useWallet } from "./WalletProvider";
-import { NetworkProvider } from "./NetworkProvider";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as freighter from "@/lib/stellar/freighter";
+import { act,render, screen } from "@testing-library/react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import * as stellar from "@/lib/stellar";
+import * as freighter from "@/lib/stellar/freighter";
+
+import { NetworkProvider } from "./NetworkProvider";
+import { useWallet,WalletProvider } from "./WalletProvider";
 
 vi.mock("@/lib/stellar/freighter", () => ({
   getAddress: vi.fn(),

@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
+
 import { sanitizeUrl } from "@/lib/sanitize";
 
 interface OptimizedImageProps extends Omit<ImageProps, "placeholder" | "blurDataURL"> {

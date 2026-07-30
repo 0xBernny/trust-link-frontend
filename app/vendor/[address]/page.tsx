@@ -1,11 +1,12 @@
 "use client";
 
+import { ArrowLeft, BarChart3,History, MapPin, Package, ShieldCheck, Star } from "lucide-react";
+import Link from "next/link";
 import { use } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Star, ShieldCheck, MapPin, History, Package, BarChart3 } from "lucide-react";
-import Link from "next/link";
-import { formatUSDC } from "@/utils/currency";
+
 import { formatTimeAgo } from "@/lib/utils";
+import { formatUSDC } from "@/utils/currency";
 
 // Mock data generator for the vendor profile
 const getVendorMock = (address: string) => {

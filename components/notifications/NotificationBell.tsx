@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import type { JSX } from "react";
+import { AlertCircle,Banknote, Bell, CheckCheck, CircleCheck, Clock, Package, RotateCcw, ShieldAlert, Truck } from "lucide-react";
 import Link from "next/link";
-import { Bell, CheckCheck, Package, Banknote, Truck, ShieldAlert, RotateCcw, CircleCheck, Clock, AlertCircle } from "lucide-react";
+import type { JSX } from "react";
+import React, { useEffect, useRef, useState } from "react";
+
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { relativeTime, statusLabel } from "@/lib/notifications";
 import type { AppNotification, EscrowStatus } from "@/types";

@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   ArrowLeft,
   BarChart3,
@@ -10,6 +8,10 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -19,12 +21,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatUSDC } from "@/utils/currency";
-import { cn } from "@/lib/utils";
+
 import { getVendorAnalytics, type VendorAnalyticsPoint, type VendorAnalyticsResponse } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { formatUSDC } from "@/utils/currency";
+
 import VendorAnalyticsSkeleton from "./VendorAnalyticsSkeleton";
-import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
 
 function formatRate(value: number): string {
   return `${value.toFixed(1)}%`;
@@ -321,7 +323,7 @@ export default function VendorAnalyticsSection() {
                     tickMargin={12}
                     interval={isMobile ? 5 : 2}
                     minTickGap={isMobile ? 24 : 16}
-                    tickFormatter={(value) => formatAxisLabel(String(value), isMobile)}
+                    tickFormatter={(value: string | number) => formatAxisLabel(String(value), isMobile)}
                     tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
                   />
                   <YAxis
@@ -329,7 +331,7 @@ export default function VendorAnalyticsSection() {
                     axisLine={false}
                     tickMargin={10}
                     width={isMobile ? 44 : 64}
-                    tickFormatter={(value) => formatCompactVolume(Number(value))}
+                    tickFormatter={(value: string | number) => formatCompactVolume(Number(value))}
                     tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
                   />
                   <Tooltip content={<AnalyticsTooltip />} />

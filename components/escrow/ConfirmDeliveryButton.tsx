@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import useWallet from "@/hooks/useWallet";
+
 import FocusTrap from "@/components/ui/FocusTrap";
+import useWallet from "@/hooks/useWallet";
 import { createApiClient } from "@/lib/api-client";
 import type { ApiErrorResponse } from "@/types/api";
 

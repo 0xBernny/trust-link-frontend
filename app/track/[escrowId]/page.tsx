@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { setEscrowContext } from "@/lib/logger";
+
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import TrackingTimeline from "@/components/tracking/TrackingTimeline";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getEscrow } from "@/lib/api";
+import { setEscrowContext } from "@/lib/logger";
 import type { GetEscrowResponse } from "@/types/api";
 import { formatUSDC } from "@/utils/currency";
 

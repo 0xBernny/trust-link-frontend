@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState, startTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CheckCircle2,
@@ -10,6 +8,9 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { startTransition,useEffect, useMemo, useState } from "react";
+
 import WalletConnectButton from "@/components/wallet/WalletConnectButton";
 import useWallet from "@/hooks/useWallet";
 

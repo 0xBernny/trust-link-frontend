@@ -1,12 +1,14 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import useEscrow from "@/hooks/useEscrow";
-import DisputeForm from "./DisputeForm";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { formatUSDC } from "@/utils/currency";
+import { useParams } from "next/navigation";
+
 import { Skeleton } from "@/components/ui/Skeleton";
+import useEscrow from "@/hooks/useEscrow";
+import { formatUSDC } from "@/utils/currency";
+
+import DisputeForm from "./DisputeForm";
 
 function DisputePageSkeleton() {
   return (

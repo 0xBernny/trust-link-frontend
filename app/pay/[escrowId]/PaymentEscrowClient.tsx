@@ -1,14 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState, useEffect, startTransition } from "react";
-import { Escrow } from "@/types";
+import { startTransition,useEffect, useMemo, useState } from "react";
+
 import { TrustBadge } from "@/components/payment/TrustBadge";
 import { useWallet } from "@/components/providers/WalletProvider";
-import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
-import { patchBuyerContact } from "@/lib/api";
-import { formatUSDC } from "@/utils/currency";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { patchBuyerContact } from "@/lib/api";
+import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
+import { Escrow, EscrowStatusConst } from "@/types";
+import { formatUSDC } from "@/utils/currency";
 
 function TrackingTimelineSkeleton() {
   return (
@@ -80,8 +81,8 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   const total = useMemo(() => Number((amount + fee).toFixed(2)), [amount, fee]);
   const contractAddress = escrow.contractAddress ?? process.env.NEXT_PUBLIC_CONTRACT_ID ?? escrow.id;
 
-  const isFunded = escrow.status === "FUNDED";
-  const isExpired = escrow.status === "EXPIRED";
+  const isFunded = escrow.status === EscrowStatusConst.FUNDED;
+  const isExpired = escrow.status === EscrowStatusConst.EXPIRED;
 
   // Countdown logic for expiresAt
   useEffect(() => {

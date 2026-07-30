@@ -1,5 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
-import { setupNetworkMocks, type MockDispute } from "./helpers/mock-api";
+
+import { authenticatePage } from "./helpers/auth";
+import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
@@ -7,7 +9,7 @@ let isResolved = false;
 const mockDispute: MockDispute = {
   id: disputeId,
   escrowId: "escrow-42",
-  buyerId: "GBUYER8TESTING1234567890ABCDEF",
+  buyerId: BUYER_KEY,
   reason: "Item not received",
   evidence: ["https://example.com/evidence.jpg"],
   status: "OPEN",
@@ -15,8 +17,8 @@ const mockDispute: MockDispute = {
   updatedAt: "2026-01-02T00:00:00Z",
   escrow: {
     id: "escrow-42",
-    vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-    buyerId: "GBUYER8TESTING1234567890ABCDEF",
+    vendorId: VENDOR_KEY,
+    buyerId: BUYER_KEY,
     item: "Gold Necklace",
     amount: 180.0,
     status: "DISPUTED",
@@ -29,9 +31,7 @@ const mockDispute: MockDispute = {
 test("admin can resolve a dispute and the dispute list updates", async ({ page, next }) => {
   isResolved = false;
 
-  await page.addInitScript(() => {
-    window.localStorage.setItem("wallet.jwt", "jwt-token");
-  });
+  await authenticatePage(page);
 
   await setupNetworkMocks(page, next);
   

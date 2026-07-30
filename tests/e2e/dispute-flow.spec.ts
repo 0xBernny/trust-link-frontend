@@ -1,17 +1,18 @@
-import { test, expect } from "next/experimental/testmode/playwright";
+import { expect,test } from "next/experimental/testmode/playwright";
+
 import {
-  setupNetworkMocks,
-  setupNextOnFetch,
   type MockDispute,
   type MockEscrow,
+  setupNetworkMocks,
+  setupNextOnFetch,
 } from "./helpers/mock-api";
 
 const TEST_ESCROW_ID = "test_escrow_dispute_001";
 
 const mockEscrow: MockEscrow = {
   id: TEST_ESCROW_ID,
-  vendorId: "vendor_test_1",
-  buyerId: "buyer_test_1",
+  vendorId: VENDOR_ID,
+  buyerId: BUYER_ID,
   amount: 75.0,
   item: "Wireless Headphones",
   status: "SHIPPED",
@@ -23,7 +24,7 @@ const mockEscrow: MockEscrow = {
 const mockDisputeResponse: MockDispute = {
   id: "dispute-001",
   escrowId: TEST_ESCROW_ID,
-  buyerId: "buyer_test_1",
+  buyerId: BUYER_ID,
   reason: "Item Not Received",
   description: "The package never arrived despite the tracking showing delivered.",
   evidence: ["https://example.com/evidence-dummy.jpg"],

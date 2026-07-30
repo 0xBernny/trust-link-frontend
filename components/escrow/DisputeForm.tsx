@@ -1,28 +1,23 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useEffect,useRef, useState } from 'react';
+
 import type { SubmitDisputeFormResponse } from '@/types/api';
 
-// Types
-interface DisputeFormData {
-  // Step 1: Personal Info
+interface DisputeFormValues {
   name: string;
   email: string;
   orderNumber: string;
-  
-  // Step 2: Dispute Details
   reason: string;
   description: string;
-  
-  // Step 3: Evidence
   files: File[];
-  
-  // Additional
   agreeToTerms: boolean;
 }
 
+type DisputeFormData = DisputeFormValues;
+
 interface DisputeFormProps {
-  onSubmit?: (data: DisputeFormData) => Promise<void>;
+  onSubmit?: (data: DisputeFormValues) => Promise<void>;
   apiEndpoint?: string;
   onSuccess?: (response: SubmitDisputeFormResponse) => void;
   onError?: (error: Error) => void;
@@ -86,7 +81,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -109,7 +104,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -127,7 +122,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -145,36 +140,30 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     // Set focus target to the first field with an error.
     if (Object.keys(newErrors).length > 0) {
       const firstErrorKey = Object.keys(newErrors)[0] as keyof DisputeFormData;
-      firstErrorRef.current = document.getElementById(firstErrorKey);
+      firstErrorRef.current = document.getElementById(firstErrorKey as string);
     }
 
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
+  const validateStep = useCallback((step: Step): boolean => {
+    const validators: Record<Step, () => boolean> = {
+      1: validateStep1,
+      2: validateStep2,
+      3: validateStep3,
+      4: validateStep4,
+    };
+    return validators[step]();
+  }, [validateStep1, validateStep2, validateStep3, validateStep4]);
+
   // Navigation handlers
   const handleNext = useCallback(() => {
-    let isValid = false;
-    
-    switch (currentStep) {
-      case 1:
-        isValid = validateStep1();
-        break;
-      case 2:
-        isValid = validateStep2();
-        break;
-      case 3:
-        isValid = validateStep3();
-        break;
-      case 4:
-        isValid = validateStep4();
-        break;
-    }
-    
-    if (isValid && currentStep < 4) {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < 4) {
       setCurrentStep((prev) => (prev + 1) as Step);
       setErrors({});
     }
-  }, [currentStep, validateStep1, validateStep2, validateStep3, validateStep4]);
+  }, [currentStep, validateStep]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -188,7 +177,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     field: K,
     value: DisputeFormData[K]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: DisputeFormData) => ({ ...prev, [field]: value }));
     // Clear error for this field when user types
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -219,13 +208,13 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   }, [formData.files, updateField]);
 
   const removeFile = useCallback((index: number) => {
-    const newFiles = formData.files.filter((_, i) => i !== index);
+    const newFiles = formData.files.filter((_: File, i: number) => i !== index);
     updateField('files', newFiles);
   }, [formData.files, updateField]);
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!validateStep4()) return;
+    if (!validateStep(4)) return;
     
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -238,7 +227,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         orderNumber: formData.orderNumber,
         reason: formData.reason,
         description: formData.description,
-        files: formData.files.map(file => ({
+        files: formData.files.map((file: File) => ({
           name: file.name,
           type: file.type,
           size: file.size
@@ -280,7 +269,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, onSubmit, apiEndpoint, onSuccess, onError, validateStep4]);
+  }, [formData, onSubmit, apiEndpoint, onSuccess, onError, validateStep]);
 
   // Reset form
   const resetForm = useCallback(() => {

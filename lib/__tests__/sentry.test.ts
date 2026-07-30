@@ -1,5 +1,6 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import * as Sentry from "@sentry/nextjs";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import {
   captureError,
   captureWalletError,
