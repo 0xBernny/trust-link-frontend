@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Escrow } from "@/types";
+import { Escrow, EscrowStatusConst } from "@/types";
 
 import TrackPage from "./page";
 
@@ -30,7 +30,7 @@ const mockEscrow: Escrow = {
   buyerId: "buyer_1",
   amount: 150.0,
   item: "Wireless Headphones",
-  status: "PENDING",
+  status: EscrowStatusConst.PENDING,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   history: [],
@@ -63,7 +63,7 @@ describe("TrackPage", () => {
     expect(screen.getByText("Order Details")).toBeInTheDocument();
     expect(screen.getByText("Wireless Headphones")).toBeInTheDocument();
     expect(screen.getByText("150.00 USDC")).toBeInTheDocument();
-    expect(screen.getByText("PENDING")).toBeInTheDocument();
+    expect(screen.getByText(EscrowStatusConst.PENDING)).toBeInTheDocument();
   });
 
   it("renders tracking timeline component", async () => {

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveDispute } from "@/lib/api";
-import { Dispute } from "@/types";
+import { type Dispute,DisputeStatusConst, EscrowStatusConst } from "@/types";
 
 import { DisputeDetailsClient } from "./DisputeDetailsClient";
 
@@ -41,7 +41,7 @@ const mockDispute: Dispute = {
   buyerId: "buyer-123",
   reason: "Item not as described",
   evidence: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
-  status: "OPEN",
+  status: DisputeStatusConst.OPEN,
   createdAt: "2023-10-01T12:00:00Z",
   updatedAt: "2023-10-01T12:00:00Z",
   escrow: {
@@ -50,28 +50,28 @@ const mockDispute: Dispute = {
     buyerId: "buyer-123",
     amount: 100,
     item: "High-end Headphones",
-    status: "DISPUTED",
+    status: EscrowStatusConst.DISPUTED,
     createdAt: "2023-09-25T10:00:00Z",
     updatedAt: "2023-10-01T12:00:00Z",
     history: [
       {
         id: "h1",
         escrowId: "escrow-1",
-        status: "PENDING",
+        status: EscrowStatusConst.PENDING,
         timestamp: "2023-09-25T10:00:00Z",
         description: "Escrow created",
       },
       {
         id: "h2",
         escrowId: "escrow-1",
-        status: "FUNDED",
+        status: EscrowStatusConst.FUNDED,
         timestamp: "2023-09-25T10:05:00Z",
         description: "Funds deposited",
       },
       {
         id: "h3",
         escrowId: "escrow-1",
-        status: "DISPUTED",
+        status: EscrowStatusConst.DISPUTED,
         timestamp: "2023-10-01T12:00:00Z",
         description: "Dispute raised by buyer",
       },

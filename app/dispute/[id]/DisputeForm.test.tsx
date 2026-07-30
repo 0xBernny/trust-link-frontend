@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
 import { createDispute } from "@/lib/api";
+import { DisputeStatusConst } from "@/types";
 
 import DisputeForm from "./DisputeForm";
 
@@ -153,7 +154,7 @@ describe("Production DisputeForm - app/dispute/[id]/DisputeForm", () => {
   it("submits the form successfully when all inputs and files are valid", async () => {
     vi.mocked(createDispute).mockResolvedValueOnce({
       id: "DISP-SUCCESS",
-      status: "OPEN",
+      status: DisputeStatusConst.OPEN,
     } as unknown as Awaited<ReturnType<typeof createDispute>>);
 
     render(<DisputeForm escrowId="ESC-777" />);
