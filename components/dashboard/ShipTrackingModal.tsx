@@ -2,6 +2,7 @@
 
 import React, { FormEvent, useEffect, useRef,useState } from "react";
 
+import { shipEscrow } from "@/lib/api";
 import type { ApiErrorResponse } from "@/types/api";
 
 interface ShipTrackingModalProps {
@@ -85,20 +86,10 @@ export default function ShipTrackingModal({
     setError(null);
 
     try {
-      const response = await fetch(`/escrow/${escrowId}/ship`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ trackingId: trimmedTrackingId, carrier }),
+      await shipEscrow(escrowId, {
+        trackingId: trimmedTrackingId,
+        carrier: carrier,
       });
-
-      if (!response.ok) {
-        const payload = (await response
-          .json()
-          .catch(() => null)) as ApiErrorResponse | null;
-        throw new Error(payload?.message ?? "Unable to submit shipment details.");
-      }
 
       onSuccess(escrowId);
       onClose();
