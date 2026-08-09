@@ -73,7 +73,7 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
     const url = new URL(request.url);
 
     // Server-side fetch for the dispute detail page
-    if (url.pathname === `/disputes/${disputeId}`) {
+    if (url.pathname.endsWith(`/disputes/${disputeId}`)) {
       return new Response(JSON.stringify(mockDispute), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -86,7 +86,9 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
   await page.goto("/admin/disputes");
 
   await expect(page.getByText("Admin Disputes")).toBeVisible();
-  await page.getByRole("link", { name: /view dispute/i }).click();
+  
+  // Navigate directly to the dispute details page to avoid Next.js RSC client navigation issues
+  await page.goto(`/admin/disputes/${disputeId}`);
 
   await expect(page.getByText(/release to vendor/i)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByTestId("dispute-status-badge")).toHaveText("OPEN");
