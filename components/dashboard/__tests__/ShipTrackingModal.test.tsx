@@ -4,6 +4,7 @@ import React from "react";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
 import { shipEscrow } from "@/lib/api";
+
 import ShipTrackingModal from "../ShipTrackingModal";
 
 vi.mock("@/lib/api", () => ({
@@ -99,7 +100,7 @@ describe("ShipTrackingModal", () => {
     const onSuccess = vi.fn();
     const onClose = vi.fn();
 
-    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as never);
 
     render(
       <ShipTrackingModal
@@ -120,7 +121,7 @@ describe("ShipTrackingModal", () => {
 
   it("sends correct payload to the ship endpoint", async () => {
     const user = userEvent.setup();
-    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as never);
 
     render(<ShipTrackingModal {...defaultProps} />);
 
@@ -178,7 +179,7 @@ describe("ShipTrackingModal", () => {
     vi.mocked(shipEscrow).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
-          setTimeout(() => resolve({} as any), 500)
+          setTimeout(() => resolve({} as never), 500)
         )
     );
 
@@ -207,7 +208,7 @@ describe("ShipTrackingModal", () => {
     });
 
     // Second call succeeds
-    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as never);
 
     await user.click(screen.getByRole("button", { name: /submit/i }));
 
