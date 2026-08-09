@@ -3,7 +3,12 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
+import { shipEscrow } from "@/lib/api";
 import ShipTrackingModal from "../ShipTrackingModal";
+
+vi.mock("@/lib/api", () => ({
+  shipEscrow: vi.fn(),
+}));
 
 const defaultProps = {
   escrowId: "escrow-123",
@@ -94,10 +99,7 @@ describe("ShipTrackingModal", () => {
     const onSuccess = vi.fn();
     const onClose = vi.fn();
 
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ status: "Shipped" }),
-    } as Response);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
 
     render(
       <ShipTrackingModal
@@ -118,10 +120,7 @@ describe("ShipTrackingModal", () => {
 
   it("sends correct payload to the ship endpoint", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
 
     render(<ShipTrackingModal {...defaultProps} />);
 
@@ -133,24 +132,17 @@ describe("ShipTrackingModal", () => {
     await user.click(screen.getByRole("button", { name: /submit/i }));
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
-        "/escrow/escrow-123/ship",
-        expect.objectContaining({
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trackingId: "TRACK-999", carrier: "GIGL" }),
-        })
-      );
+      expect(shipEscrow).toHaveBeenCalledWith("escrow-123", {
+        trackingId: "TRACK-999",
+        carrier: "GIGL",
+      });
     });
   });
 
   it("displays error message when the API call fails", async () => {
     const user = userEvent.setup();
 
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Escrow not found" }),
-    } as Response);
+    vi.mocked(shipEscrow).mockRejectedValueOnce(new Error("Escrow not found"));
 
     render(<ShipTrackingModal {...defaultProps} />);
 
@@ -165,12 +157,7 @@ describe("ShipTrackingModal", () => {
   it("displays generic error when API returns non-JSON response", async () => {
     const user = userEvent.setup();
 
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: false,
-      json: async () => {
-        throw new Error("invalid json");
-      },
-    } as unknown as Response);
+    vi.mocked(shipEscrow).mockRejectedValueOnce(new Error("invalid json"));
 
     render(<ShipTrackingModal {...defaultProps} />);
 
@@ -179,7 +166,7 @@ describe("ShipTrackingModal", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/unable to submit shipment details/i)
+        screen.getByText(/invalid json/i)
       ).toBeInTheDocument();
     });
   });
@@ -188,17 +175,10 @@ describe("ShipTrackingModal", () => {
     const user = userEvent.setup();
 
     // Slow response to keep submitting state visible
-    vi.spyOn(global, "fetch").mockImplementationOnce(
+    vi.mocked(shipEscrow).mockImplementationOnce(
       () =>
         new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: async () => ({}),
-              } as Response),
-            500
-          )
+          setTimeout(() => resolve({} as any), 500)
         )
     );
 
@@ -215,10 +195,7 @@ describe("ShipTrackingModal", () => {
     const user = userEvent.setup();
 
     // First call fails
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Server error" }),
-    } as Response);
+    vi.mocked(shipEscrow).mockRejectedValueOnce(new Error("Server error"));
 
     render(<ShipTrackingModal {...defaultProps} />);
 
@@ -230,10 +207,7 @@ describe("ShipTrackingModal", () => {
     });
 
     // Second call succeeds
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    vi.mocked(shipEscrow).mockResolvedValueOnce({} as any);
 
     await user.click(screen.getByRole("button", { name: /submit/i }));
 
