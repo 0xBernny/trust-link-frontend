@@ -16,7 +16,7 @@ export const EscrowCreateSchema = z.object({
     ),
   description: z.string().min(1, "Description is required."),
   shippingWindow: z.enum(shippingOptions),
-});
+}).strict();
 
 export type EscrowCreateValues = z.infer<typeof EscrowCreateSchema>;
 export type ShippingWindow = z.infer<typeof EscrowCreateSchema.shape.shippingWindow>;
