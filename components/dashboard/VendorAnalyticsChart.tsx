@@ -81,12 +81,12 @@ export default function VendorAnalyticsChart({
       <LineChart data={data} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
         <defs>
           <linearGradient id="volumeStroke" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1B2A6B" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="#7B68EE" stopOpacity={0.8} />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.8} />
           </linearGradient>
           <linearGradient id="volumeFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1B2A6B" stopOpacity={0.18} />
-            <stop offset="100%" stopColor="#7B68EE" stopOpacity={0.02} />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.18} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(120,120,120,0.18)" />

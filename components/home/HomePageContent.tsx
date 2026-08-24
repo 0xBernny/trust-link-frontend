@@ -41,7 +41,7 @@ export default function HomePageContent() {
   return (
     <div className="min-h-screen bg-[var(--muted-bg)]">
       {/* ── Hero Section ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#1B2A6B] to-[#7B68EE] text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-primary to-brand-accent text-white">
         <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           aria-hidden="true"
@@ -59,7 +59,7 @@ export default function HomePageContent() {
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
               Secure Escrow for
-              <span className="block" style={{ color: "#a89eff" }}>
+              <span className="block text-brand-accent-soft">
                 Every Transaction
               </span>
             </h1>
@@ -71,7 +71,7 @@ export default function HomePageContent() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/vendor/signup"
-                className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-[#7B68EE] rounded-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center rounded-lg bg-brand-accent px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
               >
                 Get Started as a Vendor
                 <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
@@ -221,7 +221,7 @@ export default function HomePageContent() {
       </section>
 
       {/* ── CTA Section ───────────────────────────────────────────────────── */}
-      <section className="py-20 sm:py-24 bg-gradient-to-br from-[#1B2A6B] to-[#7B68EE] text-white">
+      <section className="bg-gradient-to-br from-brand-primary to-brand-accent py-20 text-white sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
             Ready to Trade with Confidence?
@@ -233,14 +233,14 @@ export default function HomePageContent() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/vendor/signup"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-[#7B68EE] rounded-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-accent px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
             >
               Start as a Vendor
                 <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
               </Link>
               <a
                 href="/verify"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-[#1B2A6B] bg-white rounded-lg hover:bg-white/90 transition-all"
+              className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-base font-semibold text-brand-primary transition-all hover:bg-white/90"
             >
               Verify a Link
             </a>

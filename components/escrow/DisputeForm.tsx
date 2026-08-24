@@ -669,19 +669,19 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           justify-content: space-between;
           margin-bottom: 30px;
           padding-bottom: 10px;
-          border-bottom: 2px solid #e0e0e0;
+          border-bottom: 2px solid var(--border);
         }
         
         .step-indicator {
           flex: 1;
           text-align: center;
           padding: 10px;
-          color: #999;
+          color: var(--muted);
           font-size: 14px;
         }
         
         .step-indicator.active {
-          color: #4CAF50;
+          color: var(--success);
           font-weight: bold;
         }
         
@@ -698,32 +698,32 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         input, select, textarea {
           width: 100%;
           padding: 10px;
-          border: 1px solid #ddd;
+          border: 1px solid var(--border);
           border-radius: 4px;
           font-size: 16px;
         }
         
         input:focus, select:focus, textarea:focus {
           outline: none;
-          border-color: #4CAF50;
+          border-color: var(--success);
         }
         
         .error {
-          color: #f44336;
+          color: var(--destructive);
           font-size: 14px;
           margin-top: 5px;
           display: block;
         }
         
         small {
-          color: #666;
+          color: var(--foreground);
           font-size: 12px;
         }
         
         .file-list {
           margin-top: 15px;
           padding: 10px;
-          background: #f5f5f5;
+          background: var(--muted-bg);
           border-radius: 4px;
         }
         
@@ -740,7 +740,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         }
         
         .file-list button {
-          background: #f44336;
+          background: var(--destructive);
           color: white;
           border: none;
           padding: 5px 10px;
@@ -749,7 +749,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         }
         
         .review-section {
-          background: #f9f9f9;
+          background: var(--background);
           padding: 20px;
           border-radius: 8px;
           margin-bottom: 20px;
@@ -757,7 +757,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         
         .review-section h3 {
           margin-top: 0;
-          color: #333;
+          color: var(--foreground);
         }
         
         .navigation-buttons {
@@ -768,7 +768,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         
         .navigation-buttons button {
           padding: 10px 20px;
-          background: #4CAF50;
+          background: var(--success);
           color: white;
           border: none;
           border-radius: 4px;
@@ -777,11 +777,11 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         }
         
         .navigation-buttons button:hover {
-          background: #45a049;
+          background: color-mix(in srgb, var(--success) 85%, black);
         }
         
         .navigation-buttons button:disabled {
-          background: #ccc;
+          background: var(--muted);
           cursor: not-allowed;
         }
         
@@ -791,17 +791,17 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         }
         
         .success-message {
-          color: #4CAF50;
+          color: var(--success);
         }
         
         .error-message {
-          color: #f44336;
+          color: var(--destructive);
         }
         
         .success-state button, .error-state button {
           margin-top: 20px;
           padding: 10px 20px;
-          background: #4CAF50;
+          background: var(--success);
           color: white;
           border: none;
           border-radius: 4px;
