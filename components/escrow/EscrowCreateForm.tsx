@@ -12,6 +12,7 @@ import {
   type ShippingWindow,
 } from "@/lib/validations";
 import { FormField } from "@/components/ui/FormField";
+import ShareModal from "@/components/escrow/ShareModal";
 
 const defaultValues: EscrowCreateValues = {
   itemName: "",
@@ -110,6 +111,7 @@ export default function EscrowCreateForm() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const updateField = <K extends keyof EscrowCreateValues>(
@@ -163,6 +165,7 @@ export default function EscrowCreateForm() {
       }
 
       setResultUrl(response.url);
+      setIsModalOpen(true);
       track("link_created");
     } catch (error) {
       const message =
@@ -349,6 +352,15 @@ export default function EscrowCreateForm() {
           </div>
         </section>
       ) : null}
+
+      {resultUrl && (
+        <ShareModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={resultUrl}
+          escrowId={resultUrl.split("/").pop() || "escrow"}
+        />
+      )}
     </div>
   );
 }
