@@ -14,7 +14,7 @@ interface ShareModalProps {
   escrowId: string;
 }
 
-export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModalProps) {
+export default function ShareModal({ isOpen, onClose, url, escrowId: _escrowId }: ShareModalProps) {
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const handleCopy = async () => {
@@ -23,7 +23,7 @@ export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModa
       setCopyStatus("Link copied!");
       track("link_copied", { method: "share_modal" });
       setTimeout(() => setCopyStatus(null), 2000);
-    } catch (err) {
+    } catch (_err) {
       setCopyStatus("Failed to copy");
     }
   };

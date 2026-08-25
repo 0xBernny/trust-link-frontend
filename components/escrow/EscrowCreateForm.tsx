@@ -3,6 +3,8 @@
 import { type FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import ShareModal from "@/components/escrow/ShareModal";
+import { FormField } from "@/components/ui/FormField";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
 import {
@@ -11,15 +13,6 @@ import {
   shippingOptions,
   type ShippingWindow,
 } from "@/lib/validations";
-import { FormField } from "@/components/ui/FormField";
-import ShareModal from "@/components/escrow/ShareModal";
-
-const defaultValues: EscrowCreateValues = {
-  itemName: "",
-  priceUSDC: "",
-  description: "",
-  shippingWindow: shippingOptions[0],
-};
 
 function buildQrMatrix(value: string) {
   const size = 21;

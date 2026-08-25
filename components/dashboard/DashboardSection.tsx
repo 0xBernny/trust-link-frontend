@@ -1,5 +1,5 @@
-import VendorDashboardList from "@/components/dashboard/VendorDashboardList";
 import DashboardAnalyticsSummary from "@/components/dashboard/DashboardAnalyticsSummary";
+import VendorDashboardList from "@/components/dashboard/VendorDashboardList";
 
 export default function DashboardSection() {
   return (

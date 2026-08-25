@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import type { SubmitDisputeFormResponse } from "@/types/api";
 import { FormField } from "@/components/ui/FormField";
+import type { SubmitDisputeFormResponse } from "@/types/api";
 
 interface DisputeFormValues {
   name: string;

@@ -37,12 +37,13 @@ export function DialogTrigger({
 }) {
   const { onOpenChange } = React.useContext(DialogContext);
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, {
-      onClick: (e: any) => {
+    return React.cloneElement(children, {
+      onClick: (e: React.MouseEvent<HTMLElement>) => {
+        // @ts-expect-error - we know it might have onClick
         if (children.props.onClick) children.props.onClick(e);
         onOpenChange(true);
       },
-    });
+    } as Record<string, unknown>);
   }
   return (
     <button type="button" onClick={() => onOpenChange(true)}>
