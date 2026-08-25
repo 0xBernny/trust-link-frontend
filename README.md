@@ -94,6 +94,25 @@ trustlink-frontend/
 └── types/                          # Shared TypeScript types
 ```
 
+### Escrow State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Created
+    Pending --> Funded : Buyer Pays
+    Pending --> Expired : Time Elapsed
+    Funded --> Shipped : Vendor Ships
+    Shipped --> Completed : Buyer Confirms
+    Funded --> Disputed : Buyer Disputes
+    Shipped --> Disputed : Buyer Disputes
+    Disputed --> Released : Admin (to Vendor)
+    Disputed --> Refunded : Admin (to Buyer)
+    Completed --> [*]
+    Released --> [*]
+    Refunded --> [*]
+    Expired --> [*]
+```
+
 ---
 
 ##  Getting Started
