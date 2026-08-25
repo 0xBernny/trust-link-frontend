@@ -26,6 +26,25 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
+      dashboard: {
+        title: "Dashboard",
+        analytics: "Analytics",
+        upgradeBannerTitle: "Welcome to Pro!",
+        upgradeBannerMessage:
+          "Your account has been upgraded. Enjoy unlimited escrows, the analytics dashboard, and priority support.",
+        searchPlaceholder: "Search escrows...",
+        exportCsv: "Export CSV",
+        allFilter: "All",
+        noEscrowsFound: "No escrows found matching your criteria.",
+        clearFilters: "Clear filters",
+        fromLabel: "From",
+        toLabel: "To",
+        clearDates: "Clear dates",
+        showingPage: "Showing page",
+        ofPages: "of",
+        previous: "Previous",
+        next: "Next",
+      },
       payment: {
         title: "Payment",
         status: "Payments are up to date and ready to process.",
@@ -85,6 +104,25 @@ const resources = {
   },
   fr: {
     translation: {
+      dashboard: {
+        title: "Tableau de bord",
+        analytics: "Analytique",
+        upgradeBannerTitle: "Bienvenue à Pro!",
+        upgradeBannerMessage:
+          "Votre compte a été mis à niveau. Profitez d'escrows illimités, du tableau de bord analytique et du support prioritaire.",
+        searchPlaceholder: "Rechercher des escrows...",
+        exportCsv: "Exporter CSV",
+        allFilter: "Tous",
+        noEscrowsFound: "Aucun escrow trouvé correspondant à vos critères.",
+        clearFilters: "Effacer les filtres",
+        fromLabel: "De",
+        toLabel: "À",
+        clearDates: "Effacer les dates",
+        showingPage: "Page",
+        ofPages: "sur",
+        previous: "Précédent",
+        next: "Suivant",
+      },
       payment: {
         title: "Paiement",
         status: "Les paiements sont à jour et prêts à être traités.",
@@ -144,6 +182,25 @@ const resources = {
   },
   pcm: {
     translation: {
+      dashboard: {
+        title: "Dashboard",
+        analytics: "Analytics",
+        upgradeBannerTitle: "Welcome to Pro!",
+        upgradeBannerMessage:
+          "Your account don upgrade. Enjoy unlimited escrows, analytics dashboard, and priority support.",
+        searchPlaceholder: "Search escrows...",
+        exportCsv: "Export CSV",
+        allFilter: "All",
+        noEscrowsFound: "No escrow find for your search.",
+        clearFilters: "Clear filters",
+        fromLabel: "From",
+        toLabel: "To",
+        clearDates: "Clear dates",
+        showingPage: "Showing page",
+        ofPages: "of",
+        previous: "Previous",
+        next: "Next",
+      },
       payment: {
         title: "Payment",
         status: "Payment don ready for process.",
