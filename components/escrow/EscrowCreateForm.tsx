@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import ShareModal from "@/components/escrow/ShareModal";
 import { FormField } from "@/components/ui/FormField";
+import { QrCode } from "@/components/ui/QrCode";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
 import {
@@ -13,82 +14,6 @@ import {
   shippingOptions,
   type ShippingWindow,
 } from "@/lib/validations";
-
-function buildQrMatrix(value: string) {
-  const size = 21;
-  const matrix = Array.from({ length: size }, () =>
-    Array<boolean>(size).fill(false)
-  );
-  const seed = Array.from(value).reduce(
-    (acc, char) => acc + char.charCodeAt(0),
-    0
-  );
-
-  const setFinder = (row: number, col: number) => {
-    for (let y = 0; y < 7; y += 1) {
-      for (let x = 0; x < 7; x += 1) {
-        const isBorder = x === 0 || y === 0 || x === 6 || y === 6;
-        const isCenter = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-        matrix[row + y][col + x] = isBorder || isCenter;
-      }
-    }
-  };
-
-  setFinder(0, 0);
-  setFinder(0, size - 7);
-  setFinder(size - 7, 0);
-
-  for (let i = 8; i < size - 8; i += 1) {
-    matrix[6][i] = i % 2 === 0;
-    matrix[i][6] = i % 2 === 0;
-  }
-
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      if (matrix[row][col]) {
-        continue;
-      }
-
-      const shouldFill = (row * 11 + col * 17 + seed) % 7 < 3;
-      if (shouldFill) {
-        matrix[row][col] = true;
-      }
-    }
-  }
-
-  return matrix;
-}
-
-function QrCode({ value }: { value: string }) {
-  const matrix = buildQrMatrix(value);
-
-  return (
-    <svg
-      data-testid="qr-code"
-      role="img"
-      aria-label={`QR code for ${value}`}
-      viewBox="0 0 21 21"
-      className="h-48 w-48 rounded-3xl border border-zinc-200 bg-white p-3 shadow-inner dark:border-zinc-800"
-      shapeRendering="crispEdges"
-    >
-      <rect width="21" height="21" fill="white" />
-      {matrix.map((row, y) =>
-        row.map((filled, x) =>
-          filled ? (
-            <rect
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              width="1"
-              height="1"
-              fill="black"
-            />
-          ) : null
-        )
-      )}
-    </svg>
-  );
-}
 
 export default function EscrowCreateForm() {
   const [values, setValues] = useState<EscrowCreateValues>({

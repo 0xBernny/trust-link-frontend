@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import OfflineBanner from "@/components/layout/OfflineBanner";
 import TestnetBanner from "@/components/layout/TestnetBanner";
+import { CurrencyProvider } from "@/components/providers/CurrencyProvider";
 import I18nProvider from "@/components/providers/I18nProvider";
 import { NetworkProvider } from "@/components/providers/NetworkProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
@@ -94,25 +95,27 @@ export default function RootLayout({
             </a>
             <WalletProvider>
               <SubscriptionProvider>
-                <I18nProvider>
-                  <NotificationProvider>
-                    <Navbar />
-                    <main
-                      id="main-content"
-                      tabIndex={-1}
-                      className="flex-1 flex flex-col pb-20 md:pb-0 outline-none"
-                    >
-                      {children}
-                    </main>
-                    <Footer />
-                    <BottomNav />
-                    <Toaster
-                      richColors
-                      position="top-right"
-                      visibleToasts={3}
-                    />
-                  </NotificationProvider>
-                </I18nProvider>
+                <CurrencyProvider>
+                  <I18nProvider>
+                    <NotificationProvider>
+                      <Navbar />
+                      <main
+                        id="main-content"
+                        tabIndex={-1}
+                        className="flex-1 flex flex-col pb-20 md:pb-0 outline-none"
+                      >
+                        {children}
+                      </main>
+                      <Footer />
+                      <BottomNav />
+                      <Toaster
+                        richColors
+                        position="top-right"
+                        visibleToasts={3}
+                      />
+                    </NotificationProvider>
+                  </I18nProvider>
+                </CurrencyProvider>
               </SubscriptionProvider>
             </WalletProvider>
           </NetworkProvider>

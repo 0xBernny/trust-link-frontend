@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import CurrencyDropdown from "@/components/dashboard/CurrencyDropdown";
 import DashboardSection from "@/components/dashboard/DashboardSection";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -100,7 +101,10 @@ export default function DashboardClient() {
               {t("dashboard.analytics")}
             </Link>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-4">
+            <CurrencyDropdown />
+            <NotificationBell />
+          </div>
         </div>
         <ErrorBoundary>
           <DashboardSection />
