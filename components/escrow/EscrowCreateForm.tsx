@@ -3,6 +3,8 @@
 import { type FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import ShareModal from "@/components/escrow/ShareModal";
+import { FormField } from "@/components/ui/FormField";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
 import {
@@ -11,14 +13,6 @@ import {
   shippingOptions,
   type ShippingWindow,
 } from "@/lib/validations";
-import { FormField } from "@/components/ui/FormField";
-
-const defaultValues: EscrowCreateValues = {
-  itemName: "",
-  priceUSDC: "",
-  description: "",
-  shippingWindow: shippingOptions[0],
-};
 
 function buildQrMatrix(value: string) {
   const size = 21;
@@ -110,6 +104,7 @@ export default function EscrowCreateForm() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const updateField = <K extends keyof EscrowCreateValues>(
@@ -163,6 +158,7 @@ export default function EscrowCreateForm() {
       }
 
       setResultUrl(response.url);
+      setIsModalOpen(true);
       track("link_created");
     } catch (error) {
       const message =
@@ -349,6 +345,15 @@ export default function EscrowCreateForm() {
           </div>
         </section>
       ) : null}
+
+      {resultUrl && (
+        <ShareModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={resultUrl}
+          escrowId={resultUrl.split("/").pop() || "escrow"}
+        />
+      )}
     </div>
   );
 }
