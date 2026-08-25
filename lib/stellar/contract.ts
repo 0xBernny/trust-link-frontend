@@ -131,6 +131,16 @@ function toTxError(error: unknown, fallback: string): Error {
   return wrapped;
 }
 
+function encodeTransactionResult(
+  result: xdr.TransactionResult | undefined
+): string {
+  if (!result) {
+    return "";
+  }
+
+  return result.toXDR("base64");
+}
+
 async function invokeSorobanContract(
   options: SorobanContractCallOptions
 ): Promise<ContractTransactionResult> {
@@ -180,24 +190,35 @@ async function invokeSorobanContract(
       TransactionBuilder.fromXDR(signedXdr, networkPassphrase)
     );
 
-    if ((response as any)?.status === "ERROR" || (response as any)?.status === "FAILED") {
-      throw toTxError((response as any)?.errorResultXdr || (response as any)?.error, "Transaction failed");
+    if (response.status === "ERROR") {
+      throw toTxError(
+        encodeTransactionResult(response.errorResult),
+        "Transaction failed"
+      );
     }
 
-    if ((response as any)?.status === "PENDING") {
-      const txResponse = await server.getTransaction((response as any).hash);
-      if ((txResponse as any).status === "FAILED") {
-        throw toTxError((txResponse as any).errorResultXdr || (txResponse as any).resultXdr, "Transaction failed");
+    if (response.status === "PENDING" || response.status === "DUPLICATE") {
+      const txResponse = await server.getTransaction(response.hash);
+
+      if (txResponse.status === "FAILED") {
+        throw toTxError(
+          encodeTransactionResult(txResponse.resultXdr),
+          "Transaction failed"
+        );
       }
+
       return {
-        hash: (response as any).hash,
-        resultXdr: (txResponse as any).resultXdr || "",
+        hash: response.hash,
+        resultXdr:
+          txResponse.status === "SUCCESS"
+            ? encodeTransactionResult(txResponse.resultXdr)
+            : "",
       };
     }
 
     return {
-      hash: (response as any).hash || "",
-      resultXdr: (response as any).resultXdr || "",
+      hash: response.hash,
+      resultXdr: "",
     };
   } catch (error) {
     throw toTxError(error, "Transaction submission failed");

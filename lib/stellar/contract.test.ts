@@ -396,29 +396,60 @@ describe("lib/stellar/contract.ts", () => {
     const validSourceAccount = "GBRPYHIL2CI3WHZDTOOQFC6EB4RRQQ5O5L3RHODOXJWYDOGNXVFC3J3A";
     const validContractId = "CCCZQVD4JFF2Z56XDQY2XHXGTWHBZWBRWQJL4QBFQZR77EAPBFQWKQ6S";
 
-    it("fundEscrow returns hash and result XDR on success", async () => {
-      const server = rpc.Server;
-      const mockSendTransaction = vi.fn().mockResolvedValue({ status: "SUCCESS", hash: "hash-1", resultXdr: "result-xdr" });
-      vi.mocked(server).mockImplementationOnce(function() {
+    function mockResultXdr(encoded: string) {
+      return { toXDR: vi.fn().mockReturnValue(encoded) };
+    }
+
+    function mockServer(options: {
+      sendTransaction: ReturnType<typeof vi.fn>;
+      getTransaction?: ReturnType<typeof vi.fn>;
+    }) {
+      vi.mocked(rpc.Server).mockImplementationOnce(function() {
         return {
           getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
-          sendTransaction: mockSendTransaction,
+          sendTransaction: options.sendTransaction,
+          getTransaction: options.getTransaction ?? vi.fn(),
         } as unknown as rpc.Server;
+      });
+    }
+
+    it("fundEscrow returns hash and result XDR on success", async () => {
+      const mockSendTransaction = vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-1" });
+      const mockGetTransaction = vi.fn().mockResolvedValue({
+        status: "SUCCESS",
+        resultXdr: mockResultXdr("result-xdr"),
+      });
+      mockServer({
+        sendTransaction: mockSendTransaction,
+        getTransaction: mockGetTransaction,
       });
 
       const result = await fundEscrow(validContractId, ["arg"], validSourceAccount, "TESTNET");
 
       expect(result).toEqual({ hash: "hash-1", resultXdr: "result-xdr" });
       expect(freighter.signTransaction).toHaveBeenCalled();
+      expect(mockGetTransaction).toHaveBeenCalledWith("hash-1");
     });
 
-    it("propagates TxFailed errors", async () => {
-      const server = rpc.Server;
-      vi.mocked(server).mockImplementationOnce(function() {
-        return {
-          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
-          sendTransaction: vi.fn().mockResolvedValue({ status: "FAILED", errorResultXdr: "TxFailed: bad" }),
-        } as unknown as rpc.Server;
+    it("propagates TxFailed errors from sendTransaction", async () => {
+      mockServer({
+        sendTransaction: vi.fn().mockResolvedValue({
+          status: "ERROR",
+          errorResult: mockResultXdr("TxFailed: bad"),
+        }),
+      });
+
+      await expect(fundEscrow(validContractId, [], validSourceAccount, "TESTNET"))
+        .rejects.toThrow("TxFailed");
+    });
+
+    it("propagates TxFailed errors from getTransaction", async () => {
+      mockServer({
+        sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-failed" }),
+        getTransaction: vi.fn().mockResolvedValue({
+          status: "FAILED",
+          resultXdr: mockResultXdr("TxFailed: bad"),
+        }),
       });
 
       await expect(fundEscrow(validContractId, [], validSourceAccount, "TESTNET"))
@@ -426,12 +457,11 @@ describe("lib/stellar/contract.ts", () => {
     });
 
     it("propagates TxExpired errors", async () => {
-      const server = rpc.Server;
-      vi.mocked(server).mockImplementationOnce(function() {
-        return {
-          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
-          sendTransaction: vi.fn().mockResolvedValue({ status: "ERROR", error: "TxExpired: expired" }),
-        } as unknown as rpc.Server;
+      mockServer({
+        sendTransaction: vi.fn().mockResolvedValue({
+          status: "ERROR",
+          errorResult: mockResultXdr("TxExpired: expired"),
+        }),
       });
 
       await expect(confirmDelivery(validContractId, [], validSourceAccount, "TESTNET"))
@@ -439,12 +469,12 @@ describe("lib/stellar/contract.ts", () => {
     });
 
     it("raises dispute through its contract method", async () => {
-      const server = rpc.Server;
-      vi.mocked(server).mockImplementationOnce(function() {
-        return {
-          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
-          sendTransaction: vi.fn().mockResolvedValue({ status: "SUCCESS", hash: "hash-2", resultXdr: "result-xdr-2" }),
-        } as unknown as rpc.Server;
+      mockServer({
+        sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-2" }),
+        getTransaction: vi.fn().mockResolvedValue({
+          status: "SUCCESS",
+          resultXdr: mockResultXdr("result-xdr-2"),
+        }),
       });
 
       const result = await raiseDispute(validContractId, ["reason"], validSourceAccount, "TESTNET");
