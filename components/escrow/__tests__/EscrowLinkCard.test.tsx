@@ -140,7 +140,7 @@ describe('EscrowLinkCard Component', () => {
       await userEvent.click(waButton);
 
       expect(openSpy).toHaveBeenCalledWith(
-        expect.stringContaining('https://wa.me/?text='),
+        expect.stringContaining('whatsapp://send?text='),
         '_blank'
       );
       expect(openSpy.mock.calls[0][0]).toContain(encodeURIComponent(mockUrl));
