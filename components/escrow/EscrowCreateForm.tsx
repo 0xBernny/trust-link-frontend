@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import ShareModal from "@/components/escrow/ShareModal";
 import { FormField } from "@/components/ui/FormField";
+import { QrCode } from "@/components/ui/QrCode";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
 import {
@@ -13,8 +14,6 @@ import {
   shippingOptions,
   type ShippingWindow,
 } from "@/lib/validations";
-
-import { QrCode } from "@/components/ui/QrCode";
 
 export default function EscrowCreateForm() {
   const [values, setValues] = useState<EscrowCreateValues>({

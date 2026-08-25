@@ -1,8 +1,9 @@
 "use client";
 
-import { useCurrency, type CurrencyCode } from "@/components/providers/CurrencyProvider";
 import { ChevronDown, Info } from "lucide-react";
 import React from "react";
+
+import { type CurrencyCode,useCurrency } from "@/components/providers/CurrencyProvider";
 
 const currencies: CurrencyCode[] = ["USDC", "USD", "EUR", "NGN", "GBP"];
 

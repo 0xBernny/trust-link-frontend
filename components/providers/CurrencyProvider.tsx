@@ -36,6 +36,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("preferredCurrency") as CurrencyCode;
     if (saved && mockRates[saved]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrencyState(saved);
     }
   }, []);

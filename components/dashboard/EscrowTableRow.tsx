@@ -4,10 +4,10 @@ import Link from "next/link";
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useCurrency } from "@/components/providers/CurrencyProvider";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { formatTimeAgo } from "@/lib/utils";
 import type { Escrow } from "@/types";
-import { useCurrency } from "@/components/providers/CurrencyProvider";
 
 interface EscrowTableRowProps {
   escrow: Escrow;

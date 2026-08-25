@@ -1,5 +1,6 @@
-import type { DisputeFormValues } from "@/lib/validations/dispute";
 import React from "react";
+
+import type { DisputeFormValues } from "@/lib/validations/dispute";
 
 interface Props {
   formData: DisputeFormValues;

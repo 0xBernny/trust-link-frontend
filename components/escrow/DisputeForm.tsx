@@ -1,7 +1,9 @@
 "use client";
 
+import "./DisputeForm.css";
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { SubmitDisputeFormResponse } from "@/types/api";
+
 import type { DisputeFormValues } from "@/lib/validations/dispute";
 import {
   validateStep1Data,
@@ -9,11 +11,12 @@ import {
   validateStep3Data,
   validateStep4Data,
 } from "@/lib/validations/disputeValidators";
-import { DisputeStepInfo } from "./DisputeStepInfo";
+import type { SubmitDisputeFormResponse } from "@/types/api";
+
 import { DisputeStepDetails } from "./DisputeStepDetails";
 import { DisputeStepEvidence } from "./DisputeStepEvidence";
+import { DisputeStepInfo } from "./DisputeStepInfo";
 import { DisputeStepReview } from "./DisputeStepReview";
-import "./DisputeForm.css";
 
 interface DisputeFormProps {
   onSubmit?: (data: DisputeFormValues) => Promise<void>;

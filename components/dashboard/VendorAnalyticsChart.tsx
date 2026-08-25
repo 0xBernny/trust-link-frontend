@@ -10,8 +10,8 @@ import {
   YAxis,
 } from "recharts";
 
-import type { VendorAnalyticsPoint } from "@/lib/api";
 import { useCurrency } from "@/components/providers/CurrencyProvider";
+import type { VendorAnalyticsPoint } from "@/lib/api";
 
 function formatRate(value: number): string {
   return `${value.toFixed(1)}%`;

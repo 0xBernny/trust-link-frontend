@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+
 import { buildQrMatrix } from "@/lib/utils/qrcode";
 
 export function QrCode({ value }: { value: string }) {

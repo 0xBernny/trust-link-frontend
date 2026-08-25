@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import DashboardSection from "@/components/dashboard/DashboardSection";
 import CurrencyDropdown from "@/components/dashboard/CurrencyDropdown";
+import DashboardSection from "@/components/dashboard/DashboardSection";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { Skeleton } from "@/components/ui/Skeleton";
