@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import "@/lib/i18n";
+
 import { vi } from "vitest";
 
 vi.mock("@/components/providers/CurrencyProvider", () => ({
