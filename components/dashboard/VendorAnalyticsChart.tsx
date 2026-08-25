@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 import type { VendorAnalyticsPoint } from "@/lib/api";
-import { formatUSDC } from "@/utils/currency";
+import { useCurrency } from "@/components/providers/CurrencyProvider";
 
 function formatRate(value: number): string {
   return `${value.toFixed(1)}%`;
@@ -48,6 +48,7 @@ function AnalyticsTooltip({
   payload?: Array<{ payload: VendorAnalyticsPoint }>;
   label?: string;
 }) {
+  const { formatAmount } = useCurrency();
   if (!active || !payload?.length) return null;
 
   const point = payload[0].payload;
@@ -58,8 +59,8 @@ function AnalyticsTooltip({
         {label ? formatAxisLabel(label, false) : "Daily snapshot"}
       </p>
       <div className="mt-3 space-y-1 text-zinc-600 dark:text-zinc-300">
-        <p>Transaction volume: {formatUSDC(point.transactionVolume)}</p>
-        <p>Average order: {formatUSDC(point.averageOrderValue)}</p>
+        <p>Transaction volume: {formatAmount(point.transactionVolume)}</p>
+        <p>Average order: {formatAmount(point.averageOrderValue)}</p>
         <p>Completion rate: {formatRate(normalizeRate(point.completionRate))}</p>
         <p>Dispute rate: {formatRate(normalizeRate(point.disputeRate))}</p>
       </div>

@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { formatTimeAgo } from "@/lib/utils";
 import type { Escrow } from "@/types";
-import { formatUSDC } from "@/utils/currency";
+import { useCurrency } from "@/components/providers/CurrencyProvider";
 
 interface EscrowTableRowProps {
   escrow: Escrow;
@@ -16,6 +16,7 @@ interface EscrowTableRowProps {
 
 function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps) {
   const { i18n } = useTranslation();
+  const { formatAmount } = useCurrency();
 
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -38,7 +39,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps)
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
               <span>Buyer: {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : "Unknown"}</span>
               <span>•</span>
-              <span>Amount: {formatUSDC(escrow.amount)}</span>
+              <span>Amount: {formatAmount(escrow.amount)}</span>
               <span>•</span>
               <span>Created: {formatTimeAgo(escrow.createdAt, i18n.language)}</span>
             </div>
