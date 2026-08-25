@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect,useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import type { SubmitDisputeFormResponse } from '@/types/api';
+import type { SubmitDisputeFormResponse } from "@/types/api";
+import { FormField } from "@/components/ui/FormField";
 
 interface DisputeFormValues {
   name: string;
@@ -25,26 +26,30 @@ interface DisputeFormProps {
 
 type Step = 1 | 2 | 3 | 4;
 
-const DisputeForm: React.FC<DisputeFormProps> = ({ 
-  onSubmit, 
-  apiEndpoint = '/api/dispute',
+const DisputeForm: React.FC<DisputeFormProps> = ({
+  onSubmit,
+  apiEndpoint = "/api/dispute",
   onSuccess,
-  onError 
+  onError,
 }) => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState<DisputeFormData>({
-    name: '',
-    email: '',
-    orderNumber: '',
-    reason: '',
-    description: '',
+    name: "",
+    email: "",
+    orderNumber: "",
+    reason: "",
+    description: "",
     files: [],
-    agreeToTerms: false
+    agreeToTerms: false,
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof DisputeFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof DisputeFormData, string>>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
 
   // Ref for managing focus to the first field with a validation error.
   const firstErrorRef = useRef<HTMLElement | null>(null);
@@ -63,19 +68,19 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   // Validation functions
   const validateStep1 = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
     if (!formData.orderNumber.trim()) {
-      newErrors.orderNumber = 'Order number is required';
+      newErrors.orderNumber = "Order number is required";
     }
-    
+
     setErrors(newErrors);
 
     // Set focus target to the first field with an error.
@@ -89,16 +94,16 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
 
   const validateStep2 = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
+
     if (!formData.reason) {
-      newErrors.reason = 'Reason is required';
+      newErrors.reason = "Reason is required";
     }
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = "Description is required";
     } else if (formData.description.length < 20) {
-      newErrors.description = 'Description must be at least 20 characters';
+      newErrors.description = "Description must be at least 20 characters";
     }
-    
+
     setErrors(newErrors);
 
     // Set focus target to the first field with an error.
@@ -112,11 +117,11 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
 
   const validateStep3 = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
+
     if (formData.files.length === 0) {
-      newErrors.files = 'Please upload at least one file as evidence';
+      newErrors.files = "Please upload at least one file as evidence";
     }
-    
+
     setErrors(newErrors);
 
     // Set focus target to the first field with an error.
@@ -130,11 +135,11 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
 
   const validateStep4 = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof DisputeFormData, string>> = {};
-    
+
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms';
+      newErrors.agreeToTerms = "You must agree to the terms";
     }
-    
+
     setErrors(newErrors);
 
     // Set focus target to the first field with an error.
@@ -146,15 +151,18 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const validateStep = useCallback((step: Step): boolean => {
-    const validators: Record<Step, () => boolean> = {
-      1: validateStep1,
-      2: validateStep2,
-      3: validateStep3,
-      4: validateStep4,
-    };
-    return validators[step]();
-  }, [validateStep1, validateStep2, validateStep3, validateStep4]);
+  const validateStep = useCallback(
+    (step: Step): boolean => {
+      const validators: Record<Step, () => boolean> = {
+        1: validateStep1,
+        2: validateStep2,
+        3: validateStep3,
+        4: validateStep4,
+      };
+      return validators[step]();
+    },
+    [validateStep1, validateStep2, validateStep3, validateStep4]
+  );
 
   // Navigation handlers
   const handleNext = useCallback(() => {
@@ -173,52 +181,76 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   }, [currentStep]);
 
   // Form field updates
-  const updateField = useCallback(<K extends keyof DisputeFormData>(
-    field: K,
-    value: DisputeFormData[K]
-  ) => {
-    setFormData((prev: DisputeFormData) => ({ ...prev, [field]: value }));
-    // Clear error for this field when user types
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  }, [errors]);
+  const updateField = useCallback(
+    <K extends keyof DisputeFormData>(field: K, value: DisputeFormData[K]) => {
+      setFormData((prev: DisputeFormData) => ({ ...prev, [field]: value }));
+      // Clear error for this field when user types
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [errors]
+  );
 
   // File upload handler
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
+  const handleFileUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFiles = Array.from(e.target.files || []);
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "image/webp",
+        "application/pdf",
+      ];
+      const maxSize = 10 * 1024 * 1024; // 10MB
 
-    const rejectedByType = selectedFiles.filter(file => !allowedTypes.includes(file.type));
-    const rejectedBySize = selectedFiles.filter(file => file.size > maxSize);
+      const rejectedByType = selectedFiles.filter(
+        (file) => !allowedTypes.includes(file.type)
+      );
+      const rejectedBySize = selectedFiles.filter(
+        (file) => file.size > maxSize
+      );
 
-    if (rejectedByType.length > 0) {
-      setErrors(prev => ({ ...prev, files: "Please upload an image (JPG, PNG, WebP) or PDF." }));
-      return;
-    }
+      if (rejectedByType.length > 0) {
+        setErrors((prev) => ({
+          ...prev,
+          files: "Please upload an image (JPG, PNG, WebP) or PDF.",
+        }));
+        return;
+      }
 
-    if (rejectedBySize.length > 0) {
-      setErrors(prev => ({ ...prev, files: "Each file must be 10 MB or smaller." }));
-      return;
-    }
+      if (rejectedBySize.length > 0) {
+        setErrors((prev) => ({
+          ...prev,
+          files: "Each file must be 10 MB or smaller.",
+        }));
+        return;
+      }
 
-    setErrors(prev => ({ ...prev, files: undefined }));
-    updateField('files', [...formData.files, ...selectedFiles]);
-  }, [formData.files, updateField]);
+      setErrors((prev) => ({ ...prev, files: undefined }));
+      updateField("files", [...formData.files, ...selectedFiles]);
+    },
+    [formData.files, updateField]
+  );
 
-  const removeFile = useCallback((index: number) => {
-    const newFiles = formData.files.filter((_: File, i: number) => i !== index);
-    updateField('files', newFiles);
-  }, [formData.files, updateField]);
+  const removeFile = useCallback(
+    (index: number) => {
+      const newFiles = formData.files.filter(
+        (_: File, i: number) => i !== index
+      );
+      updateField("files", newFiles);
+    },
+    [formData.files, updateField]
+  );
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
     if (!validateStep(4)) return;
-    
+
     setIsSubmitting(true);
-    setSubmitStatus('idle');
-    
+    setSubmitStatus("idle");
+
     try {
       // Prepare payload
       const payload = {
@@ -230,39 +262,42 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
         files: formData.files.map((file: File) => ({
           name: file.name,
           type: file.type,
-          size: file.size
+          size: file.size,
         })),
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toISOString(),
       };
-      
+
       // Use custom onSubmit if provided, otherwise use fetch
       if (onSubmit) {
         await onSubmit(formData);
       } else {
         const response = await fetch(apiEndpoint, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        const responseData = (await response.json()) as SubmitDisputeFormResponse;
+
+        const responseData =
+          (await response.json()) as SubmitDisputeFormResponse;
 
         if (onSuccess) {
           onSuccess(responseData);
         }
       }
-      
-      setSubmitStatus('success');
-      setSubmitMessage('Your dispute has been submitted successfully!');
+
+      setSubmitStatus("success");
+      setSubmitMessage("Your dispute has been submitted successfully!");
     } catch (error: unknown) {
-      setSubmitStatus('error');
-      setSubmitMessage(error instanceof Error ? error.message : 'Failed to submit dispute');
+      setSubmitStatus("error");
+      setSubmitMessage(
+        error instanceof Error ? error.message : "Failed to submit dispute"
+      );
       if (onError && error instanceof Error) {
         onError(error);
       }
@@ -274,18 +309,18 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   // Reset form
   const resetForm = useCallback(() => {
     setFormData({
-      name: '',
-      email: '',
-      orderNumber: '',
-      reason: '',
-      description: '',
+      name: "",
+      email: "",
+      orderNumber: "",
+      reason: "",
+      description: "",
       files: [],
-      agreeToTerms: false
+      agreeToTerms: false,
     });
     setCurrentStep(1);
     setErrors({});
-    setSubmitStatus('idle');
-    setSubmitMessage('');
+    setSubmitStatus("idle");
+    setSubmitMessage("");
   }, []);
 
   // Render step content
@@ -296,14 +331,12 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           <div className="step step-1" data-testid="step-1">
             <h2>Step 1: Personal Information</h2>
             <div className="form-group">
-              <label htmlFor="name">
-                Full Name *
-              </label>
+              <label htmlFor="name">Full Name *</label>
               <input
                 id="name"
                 type="text"
                 value={formData.name}
-                onChange={(e) => updateField('name', e.target.value)}
+                onChange={(e) => updateField("name", e.target.value)}
                 aria-label="name"
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "name-error" : undefined}
@@ -314,16 +347,14 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
                 </span>
               )}
             </div>
-            
+
             <div className="form-group">
-              <label htmlFor="email">
-                Email Address *
-              </label>
+              <label htmlFor="email">Email Address *</label>
               <input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => updateField('email', e.target.value)}
+                onChange={(e) => updateField("email", e.target.value)}
                 aria-label="email"
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -334,19 +365,19 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
                 </span>
               )}
             </div>
-            
+
             <div className="form-group">
-              <label htmlFor="orderNumber">
-                Order Number *
-              </label>
+              <label htmlFor="orderNumber">Order Number *</label>
               <input
                 id="orderNumber"
                 type="text"
                 value={formData.orderNumber}
-                onChange={(e) => updateField('orderNumber', e.target.value)}
+                onChange={(e) => updateField("orderNumber", e.target.value)}
                 aria-label="order number"
                 aria-invalid={!!errors.orderNumber}
-                aria-describedby={errors.orderNumber ? "orderNumber-error" : undefined}
+                aria-describedby={
+                  errors.orderNumber ? "orderNumber-error" : undefined
+                }
               />
               {errors.orderNumber && (
                 <span id="orderNumber-error" className="error" role="alert">
@@ -356,25 +387,25 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
             </div>
           </div>
         );
-        
+
       case 2:
         return (
           <div className="step step-2" data-testid="step-2">
             <h2>Step 2: Dispute Details</h2>
             <div className="form-group">
-              <label htmlFor="reason">
-                Reason for Dispute *
-              </label>
+              <label htmlFor="reason">Reason for Dispute *</label>
               <select
                 id="reason"
                 value={formData.reason}
-                onChange={(e) => updateField('reason', e.target.value)}
+                onChange={(e) => updateField("reason", e.target.value)}
                 aria-label="reason"
                 aria-invalid={!!errors.reason}
                 aria-describedby={errors.reason ? "reason-error" : undefined}
               >
                 <option value="">Select a reason</option>
-                <option value="product_not_received">Product not received</option>
+                <option value="product_not_received">
+                  Product not received
+                </option>
                 <option value="damaged_product">Damaged product</option>
                 <option value="wrong_product">Wrong product received</option>
                 <option value="defective_product">Defective product</option>
@@ -386,20 +417,20 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
                 </span>
               )}
             </div>
-            
+
             <div className="form-group">
-              <label htmlFor="description">
-                Description *
-              </label>
+              <label htmlFor="description">Description *</label>
               <textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => updateField('description', e.target.value)}
+                onChange={(e) => updateField("description", e.target.value)}
                 rows={5}
                 placeholder="Please provide detailed information about your dispute (minimum 20 characters)"
                 aria-label="description"
                 aria-invalid={!!errors.description}
-                aria-describedby={errors.description ? "description-error" : undefined}
+                aria-describedby={
+                  errors.description ? "description-error" : undefined
+                }
               />
               {errors.description && (
                 <span id="description-error" className="error" role="alert">
@@ -410,15 +441,13 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
             </div>
           </div>
         );
-        
+
       case 3:
         return (
           <div className="step step-3" data-testid="step-3">
             <h2>Step 3: Upload Evidence</h2>
             <div className="form-group">
-              <label htmlFor="files">
-                Upload Supporting Documents *
-              </label>
+              <label htmlFor="files">Upload Supporting Documents *</label>
               <input
                 id="files"
                 type="file"
@@ -430,7 +459,9 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
                 aria-describedby={errors.files ? "files-error" : "files-hint"}
                 data-testid="file-input"
               />
-              <small id="files-hint">Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)</small>
+              <small id="files-hint">
+                Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)
+              </small>
             </div>
 
             {formData.files.length > 0 && (
@@ -467,41 +498,58 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
             )}
           </div>
         );
-        
+
       case 4:
         return (
           <div className="step step-4" data-testid="step-4">
             <h2>Step 4: Review & Submit</h2>
             <div className="review-section" data-testid="review-section">
               <h3>Personal Information</h3>
-              <p><strong>Name:</strong> {formData.name}</p>
-              <p><strong>Email:</strong> {formData.email}</p>
-              <p><strong>Order Number:</strong> {formData.orderNumber}</p>
-              
+              <p>
+                <strong>Name:</strong> {formData.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {formData.email}
+              </p>
+              <p>
+                <strong>Order Number:</strong> {formData.orderNumber}
+              </p>
+
               <h3>Dispute Details</h3>
-              <p><strong>Reason:</strong> {formData.reason}</p>
-              <p><strong>Description:</strong> {formData.description}</p>
-              
+              <p>
+                <strong>Reason:</strong> {formData.reason}
+              </p>
+              <p>
+                <strong>Description:</strong> {formData.description}
+              </p>
+
               <h3>Evidence</h3>
-              <p><strong>Files:</strong> {formData.files.length} file(s) uploaded</p>
+              <p>
+                <strong>Files:</strong> {formData.files.length} file(s) uploaded
+              </p>
               <ul>
                 {formData.files.map((file, index) => (
                   <li key={index}>{file.name}</li>
                 ))}
               </ul>
-              
+
               <div className="form-group">
                 <label>
                   <input
                     type="checkbox"
                     id="agreeToTerms"
                     checked={formData.agreeToTerms}
-                    onChange={(e) => updateField('agreeToTerms', e.target.checked)}
+                    onChange={(e) =>
+                      updateField("agreeToTerms", e.target.checked)
+                    }
                     aria-label="agree to terms"
                     aria-invalid={!!errors.agreeToTerms}
-                    aria-describedby={errors.agreeToTerms ? "agreeToTerms-error" : undefined}
+                    aria-describedby={
+                      errors.agreeToTerms ? "agreeToTerms-error" : undefined
+                    }
                   />
-                  I confirm that all information provided is accurate and complete *
+                  I confirm that all information provided is accurate and
+                  complete *
                 </label>
                 {errors.agreeToTerms && (
                   <span id="agreeToTerms-error" className="error" role="alert">
@@ -512,20 +560,28 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
             </div>
           </div>
         );
-        
+
       default:
         return null;
     }
   };
 
   // Success state
-  if (submitStatus === 'success') {
+  if (submitStatus === "success") {
     return (
-      <div className="dispute-form success-state" data-testid="success-state" role="status" aria-live="polite">
+      <div
+        className="dispute-form success-state"
+        data-testid="success-state"
+        role="status"
+        aria-live="polite"
+      >
         <div className="success-message">
           <h2>✓ Dispute Submitted Successfully!</h2>
           <p>{submitMessage}</p>
-          <p>We will review your dispute and get back to you within 3-5 business days.</p>
+          <p>
+            We will review your dispute and get back to you within 3-5 business
+            days.
+          </p>
           <button
             type="button"
             onClick={resetForm}
@@ -545,19 +601,24 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   }
 
   // Error state
-  if (submitStatus === 'error') {
+  if (submitStatus === "error") {
     return (
-      <div className="dispute-form error-state" data-testid="error-state" role="alert" aria-live="assertive">
+      <div
+        className="dispute-form error-state"
+        data-testid="error-state"
+        role="alert"
+        aria-live="assertive"
+      >
         <div className="error-message">
           <h2>✗ Submission Failed</h2>
           <p>{submitMessage}</p>
           <button
             type="button"
-            onClick={() => setSubmitStatus('idle')}
+            onClick={() => setSubmitStatus("idle")}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                setSubmitStatus('idle');
+                setSubmitStatus("idle");
               }
             }}
             data-testid="try-again-button"
@@ -572,37 +633,45 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
   return (
     <div className="dispute-form" data-testid="dispute-form">
       {/* Progress indicator */}
-      <nav className="progress-indicator" data-testid="progress-indicator" aria-label="Form progress">
+      <nav
+        className="progress-indicator"
+        data-testid="progress-indicator"
+        aria-label="Form progress"
+      >
         <div
-          className={`step-indicator ${currentStep >= 1 ? 'active' : ''}`}
-          aria-current={currentStep === 1 ? 'step' : undefined}
+          className={`step-indicator ${currentStep >= 1 ? "active" : ""}`}
+          aria-current={currentStep === 1 ? "step" : undefined}
         >
           Step 1: Info
         </div>
         <div
-          className={`step-indicator ${currentStep >= 2 ? 'active' : ''}`}
-          aria-current={currentStep === 2 ? 'step' : undefined}
+          className={`step-indicator ${currentStep >= 2 ? "active" : ""}`}
+          aria-current={currentStep === 2 ? "step" : undefined}
         >
           Step 2: Details
         </div>
         <div
-          className={`step-indicator ${currentStep >= 3 ? 'active' : ''}`}
-          aria-current={currentStep === 3 ? 'step' : undefined}
+          className={`step-indicator ${currentStep >= 3 ? "active" : ""}`}
+          aria-current={currentStep === 3 ? "step" : undefined}
         >
           Step 3: Evidence
         </div>
         <div
-          className={`step-indicator ${currentStep >= 4 ? 'active' : ''}`}
-          aria-current={currentStep === 4 ? 'step' : undefined}
+          className={`step-indicator ${currentStep >= 4 ? "active" : ""}`}
+          aria-current={currentStep === 4 ? "step" : undefined}
         >
           Step 4: Review
         </div>
       </nav>
-      
+
       {/* Form content */}
-      <form onSubmit={(e) => e.preventDefault()} aria-label="Dispute submission form" noValidate>
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        aria-label="Dispute submission form"
+        noValidate
+      >
         {renderStep()}
-        
+
         {/* Navigation buttons */}
         <div className="navigation-buttons">
           {currentStep > 1 && (
@@ -621,7 +690,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
               Back
             </button>
           )}
-          
+
           {currentStep < 4 ? (
             <button
               type="button"
@@ -650,20 +719,22 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
               disabled={isSubmitting}
               data-testid="submit-button"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Dispute'}
+              {isSubmitting ? "Submitting..." : "Submit Dispute"}
             </button>
           )}
         </div>
       </form>
-      
+
       <style jsx>{`
         .dispute-form {
           max-width: 600px;
           margin: 0 auto;
           padding: 20px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+            Ubuntu, sans-serif;
         }
-        
+
         .progress-indicator {
           display: flex;
           justify-content: space-between;
@@ -671,7 +742,7 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           padding-bottom: 10px;
           border-bottom: 2px solid #e0e0e0;
         }
-        
+
         .step-indicator {
           flex: 1;
           text-align: center;
@@ -679,66 +750,70 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           color: #999;
           font-size: 14px;
         }
-        
+
         .step-indicator.active {
-          color: #4CAF50;
+          color: #4caf50;
           font-weight: bold;
         }
-        
+
         .form-group {
           margin-bottom: 20px;
         }
-        
+
         label {
           display: block;
           margin-bottom: 5px;
           font-weight: 500;
         }
-        
-        input, select, textarea {
+
+        input,
+        select,
+        textarea {
           width: 100%;
           padding: 10px;
           border: 1px solid #ddd;
           border-radius: 4px;
           font-size: 16px;
         }
-        
-        input:focus, select:focus, textarea:focus {
+
+        input:focus,
+        select:focus,
+        textarea:focus {
           outline: none;
-          border-color: #4CAF50;
+          border-color: #4caf50;
         }
-        
+
         .error {
           color: #f44336;
           font-size: 14px;
           margin-top: 5px;
           display: block;
         }
-        
+
         small {
           color: #666;
           font-size: 12px;
         }
-        
+
         .file-list {
           margin-top: 15px;
           padding: 10px;
           background: #f5f5f5;
           border-radius: 4px;
         }
-        
+
         .file-list ul {
           list-style: none;
           padding: 0;
         }
-        
+
         .file-list li {
           padding: 5px 0;
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
-        
+
         .file-list button {
           background: #f44336;
           color: white;
@@ -747,77 +822,79 @@ const DisputeForm: React.FC<DisputeFormProps> = ({
           border-radius: 4px;
           cursor: pointer;
         }
-        
+
         .review-section {
           background: #f9f9f9;
           padding: 20px;
           border-radius: 8px;
           margin-bottom: 20px;
         }
-        
+
         .review-section h3 {
           margin-top: 0;
           color: #333;
         }
-        
+
         .navigation-buttons {
           display: flex;
           justify-content: space-between;
           margin-top: 30px;
         }
-        
+
         .navigation-buttons button {
           padding: 10px 20px;
-          background: #4CAF50;
+          background: #4caf50;
           color: white;
           border: none;
           border-radius: 4px;
           cursor: pointer;
           font-size: 16px;
         }
-        
+
         .navigation-buttons button:hover {
           background: #45a049;
         }
-        
+
         .navigation-buttons button:disabled {
           background: #ccc;
           cursor: not-allowed;
         }
-        
-        .success-state, .error-state {
+
+        .success-state,
+        .error-state {
           text-align: center;
           padding: 40px;
         }
-        
+
         .success-message {
-          color: #4CAF50;
+          color: #4caf50;
         }
-        
+
         .error-message {
           color: #f44336;
         }
-        
-        .success-state button, .error-state button {
+
+        .success-state button,
+        .error-state button {
           margin-top: 20px;
           padding: 10px 20px;
-          background: #4CAF50;
+          background: #4caf50;
           color: white;
           border: none;
           border-radius: 4px;
           cursor: pointer;
         }
-        
+
         @media (max-width: 768px) {
           .dispute-form {
             padding: 10px;
           }
-          
+
           .step-indicator {
             font-size: 10px;
             padding: 5px;
           }
-          
+
           .navigation-buttons button {
             padding: 8px 16px;
           }

@@ -35,7 +35,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://trustlink.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://trustlink.app"
+  ),
   title: "TrustLink",
   description: "The Web2 experience. The Web3 guarantee.",
 };
@@ -77,36 +79,44 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-        <Suspense fallback={null}>
-          <TopProgressBar />
-        </Suspense>
-        <NetworkProvider>
-          <ServiceWorkerProvider />
-          <OfflineBanner />
-          <TestnetBanner />
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-black focus:font-semibold"
-          >
-            Skip to content
-          </a>
-          <WalletProvider>
-            <SubscriptionProvider>
-              <I18nProvider>
-                <NotificationProvider>
-                  <Navbar />
-                  <main id="main-content" tabIndex={-1} className="flex flex-1 flex-col pb-20 md:pb-0 outline-none">
-                    {children}
-                  </main>
-                  <Footer />
-                  <BottomNav />
-                  <Toaster richColors position="top-right" visibleToasts={3} />
-                </NotificationProvider>
-              </I18nProvider>
-            </SubscriptionProvider>
-          </WalletProvider>
-        </NetworkProvider>
-        <CommandPalette />
+          <Suspense fallback={null}>
+            <TopProgressBar />
+          </Suspense>
+          <NetworkProvider>
+            <ServiceWorkerProvider />
+            <OfflineBanner />
+            <TestnetBanner />
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-black focus:font-semibold"
+            >
+              Skip to content
+            </a>
+            <WalletProvider>
+              <SubscriptionProvider>
+                <I18nProvider>
+                  <NotificationProvider>
+                    <Navbar />
+                    <main
+                      id="main-content"
+                      tabIndex={-1}
+                      className="flex-1 flex flex-col pb-20 md:pb-0 outline-none"
+                    >
+                      {children}
+                    </main>
+                    <Footer />
+                    <BottomNav />
+                    <Toaster
+                      richColors
+                      position="top-right"
+                      visibleToasts={3}
+                    />
+                  </NotificationProvider>
+                </I18nProvider>
+              </SubscriptionProvider>
+            </WalletProvider>
+          </NetworkProvider>
+          <CommandPalette />
         </ThemeProvider>
       </body>
     </html>

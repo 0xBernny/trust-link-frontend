@@ -5,6 +5,7 @@ import { BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import DashboardSection from "@/components/dashboard/DashboardSection";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
@@ -12,6 +13,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
+  const { t } = useTranslation();
   return (
     <div
       role="alert"
@@ -21,11 +23,10 @@ function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
         <Sparkles className="h-5 w-5 shrink-0 text-amber-500" />
         <div>
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-            Welcome to Pro!
+            {t("dashboard.upgradeBannerTitle")}
           </p>
           <p className="text-sm text-amber-700 dark:text-amber-400">
-            Your account has been upgraded. Enjoy unlimited escrows, the analytics
-            dashboard, and priority support.
+            {t("dashboard.upgradeBannerMessage")}
           </p>
         </div>
       </div>
@@ -42,6 +43,7 @@ function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
 }
 
 export default function DashboardClient() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isChecking, setIsChecking] = useState(true);
@@ -87,13 +89,15 @@ export default function DashboardClient() {
         )}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-semibold text-zinc-950 dark:text-white">Dashboard</h1>
+            <h1 className="text-3xl font-semibold text-zinc-950 dark:text-white">
+              {t("dashboard.title")}
+            </h1>
             <Link
               href="/dashboard/analytics"
               className="hidden items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 sm:inline-flex"
             >
               <BarChart3 className="h-4 w-4" />
-              Analytics
+              {t("dashboard.analytics")}
             </Link>
           </div>
           <NotificationBell />
