@@ -4,28 +4,12 @@ import dynamic from "next/dynamic";
 import { startTransition,useEffect, useMemo, useState } from "react";
 
 import { TrustBadge } from "@/components/payment/TrustBadge";
-import { Skeleton } from "@/components/ui/Skeleton";
+import TrackingTimelineSkeleton from "@/components/tracking/TrackingTimelineSkeleton";
 import useWallet from "@/hooks/useWallet";
 import { patchBuyerContact } from "@/lib/api";
 import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
 import { Escrow, EscrowStatusConst } from "@/types";
 import { formatUSDC } from "@/utils/currency";
-
-function TrackingTimelineSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div key={i} className="flex gap-4">
-          <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
-          <div className="flex-1 space-y-2 pt-1">
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-3 w-2/3" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 const TrackingTimeline = dynamic(
   () => import("@/components/escrow/TrackingTimeline"),

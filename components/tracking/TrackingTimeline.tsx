@@ -5,8 +5,8 @@ import { startTransition,useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ConfirmDeliveryButton } from "@/components/escrow/ConfirmDeliveryButton";
+import TrackingTimelineSkeleton from "@/components/tracking/TrackingTimelineSkeleton";
 import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { useEscrow } from "@/hooks/useEscrow";
 import { track } from "@/lib/analytics";
 import { Escrow, EscrowStatus, EscrowStatusConst } from "@/types";
@@ -120,16 +120,8 @@ export default function TrackingTimeline({
 
   if (loading || (!escrow && isLoading)) {
     return (
-      <div className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        {[...Array(5)].map((_, index) => (
-          <div key={index} className="flex items-start gap-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="flex-1 space-y-3">
-              <Skeleton className="h-5 w-2/5" />
-              <Skeleton className="h-4 w-full" />
-            </div>
-          </div>
-        ))}
+      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <TrackingTimelineSkeleton />
       </div>
     );
   }
