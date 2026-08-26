@@ -8,6 +8,7 @@ import { FormField } from "@/components/ui/FormField";
 import { QrCode } from "@/components/ui/QrCode";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
+import { renderMarkdown } from "@/lib/markdown";
 import {
   EscrowCreateSchema,
   EscrowCreateValues,
@@ -163,16 +164,25 @@ export default function EscrowCreateForm() {
           id="description"
           error={errors.description}
         >
-          <input
+          <textarea
             id="description"
             name="description"
-            type="text"
             value={values.description}
             onChange={(event) => updateField("description", event.target.value)}
             disabled={isSubmitting}
-            placeholder="Brief description"
+            placeholder="Brief description (markdown supported: **bold**, *italic*, [link](url))"
+            rows={3}
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
           />
+          {values.description && (
+            <div className="mt-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
+              <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">Preview:</p>
+              <div 
+                className="text-sm text-zinc-700 dark:text-zinc-300"
+                dangerouslySetInnerHTML={renderMarkdown(values.description)}
+              />
+            </div>
+          )}
         </FormField>
 
         <FormField label="Shipping window" id="shippingWindow">

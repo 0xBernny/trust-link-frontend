@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, MessageCircle } from "lucide-react";
+import { Copy, MessageCircle, Share2 } from "lucide-react";
 import React, { useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,8 +14,9 @@ interface ShareModalProps {
   escrowId: string;
 }
 
-export default function ShareModal({ isOpen, onClose, url, escrowId: _escrowId }: ShareModalProps) {
+export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModalProps) {
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const canShare = typeof navigator !== "undefined" && navigator.share;
 
   const handleCopy = async () => {
     try {
@@ -28,8 +29,46 @@ export default function ShareModal({ isOpen, onClose, url, escrowId: _escrowId }
     }
   };
 
+  const handleNativeShare = async () => {
+    if (!navigator.share) return;
+    
+    try {
+      await navigator.share({
+        title: "TrustLink Payment",
+        text: `Pay for your order securely using TrustLink`,
+        url: url,
+      });
+      track("link_shared", { platform: "native", method: "share_modal" });
+    } catch (err) {
+      // User cancelled or share failed
+      if ((err as Error).name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    }
+  };
+
   const shareWhatsApp = async () => {
     const text = `Pay for your order securely using TrustLink: ${url}`;
+    
+    // Try native share first on mobile
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "TrustLink Payment",
+          text: text,
+          url: url,
+        });
+        track("link_shared", { platform: "whatsapp", method: "native" });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fall through to WhatsApp URL
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
+      }
+    }
+    
+    // Fallback: Open WhatsApp app using URL scheme
     const waUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
     track("link_shared", { platform: "whatsapp", method: "share_modal" });
@@ -64,6 +103,16 @@ export default function ShareModal({ isOpen, onClose, url, escrowId: _escrowId }
             )}
 
             <div className="grid grid-cols-2 gap-3">
+              {canShare && (
+                <button
+                  type="button"
+                  onClick={handleNativeShare}
+                  className="flex items-center justify-center gap-2 rounded-full bg-black px-4 py-2.5 font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleCopy}

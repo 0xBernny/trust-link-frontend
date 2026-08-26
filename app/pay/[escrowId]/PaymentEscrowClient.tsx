@@ -8,6 +8,7 @@ import { TrustBadge } from "@/components/payment/TrustBadge";
 import TrackingTimelineSkeleton from "@/components/tracking/TrackingTimelineSkeleton";
 import useWallet from "@/hooks/useWallet";
 import { patchBuyerContact } from "@/lib/api";
+import { renderMarkdown } from "@/lib/markdown";
 import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
 import { Escrow, EscrowStatusConst } from "@/types";
 import { formatUSDC } from "@/utils/currency";
@@ -59,6 +60,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   const [success, setSuccess] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [emailReceipt, setEmailReceipt] = useState(true);
   const [contactErrors, setContactErrors] = useState<ContactErrors>({});
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
@@ -115,6 +117,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
       await patchBuyerContact(escrowId, {
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
+        emailReceipt: email.trim() ? emailReceipt : undefined,
       });
 
       const installed = await isFreighterInstalled();
@@ -156,6 +159,15 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
             <dt className="text-zinc-600 dark:text-zinc-400">{t("payment.item")}</dt>
             <dd className="font-medium text-zinc-900 dark:text-zinc-100">{escrow.item}</dd>
           </div>
+          {escrow.description && (
+            <div className="flex flex-col gap-2">
+              <dt className="text-zinc-600 dark:text-zinc-400">Description</dt>
+              <dd 
+                className="text-sm text-zinc-700 dark:text-zinc-300"
+                dangerouslySetInnerHTML={renderMarkdown(escrow.description)}
+              />
+            </div>
+          )}
           <div className="flex items-center justify-between gap-3">
             <dt className="text-zinc-600 dark:text-zinc-400">{t("payment.vendorAddress")}</dt>
             <dd className="max-w-55 truncate font-mono text-zinc-900 dark:text-zinc-100">
@@ -215,6 +227,19 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
                   {contactErrors.email}
                 </p>
               ) : null}
+              {email.trim() && (
+                <label className="mt-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={emailReceipt}
+                    onChange={(e) => setEmailReceipt(e.target.checked)}
+                    className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+                  />
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    Send receipt to this email
+                  </span>
+                </label>
+              )}
             </div>
             <div>
               <label

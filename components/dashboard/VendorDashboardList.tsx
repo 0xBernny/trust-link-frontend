@@ -9,14 +9,16 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import FetchErrorState, {
   getFetchErrorMessage,
 } from "@/components/ui/FetchErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getVendorEscrows } from "@/lib/api";
+import { cancelEscrow, getVendorEscrows } from "@/lib/api";
 import { type Escrow, EscrowStatusConst } from "@/types";
 import { downloadCsv } from "@/utils/exportCsv";
 
@@ -45,6 +47,8 @@ export default function VendorDashboardList({
   const [escrows, setEscrows] = useState<Escrow[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(null);
+  const [escrowToCancel, setEscrowToCancel] = useState<Escrow | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [fromDate, setFromDate] = useState("");
@@ -125,6 +129,32 @@ export default function VendorDashboardList({
             : item
         ) ?? current
     );
+  };
+
+  const handleCancelEscrow = useCallback((escrow: Escrow) => {
+    setEscrowToCancel(escrow);
+  }, []);
+
+  const confirmCancelEscrow = async () => {
+    if (!escrowToCancel) return;
+    
+    setIsCancelling(true);
+    try {
+      const token = window.localStorage.getItem("wallet.jwt") || undefined;
+      await cancelEscrow(escrowToCancel.id, token);
+      
+      // Remove cancelled escrow from the list
+      setEscrows((current) => 
+        current?.filter((item) => item.id !== escrowToCancel.id) ?? current
+      );
+      
+      setEscrowToCancel(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to cancel escrow.";
+      setError(new Error(message));
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const handleExportCsv = useCallback(() => {
@@ -328,6 +358,7 @@ export default function VendorDashboardList({
               key={escrow.id}
               escrow={escrow}
               onMarkShipped={handleMarkShipped}
+              onCancelEscrow={handleCancelEscrow}
             />
           ))}
         </div>
@@ -391,6 +422,18 @@ export default function VendorDashboardList({
           }}
         />
       )}
+
+      <ConfirmationDialog
+        open={Boolean(escrowToCancel)}
+        title="Cancel Escrow"
+        description={`Are you sure you want to cancel this escrow for "${escrowToCancel?.item}"? This action cannot be undone.`}
+        confirmLabel="Cancel Escrow"
+        cancelLabel="Keep Escrow"
+        onConfirm={confirmCancelEscrow}
+        onCancel={() => setEscrowToCancel(null)}
+        variant="danger"
+        loading={isCancelling}
+      />
     </>
   );
 }

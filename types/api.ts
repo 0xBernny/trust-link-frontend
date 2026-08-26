@@ -90,6 +90,13 @@ export interface ConfirmDeliveryResponse {
 /** `POST|PATCH /escrows/:id/ship` — shipment details echoed back as tracking. */
 export type ShipEscrowResponse = Tracking;
 
+/** `DELETE /escrow/:id` or `PATCH /escrow/:id/cancel` — cancels an unfunded escrow. */
+export interface CancelEscrowResponse {
+  success: boolean;
+  escrowId: string;
+  message?: string;
+}
+
 /** `GET /escrows/:id/tracking`. */
 export type GetTrackingResponse = Tracking;
 
