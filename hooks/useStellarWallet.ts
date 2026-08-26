@@ -37,6 +37,11 @@ export interface StellarWalletState {
   signTransaction: (xdr: string, networkOverride?: string) => Promise<string>;
 }
 
+/**
+ * Internal implementation hook that owns the Freighter/SEP-10 session state.
+ * It is consumed exclusively by {@link WalletProvider} — components should
+ * use `useWallet` from `@/hooks/useWallet` instead of importing this directly.
+ */
 export function useStellarWallet() {
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);

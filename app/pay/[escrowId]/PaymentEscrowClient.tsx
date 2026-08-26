@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import { startTransition,useEffect, useMemo, useState } from "react";
 
 import { TrustBadge } from "@/components/payment/TrustBadge";
-import { useWallet } from "@/components/providers/WalletProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import useWallet from "@/hooks/useWallet";
 import { patchBuyerContact } from "@/lib/api";
 import { connectFreighter, isFreighterInstalled } from "@/lib/stellar/freighter";
 import { Escrow, EscrowStatusConst } from "@/types";

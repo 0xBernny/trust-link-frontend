@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext } from "react";
 
 import { useStellarWallet } from "@/hooks/useStellarWallet";
 
@@ -19,7 +19,12 @@ interface WalletContextType {
   error: string | null;
 }
 
-const WalletContext = createContext<WalletContextType | undefined>(undefined);
+/**
+ * Internal wallet context. Not meant to be consumed directly outside this
+ * module — components should use {@link useWallet} from `@/hooks/useWallet`,
+ * which is the single supported entry point for wallet state and actions.
+ */
+export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const wallet = useStellarWallet();
@@ -54,12 +59,4 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       {children}
     </WalletContext.Provider>
   );
-}
-
-export function useWallet() {
-  const context = useContext(WalletContext);
-  if (context === undefined) {
-    throw new Error("useWallet must be used within a WalletProvider");
-  }
-  return context;
 }
