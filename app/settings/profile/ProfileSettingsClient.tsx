@@ -2,7 +2,7 @@
 
 import { startTransition,useEffect, useState } from "react";
 
-import { useWallet } from "@/components/providers/WalletProvider";
+import useWallet from "@/hooks/useWallet";
 
 const STORAGE_KEY = "vendor.profile";
 
