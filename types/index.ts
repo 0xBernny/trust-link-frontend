@@ -8,6 +8,7 @@ export interface Escrow {
   buyerId?: string;
   amount: number;
   item: string;
+  description?: string; // Markdown-formatted item description
   contractAddress?: string;
   status: EscrowStatus;
   createdAt: string;
