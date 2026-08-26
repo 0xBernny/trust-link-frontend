@@ -7,8 +7,8 @@ import { EscrowStatusConst } from "@/types";
 
 import { PaymentEscrowClient } from "./PaymentEscrowClient";
 
-vi.mock("@/components/providers/WalletProvider", () => ({
-  useWallet: () => ({ connect: vi.fn().mockResolvedValue(true), isLoading: false }),
+vi.mock("@/hooks/useWallet", () => ({
+  default: () => ({ connect: vi.fn().mockResolvedValue(true), isLoading: false }),
 }));
 
 vi.mock("@/components/providers/NetworkProvider", () => ({
