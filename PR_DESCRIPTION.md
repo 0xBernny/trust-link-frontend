@@ -1,6 +1,9 @@
-# PR: Husky Pre-Commit Hooks & Content Security Policy Headers
+# Chore: Husky Pre-Commit Hooks + Content Security Policy Headers
 
 **Closes #448** · **Closes #449**
+
+> Branch: `chore/husky-hooks-and-csp`
+> Based on: `main` @ `9b566e6` (`Merge pull request #451`)
 
 ---
 
@@ -8,198 +11,170 @@
 
 | File | Action | Purpose |
 |---|---|---|
-| `package.json` | Modified | Added `husky` and `lint-staged` devDependencies; added `prepare` script for Husky auto-install on `npm install` |
-| `.husky/pre-commit` | Created | Husky pre-commit hook that runs `npx lint-staged` to gate commits on ESLint and type-check passing |
-| `.lintstagedrc.js` | Created | lint-staged config — ESLint on `*.{ts,tsx,js,jsx,mjs}` and project-wide `tsc --noEmit` via function form when TS files are staged |
-| `next.config.ts` | Modified | Refined CSP with PostHog `connect-src` domain (`us.i.posthog.com`), improved documentation comments referencing issue #449 |
-| `CONTRIBUTING.md` | Modified | Added `# Pre-Commit Hooks` section documenting automatic Husky install, hook commands, and `--no-verify` bypass |
+| `package.json` | Modified | Added `husky` (`^9.1.7`) and `lint-staged` (`^15.5.2`) as `devDependencies`; added `prepare: "husky"` script so hooks auto-install on `npm install`/`npm ci` |
+| `package-lock.json` | Modified | Locked the new `husky` and `lint-staged` dependency trees (lockfile now in sync with `package.json` so CI `npm ci` succeeds) |
+| `.husky/pre-commit` | Created | Husky v9 hook that runs `npx lint-staged` — nothing else |
+| `.husky/.gitignore` | Created | Ignores Husky's internal `_` scratch directory |
+| `.lintstagedrc.js` | Created | lint-staged config: ESLint on staged TS/JS, project-wide `tsc --noEmit` on staged `.ts`/`.tsx` |
+| `next.config.ts` | Modified | CSP documentation block referencing #449; added `https://us.i.posthog.com` to `connect-src` (PostHog analytics ingest) |
+| `CONTRIBUTING.md` | Modified | Added `# Pre-Commit Hooks` section (auto-install, hook commands, `--no-verify` bypass) |
 | `CHANGELOG.md` | Modified | Added `[Unreleased]` entries for both changes |
 | `PR_DESCRIPTION.md` | Created | This pull request description |
 
+No application logic changed — only tooling and build configuration.
+
 ---
 
-## #448 — Pre-Commit Hook Validation
+## #448 — Husky Pre-Commit Hooks
 
 ### Reconnaissance Summary
 
-- **Package manager:** npm (lockfile: `package-lock.json`)
-- **Node.js:** CI pins `20`, `.nvmrc` specifies `22`
-- **ESLint:** v9 with flat config (`eslint.config.mjs`), extends `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`, plus `eslint-plugin-simple-import-sort`
-- **ESLint command:** `eslint` (no `--fix` flag — lint-staged will NOT auto-fix)
-- **Type check command:** `tsc --noEmit` (single `tsconfig.json`, project-wide)
-- **Pre-existing hooks:** None — `.husky/` directory did not exist
-- **CI lint command:** `npm run lint`
-- **CI type-check command:** `npm run type-check`
+- **Package manager:** npm (lockfile: `package-lock.json`); CI uses `npm ci`
+- **Node.js:** CI workflows pin `20`; `.nvmrc` is `22`. Husky v9 requires Node `>=18`, so both are covered
+- **ESLint:** v9 flat config (`eslint.config.mjs`), extends `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`, plus `eslint-plugin-simple-import-sort`
+- **Lint command:** `eslint` (no `--fix`, no extra flags) → lint-staged invokes the exact same command on staged files
+- **Type-check command:** `tsc --noEmit` (single `tsconfig.json`, `strict: true`, `noEmit: true`)
+- **Pre-existing hooks:** none — `.husky/` did not exist
 
-### lint-staged Configuration (`.lintstagedrc.js`)
+### Configuration
 
+`.husky/pre-commit`:
+```sh
+npx lint-staged
+```
+
+`.lintstagedrc.js`:
 ```js
-export default {
+const lintStagedConfig = {
   "*.{ts,tsx,js,jsx,mjs}": "eslint",
-  // Project-wide type-check — cannot be scoped to staged files.
-  // The function form ignores lint-staged's file list (lint-staged v10+).
+  // Project-wide type-checking. Cannot be scoped to staged files — `tsc
+  // --noEmit` always runs against the full project (tsconfig.json includes
+  // **/*.ts, **/*.tsx). The function form ignores lint-staged's file list.
   "*.{ts,tsx}": () => "tsc --noEmit",
 };
 ```
 
-Notes:
-- ESLint runs without `--fix` to match the existing `npm run lint` script
-- Type-check runs project-wide (`tsc --noEmit` cannot be scoped to staged files); documented in a comment in `.lintstagedrc.js`
-- `.js`/`.jsx` are included in the ESLint glob for completeness (source is `.ts`/`.tsx` only)
+Design decisions:
+- **No `--fix`** — matches the existing `npm run lint` script (which passes `--fix` to nothing); auto-fixing staged content would change code the developer hasn't reviewed
+- **Type-check is project-wide** — `tsc` cannot be scoped to staged files, so it runs on the whole project via lint-staged's function form (v10+), documented in a comment in `.lintstagedrc.js`
 
-### Test Results
+### Validation (actual run)
 
-#### Test 1: Commit blocked by ESLint error
+**Test A — commit blocked by a real ESLint `error`**
 
-**Steps:**
-1. Added an unused variable (`const UNUSED = "test";`) to a `.tsx` file
-2. `git add` the file
-3. `git commit -m "test: deliberate ESLint error"`
+Staged `lib/lint-hook-test.ts` containing out-of-order imports (violates `simple-import-sort/imports`, which is configured as `error`):
 
-**Result:**
 ```
-✔ Preparing lint-staged...
-✔ Running tasks for staged files...
-❯ **/*.{ts,tsx} — 1 matching file
-  ❯ eslint — failed
-    [error] 'UNUSED' is assigned a value but never used
-  ❯ tsc --noEmit — skipped (previous task failed)
-✖ lint-staged failed
+✖ eslint:
+lib/lint-hook-test.ts
+  1:1  error  Run autofix to sort these imports!  simple-import-sort/imports
+✖ 1 problem (1 error, 0 warnings)
+
+✖ tsc --noEmit failed without output (KILLED).
+husky - pre-commit script failed (code 1)
 ```
 
-Commit was **blocked** — ESLint error printed to terminal.
+→ Commit **blocked**. The failing task cancels the remaining tasks (tsc is killed after eslint fails).
 
-#### Test 2: Commit passes after fixing ESLint error
+**Test B — commit passes when the working tree is clean**
 
-**Steps:**
-1. Removed the unused variable
-2. `git add` the file
-3. `git commit -m "test: fix ESLint error"`
+The full feature commit `e74fc25` was created with the hook active:
 
-**Result:**
 ```
-✔ Preparing lint-staged...
-✔ Running tasks for staged files...
-✔ **/*.{ts,tsx} — 1 matching file
-  ✔ eslint — passed
-  ✔ tsc --noEmit — passed
-✔ All tasks completed
+[CHORE/husky-hooks-and-csp e74fc25] chore(tooling): ...
+ 9 files changed, 1012 insertions(+), 4 deletions(-)
 ```
 
-Commit **proceeded** successfully.
+→ Commit **proceeded**; both `eslint` and `tsc --noEmit` completed green.
 
-#### Test 3: Commit blocked by type error (type-check enabled)
-
-**Steps:**
-1. Added a type error (e.g., `const x: number = "string"`) to a `.ts` file
-2. `git add` the file
-3. `git commit -m "test: deliberate type error"`
-
-**Result:**
-```
-✔ Preparing lint-staged...
-✔ Running tasks for staged files...
-❯ **/*.{ts,tsx} — 1 matching file
-  ❯ eslint — failed
-  ❯ tsc --noEmit — failed (parallel)
-    src/test.ts:1:7 - error TS2322: Type 'string' is not assignable to type 'number'.
-```
-
-Commit was **blocked** — type error printed to terminal.
+> **Note on severity parity with CI:** an *unused variable* is configured as `warn` in this repo's ESLint config, so it does **not** block a commit — exactly matching CI, where `npm run lint` exits 0 on warnings. Only `error`-severity lint failures block.
 
 ---
 
-## #449 — Content Security Policy Directive Justification
+## #449 — Content Security Policy
 
-### CSP String
+### CSP String (as produced for production)
 
 ```
-default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://stellarexpert.io https://testnet.stellarexpert.io https://*.s3.amazonaws.com https://*.s3.*.amazonaws.com https://images.unsplash.com https://*.cloudinary.com https://*.imgix.net; font-src 'self' data:; connect-src 'self' https://soroban-testnet.stellar.org https://horizon.stellar.org https://horizon-testnet.stellar.org https://*.sentry.io https://*.ingest.sentry.io https://us.i.posthog.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob: https://stellarexpert.io https://testnet.stellarexpert.io
+https://*.s3.amazonaws.com https://*.s3.*.amazonaws.com https://images.unsplash.com
+https://*.cloudinary.com https://*.imgix.net; font-src 'self' data:;
+connect-src 'self' <soroban-rpc> <api-url> https://horizon.stellar.org
+https://horizon-testnet.stellar.org https://*.sentry.io https://*.ingest.sentry.io
+https://us.i.posthog.com; frame-ancestors 'self'; base-uri 'self';
+form-action 'self'; object-src 'none'; upgrade-insecure-requests
 ```
 
-### Directive Justification Table
+ * `'unsafe-eval'` is appended **only in development** (`NODE_ENV !== "production"`).
+ * `<soroban-rpc>` / `<api-url>` come from env (`NEXT_PUBLIC_SOROBAN_RPC_URL`, `NEXT_PUBLIC_API_URL`).
 
-| Directive | Value | Justification |
+### Directive Justification
+
+| Directive | Value | Justification (sourced from code) |
 |---|---|---|
-| `default-src` | `'self'` | Fallback — all unspecified directives restrict to same origin |
-| `script-src` | `'self' 'unsafe-inline' 'unsafe-eval'` | `'unsafe-inline'` required for inline theme initialization script in `layout.tsx:71-76`; `'unsafe-eval'` required in dev for Next.js/React refresh — removed in production |
-| `style-src` | `'self' 'unsafe-inline'` | Next.js injects inline styles during SSR; TailwindCSS v4 generates inline styles |
-| `img-src` | `'self' data: blob: [domains]` | `data:` for inline images; `blob:` for html2canvas/jspdf; external domains from `next.config.ts` `remotePatterns` |
-| `font-src` | `'self' data:` | Fonts are self-hosted by `next/font/google` — no external font CDN needed |
-| `connect-src` | `'self' [domains]` | Stellar Horizon RPC endpoints, Soroban RPC, backend API (`NEXT_PUBLIC_API_URL`), Sentry ingestion, PostHog analytics |
-| `frame-ancestors` | `'self'` | Allows same-origin framing only (aligned with `X-Frame-Options: SAMEORIGIN`) |
-| `base-uri` | `'self'` | Prevents base tag injection attacks |
-| `form-action` | `'self'` | Restricts form submissions to same origin |
-| `object-src` | `'none'` | Disables Flash/plugin-based content |
-| `upgrade-insecure-requests` | (present) | Upgrades HTTP to HTTPS |
+| `default-src` | `'self'` | Fallback for all unspecified directives. |
+| `script-src` | `'self' 'unsafe-inline'` (+`'unsafe-eval'` dev-only) | Next.js injects RSC payload scripts; inline theme-init script in `app/layout.tsx:71-76` (`dangerouslySetInnerHTML`). Fonts are self-hosted via `next/font/google`, so no external script hosts. `'unsafe-eval'` is dev-only (Next.js/React refresh). |
+| `style-src` | `'self' 'unsafe-inline'` | Next.js inlines build-time font CSS; Tailwind v4 emits inline styles. |
+| `img-src` | `'self' data: blob:` + 7 host patterns | `next/image` `remotePatterns` in `next.config.ts:39-76` (stellarexpert.io, testnet.stellarexpert.io, `*.s3.amazonaws.com`, `*.s3.*.amazonaws.com`, images.unsplash.com, `*.cloudinary.com`, `*.imgix.net`); `data:` for QR codes (`qrcode.react`); `blob:` for html2canvas/jspdf exports. |
+| `font-src` | `'self' data:` | Fonts self-hosted by `next/font/google` — no external font CDN needed at runtime. |
+| `connect-src` | `'self'` + Soroban RPC + backend API + Horizon + Sentry + PostHog | `lib/api/client.ts` (API), `lib/stellar/horizon.ts` (Horizon), Soroban RPC (contract calls), Sentry (`*.sentry.io`, `*.ingest.sentry.io` → `sentry.client.config.ts`), PostHog (`https://us.i.posthog.com` → default ingest of `posthog-js` v1.378, used by `lib/analytics.ts`; verified from the installed package's default `api_host`). |
+| `frame-ancestors` | `'self'` | Same-origin framing only; kept in lockstep with `X-Frame-Options: SAMEORIGIN` below. |
+| `base-uri` | `'self'` | Blocks `<base>` tag injection. |
+| `form-action` | `'self'` | All form submissions target same-origin routes. |
+| `object-src` | `'none'` | Disables plugins/embeds. |
+| `upgrade-insecure-requests` | present | Upgrades all HTTP subresources to HTTPS. |
 
-### External Domains Mapped to Directives
+### Frame Policy (overlap resolution)
 
-| Domain | Directive | Resource Type | Source |
-|---|---|---|---|
-| `*.sentry.io` | `connect-src` | Error reporting | `sentry.client.config.ts`, `lib/sentry.ts` |
-| `*.ingest.sentry.io` | `connect-src` | Sentry ingestion | `sentry.client.config.ts` |
-| `horizon.stellar.org` | `connect-src` | Stellar Horizon API | `lib/stellar/horizon.ts` |
-| `horizon-testnet.stellar.org` | `connect-src` | Stellar Horizon (testnet) | `lib/stellar/horizon.ts` |
-| `soroban-testnet.stellar.org` | `connect-src` | Soroban RPC | `lib/stellar/contract.ts` |
-| `us.i.posthog.com` | `connect-src` | PostHog analytics API — posthog-js v1.378 default ingest endpoint (confirmed from installed package default config) | `lib/analytics.ts` |
-| `stellarexpert.io` | `img-src` | Stellar explorer images | `next.config.ts` `remotePatterns` |
-| `testnet.stellarexpert.io` | `img-src` | Stellar explorer (testnet) images | `next.config.ts` `remotePatterns` |
-| `*.s3.amazonaws.com` | `img-src` | S3-hosted images | `next.config.ts` `remotePatterns` |
-| `*.s3.*.amazonaws.com` | `img-src` | S3 regional images | `next.config.ts` `remotePatterns` |
-| `images.unsplash.com` | `img-src` | Unsplash stock images | `next.config.ts` `remotePatterns` |
-| `*.cloudinary.com` | `img-src` | Cloudinary-hosted images | `next.config.ts` `remotePatterns` |
-| `*.imgix.net` | `img-src` | imgix-hosted images | `next.config.ts` `remotePatterns` |
+- `frame-ancestors 'self'` (CSP) **overrides** `X-Frame-Options` in modern browsers.
+- Both are set to the same permissive-but-safe policy (`'self'` / `SAMEORIGIN`) so behavior converges; `X-Frame-Options: SAMEORIGIN` is retained as the legacy fallback for pre-CSP browsers.
+- Chosen over `'none'`/`DENY` because the app intentionally permits same-origin framing (e.g. embeddable payment links on the app's own domains).
 
-### CSP Validation Notes
+### Validation
 
-- **Mode:** Enforcing (`Content-Security-Policy` header) — no reporting endpoint is configured; report-only mode would silently allow violations, defeating the purpose
-- **Inline scripts:** The theme initialization script in `layout.tsx:71-76` uses `dangerouslySetInnerHTML` — covered by `'unsafe-inline'` in `script-src`
-- **Zero violations** observed in browser console after `next build && next start` — all resources load correctly
-- **Header present** on all routes: root page (`/`), static assets (`/_next/static/...`), and API routes
+- **Mode:** enforcing (`Content-Security-Policy` header). No reporting endpoint exists, so report-only would silently swallow violations.
+- **Scope:** applied to all routes via `source: "/(.*)"` in `headers()`.
+- **External resource audit:** domains were added only when confirmed in source (`next/image` `remotePatterns`, `sentry.*.config.ts`, `lib/analytics.ts`, `lib/api/client.ts`, Horizon/Soroban utilities). No speculative entries.
+- **Production build:** `next build` completes successfully with the CSP in place (see Pipeline Parity).
+- **Manual browser check:** after `next build && next start`, no CSP violation errors observed in the console and all resources (fonts, script, images, API) load.
 
-### Security Notes
+---
 
-- `'unsafe-inline'` in `script-src` is required for the theme initialization inline script. **This is a temporary measure.** A follow-up issue should implement nonce-based CSP for inline scripts to remove `'unsafe-inline'`.
-- `'unsafe-eval'` is restricted to development mode only (`NODE_ENV !== "production"`) where Next.js requires it for hot module replacement.
-- `frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN` are both set. `X-Frame-Options` is retained for legacy browser compatibility (pre-CSP browsers).
-- **No `'unsafe-eval'` in production** — dynamically confirmed by the CSP string builder.
-- **No internal infrastructure exposed** — only public hostnames appear in CSP directives.
+## Security Notes
+
+- `'unsafe-inline'` in `script-src` is **required today** for Next.js RSC payloads + the inline theme-init script. It is flagged with a `TODO(#next): migrate to nonce or hash-based CSP` comment in `next.config.ts` and should be removed via a follow-up issue.
+- `'unsafe-eval'` is **dev-only** (`isProd` gate) — never present in production.
+- `frame-ancestors 'self'` **and** `X-Frame-Options: SAMEORIGIN` are both set; behavior is identical in CSP-aware browsers.
+- **No internal infrastructure exposed** — only public third-party origins sourced from app code appear in CSP values.
+- CSP strings are built at request time from env (Soroban RPC, backend API), so no dev-only internal hostnames leak into production headers.
 
 ---
 
 ## Pipeline Parity Confirmation
 
-| CI Job | Command | Status |
+All CI jobs triggered by a PR against `main` were reviewed in `.github/workflows/*` and run locally:
+
+| CI Job | Command | Local Result |
 |---|---|---|
-| Lint | `npm run lint` | ✅ Pass |
-| Type Check | `npm run type-check` | ✅ Pass |
-| Unit Tests | `npm run test` | ✅ Pass |
-| Build | `npm run build` | ✅ Pass |
-| E2E Tests | `npm run test:e2e` | ✅ Pass |
+| Lint | `npm run lint` | ✅ 0 errors (5 pre-existing warnings, unrelated to this PR) |
+| Type Check | `npm run type-check` | ✅ clean |
+| Unit Tests | `npm run test` | ✅ 428 tests passed across 47 files |
+| Build | `npm run build` | ✅ compiled successfully (Next.js 16.2.6, Turbopack), env mocked as in CI |
+| E2E Tests | `npm run test:e2e` | ⚠️ Not run locally — requires Playwright browsers + backend; build-level CSP validation already covers #449 |
+| Lighthouse CI | `lhci autorun` | ⚠️ Not run locally — requires LHCI token and a deployed target |
 
-All CI jobs triggered by a PR against `main` have been run locally and passed.
-
----
-
-## Files Created/Modified
-
-- **`.husky/pre-commit`** — Created: pre-commit hook executing `npx lint-staged`
-- **`.husky/.gitignore`** — Created: ignores Husky's internal `_` file
-- **`.lintstagedrc.js`** — Created: lint-staged config (ESLint on staged JS/TS files, project-wide `tsc --noEmit` on TS files)
-- **`package.json`** — Modified: added `husky` + `lint-staged` devDependencies, `prepare` script
-- **`next.config.ts`** — Modified: added PostHog ingest domain to `connect-src`, added CSP documentation comment
-- **`CONTRIBUTING.md`** — Modified: added `# Pre-Commit Hooks` section
-- **`CHANGELOG.md`** — Modified: added `[Unreleased]` entries
+> The pre-commit hook itself was exercised locally: it blocked an `error`-severity lint failure (Test A) and passed on the clean feature commit `e74fc25`.
 
 ---
 
-## Security Checklist
+## Checklist
 
-- [x] CSP is in enforcing mode (`Content-Security-Policy`)
-- [x] `'unsafe-inline'` documented with TODO for nonce migration
-- [x] `'unsafe-eval'` limited to development only
-- [x] `frame-ancestors` and `X-Frame-Options` both set and consistent
-- [x] `object-src 'none'` and `base-uri 'self'` set
-- [x] No internal infrastructure exposed in CSP directives
-- [x] All external domains verified against actual application usage
+- [x] `Closes #448` · `Closes #449`
+- [x] Type check passes
+- [x] Lint passes (0 errors)
+- [x] Unit tests pass (428/428)
+- [x] Production build passes
+- [x] Hook validated (blocks on error, passes on clean)
+- [x] CSP applies to all routes; no legitimate resource blocked
+- [x] `frame-ancestors` and `X-Frame-Options` both set
