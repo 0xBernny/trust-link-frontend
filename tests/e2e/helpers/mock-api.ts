@@ -129,6 +129,15 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
     return { status: 200, body: options.mockEscrow };
   }
 
+  // Patch Buyer Contact
+  if (
+    options?.escrowId && 
+    (pathname.includes(`/escrows/${options.escrowId}/buyer-contact`) || 
+     pathname.includes(`/escrow/${options.escrowId}/buyer-contact`))
+  ) {
+    return { status: 200, body: options.mockEscrow };
+  }
+
   // Fund Escrow
   if (options?.escrowId && pathname.includes(`/escrows/${options.escrowId}/fund`)) {
     return {
@@ -138,7 +147,7 @@ function getMockResponse(pathname: string, method: string, options?: MockApiOpti
   }
 
   // Ship Escrow
-  if (options?.escrowId && pathname.includes(`/escrow/${options.escrowId}/ship`)) {
+  if (options?.escrowId && pathname.includes(`/escrows/${options.escrowId}/ship`)) {
     return {
       status: 200,
       body: {

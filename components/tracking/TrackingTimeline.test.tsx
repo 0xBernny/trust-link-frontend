@@ -1,7 +1,7 @@
 import { act,render, screen } from "@testing-library/react";
 import { beforeEach,describe, expect, it, vi } from "vitest";
 
-import { Escrow } from "@/types";
+import { Escrow, EscrowStatusConst } from "@/types";
 
 import TrackingTimeline from "./TrackingTimeline";
 
@@ -31,7 +31,7 @@ const mockEscrow: Escrow = {
   buyerId: "buyer_1",
   amount: 150.0,
   item: "Wireless Headphones",
-  status: "PENDING",
+  status: EscrowStatusConst.PENDING,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   history: [],
@@ -90,7 +90,7 @@ describe("TrackingTimeline", () => {
   });
 
   it("shows Confirm Delivery button when status is SHIPPED", async () => {
-    const shippedEscrow = { ...mockEscrow, status: "SHIPPED" as const };
+    const shippedEscrow = { ...mockEscrow, status: EscrowStatusConst.SHIPPED };
     await act(async () => {
       render(
         <NetworkProvider>
@@ -105,7 +105,7 @@ describe("TrackingTimeline", () => {
   });
 
   it("shows Raise a Dispute button when status is SHIPPED", async () => {
-    const shippedEscrow = { ...mockEscrow, status: "SHIPPED" as const };
+    const shippedEscrow = { ...mockEscrow, status: EscrowStatusConst.SHIPPED };
     await act(async () => {
       render(
         <NetworkProvider>
@@ -131,7 +131,7 @@ describe("TrackingTimeline", () => {
   });
 
   it("shows dispute status when order is disputed", async () => {
-    const disputedEscrow = { ...mockEscrow, status: "DISPUTED" as const };
+    const disputedEscrow = { ...mockEscrow, status: EscrowStatusConst.DISPUTED };
     await act(async () => {
       render(
         <TrackingTimeline escrowId="esc_123" initialEscrow={disputedEscrow} />
@@ -142,7 +142,7 @@ describe("TrackingTimeline", () => {
   });
 
   it("highlights completed stages correctly for FUNDED status", async () => {
-    const fundedEscrow = { ...mockEscrow, status: "FUNDED" as const };
+    const fundedEscrow = { ...mockEscrow, status: EscrowStatusConst.FUNDED };
     await act(async () => {
       render(
         <TrackingTimeline escrowId="esc_123" initialEscrow={fundedEscrow} />
@@ -155,7 +155,7 @@ describe("TrackingTimeline", () => {
   });
 
   it("highlights all stages as completed for COMPLETED status", async () => {
-    const completedEscrow = { ...mockEscrow, status: "COMPLETED" as const };
+    const completedEscrow = { ...mockEscrow, status: EscrowStatusConst.COMPLETED };
     await act(async () => {
       render(
         <TrackingTimeline escrowId="esc_123" initialEscrow={completedEscrow} />

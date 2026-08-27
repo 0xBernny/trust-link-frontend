@@ -1,6 +1,15 @@
-import type { VendorNotificationPreferences } from "@/types";
+import {
+  Dispute,
+  DisputeStatusConst,
+  Escrow,
+  Subscription,
+  Tracking,
+  type VendorAnalyticsResponse,
+  type VendorNotificationPreferences,
+} from "@/types";
 import type {
   ApiErrorResponse,
+  CancelEscrowResponse,
   CreateDisputeResponse,
   CreateEscrowResponse,
   EmptyResponse,
@@ -79,6 +88,13 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
   return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
 }
 
+/**
+ * Creates a new escrow payment request.
+ *
+ * @param data - Input parameters including item name, price in USDC, description, and shipping window.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to the created escrow response.
+ */
 export async function createEscrow(data: EscrowInput, token?: string): Promise<CreateEscrowResponse> {
   return request<CreateEscrowResponse>("/escrow", {
     method: "POST",
@@ -87,6 +103,13 @@ export async function createEscrow(data: EscrowInput, token?: string): Promise<C
   }, token);
 }
 
+/**
+ * Fetches escrow details by ID. Falls back to `/escrows/{id}` if `/escrow/{id}` returns 404.
+ *
+ * @param id - The unique escrow ID.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to the escrow details.
+ */
 export async function getEscrow(id: string, token?: string): Promise<GetEscrowResponse> {
   try {
     return await request<GetEscrowResponse>(`/escrow/${id}`, {}, token);
@@ -98,19 +121,46 @@ export async function getEscrow(id: string, token?: string): Promise<GetEscrowRe
   }
 }
 
+/**
+ * Fetches all escrows associated with the authenticated vendor.
+ *
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to the vendor's list of escrows.
+ */
 export async function getVendorEscrows(token?: string): Promise<GetVendorEscrowsResponse> {
   return request<GetVendorEscrowsResponse>("/vendor/escrows", {}, token);
 }
 
+/**
+ * Fetches details of a specific dispute.
+ *
+ * @param id - The dispute ID.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to dispute details.
+ */
 export async function getDispute(id: string, token?: string): Promise<GetDisputeResponse> {
   return request<GetDisputeResponse>(`/disputes/${id}`, {}, token);
 }
 
+/**
+ * Fetches open and under-review disputes for admin resolution.
+ *
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to filtered list of active disputes.
+ */
 export async function getAdminDisputes(token?: string): Promise<GetDisputesResponse> {
   const disputes = await request<GetDisputesResponse>("/disputes?status=OPEN,UNDER_REVIEW", {}, token);
   return disputes.filter((dispute) => dispute.status === "OPEN" || dispute.status === "UNDER_REVIEW");
 }
 
+/**
+ * Resolves an active dispute as admin by either releasing funds to vendor or refunding buyer.
+ *
+ * @param id - The dispute ID.
+ * @param resolution - The resolution action ("RELEASE_TO_VENDOR" or "REFUND_BUYER").
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to the resolution response.
+ */
 export async function resolveDispute(id: string, resolution: "RELEASE_TO_VENDOR" | "REFUND_BUYER", token?: string): Promise<ResolveDisputeResponse> {
   return request<ResolveDisputeResponse>(`/disputes/${id}/resolve`, {
     method: "PATCH",
@@ -119,6 +169,14 @@ export async function resolveDispute(id: string, resolution: "RELEASE_TO_VENDOR"
   }, token);
 }
 
+/**
+ * Creates a dispute for an existing escrow.
+ *
+ * @param escrowId - The escrow ID.
+ * @param data - Dispute reason, description, and evidence array.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to the created dispute details.
+ */
 export async function createDispute(escrowId: string, data: CreateDisputeInput, token?: string): Promise<CreateDisputeResponse> {
   return request<CreateDisputeResponse>(`/escrows/${escrowId}/dispute`, {
     method: "POST",
@@ -127,6 +185,14 @@ export async function createDispute(escrowId: string, data: CreateDisputeInput, 
   }, token);
 }
 
+/**
+ * Marks an escrow item as shipped with tracking information.
+ *
+ * @param escrowId - The escrow ID.
+ * @param data - Tracking ID and optional carrier.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to ship escrow response.
+ */
 export async function shipEscrow(escrowId: string, data: ShipEscrowInput, token?: string): Promise<ShipEscrowResponse> {
   return request<ShipEscrowResponse>(`/escrows/${escrowId}/ship`, {
     method: "POST",
@@ -135,14 +201,33 @@ export async function shipEscrow(escrowId: string, data: ShipEscrowInput, token?
   }, token);
 }
 
+/**
+ * Fetches tracking information for a given escrow.
+ *
+ * @param escrowId - The escrow ID.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to tracking details.
+ */
 export async function getTracking(escrowId: string, token?: string): Promise<GetTrackingResponse> {
   return request<GetTrackingResponse>(`/escrows/${escrowId}/tracking`, {}, token);
 }
 
+/**
+ * Fetches current subscription details for the authenticated user/vendor.
+ *
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to subscription response.
+ */
 export async function getSubscription(token?: string): Promise<GetSubscriptionResponse> {
   return request<GetSubscriptionResponse>("/subscription", {}, token);
 }
 
+/**
+ * Upgrades the user's subscription level.
+ *
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to upgrade response.
+ */
 export async function upgradeSubscription(token?: string): Promise<UpgradeSubscriptionResponse> {
   return request<UpgradeSubscriptionResponse>("/subscription/upgrade", {
     method: "POST",
@@ -150,10 +235,23 @@ export async function upgradeSubscription(token?: string): Promise<UpgradeSubscr
   }, token);
 }
 
+/**
+ * Fetches vendor notification preferences.
+ *
+ * @param token - Required Bearer auth token.
+ * @returns Promise resolving to vendor notification preferences.
+ */
 export async function getVendorNotificationPreferences(token: string): Promise<GetVendorNotificationPreferencesResponse> {
   return request<GetVendorNotificationPreferencesResponse>("/vendor/notifications", {}, token);
 }
 
+/**
+ * Updates vendor notification preferences.
+ *
+ * @param prefs - Updated notification preference flags.
+ * @param token - Required Bearer auth token.
+ * @returns Promise resolving to empty response upon success.
+ */
 export async function patchVendorNotifications(prefs: VendorNotificationPreferences, token: string): Promise<EmptyResponse> {
   await request<EmptyResponse>("/vendor/notifications", {
     method: "PATCH",
@@ -162,7 +260,32 @@ export async function patchVendorNotifications(prefs: VendorNotificationPreferen
   }, token);
 }
 
-export async function patchBuyerContact(escrowId: string, data: { email?: string; phone?: string }, token?: string): Promise<EmptyResponse> {
+/**
+ * Cancels an unfunded escrow.
+ *
+ * @param escrowId - The escrow ID to cancel.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to cancellation response.
+ */
+export async function cancelEscrow(escrowId: string, token?: string): Promise<CancelEscrowResponse> {
+  return request<CancelEscrowResponse>(`/escrow/${escrowId}`, {
+    method: "DELETE",
+  }, token);
+}
+
+/**
+ * Updates buyer contact information (email/phone) and email receipt preference.
+ *
+ * @param escrowId - The escrow ID.
+ * @param data - Contact information and email receipt opt-in flag.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to empty response upon success.
+ */
+export async function patchBuyerContact(
+  escrowId: string,
+  data: { email?: string; phone?: string; emailReceipt?: boolean },
+  token?: string
+): Promise<EmptyResponse> {
   await request<EmptyResponse>(`/escrow/${escrowId}/buyer-contact`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -170,6 +293,12 @@ export async function patchBuyerContact(escrowId: string, data: { email?: string
   }, token);
 }
 
+/**
+ * Fetches vendor analytics data points and statistics.
+ *
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to vendor analytics payload.
+ */
 export async function getVendorAnalytics(token?: string): Promise<GetVendorAnalyticsResponse> {
   return request<GetVendorAnalyticsResponse>("/vendor/analytics", {}, token);
 }
@@ -196,6 +325,7 @@ export interface ApiClient {
     escrowId: string,
     data: ShipEscrowInput
   ) => Promise<ShipEscrowResponse>;
+  cancelEscrow: (escrowId: string) => Promise<CancelEscrowResponse>;
   getTracking: (escrowId: string) => Promise<GetTrackingResponse>;
   getSubscription: () => Promise<GetSubscriptionResponse>;
   upgradeSubscription: () => Promise<UpgradeSubscriptionResponse>;
@@ -208,7 +338,7 @@ export interface ApiClient {
   ) => Promise<EmptyResponse>;
   patchBuyerContact: (
     escrowId: string,
-    data: { email?: string; phone?: string }
+    data: { email?: string; phone?: string; emailReceipt?: boolean }
   ) => Promise<EmptyResponse>;
   getVendorAnalytics: () => Promise<GetVendorAnalyticsResponse>;
 }
@@ -223,12 +353,13 @@ export function createApiClient(token?: string): ApiClient {
     resolveDispute: (id: string, resolution: "RELEASE_TO_VENDOR" | "REFUND_BUYER") => resolveDispute(id, resolution, token),
     createDispute: (escrowId: string, data: CreateDisputeInput) => createDispute(escrowId, data, token),
     shipEscrow: (escrowId: string, data: ShipEscrowInput) => shipEscrow(escrowId, data, token),
+    cancelEscrow: (escrowId: string) => cancelEscrow(escrowId, token),
     getTracking: (escrowId: string) => getTracking(escrowId, token),
     getSubscription: () => getSubscription(token),
     upgradeSubscription: () => upgradeSubscription(token),
     getVendorNotificationPreferences: (authToken = token ?? "") => getVendorNotificationPreferences(authToken),
     patchVendorNotifications: (prefs: VendorNotificationPreferences, authToken = token ?? "") => patchVendorNotifications(prefs, authToken),
-    patchBuyerContact: (escrowId: string, data: { email?: string; phone?: string }) => patchBuyerContact(escrowId, data, token),
+    patchBuyerContact: (escrowId: string, data: { email?: string; phone?: string; emailReceipt?: boolean }) => patchBuyerContact(escrowId, data, token),
     getVendorAnalytics: () => getVendorAnalytics(token),
   };
 }

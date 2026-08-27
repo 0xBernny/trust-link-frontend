@@ -1,4 +1,6 @@
-export type EscrowStatus = 'PENDING' | 'FUNDED' | 'SHIPPED' | 'COMPLETED' | 'DISPUTED' | 'RELEASED' | 'REFUNDED' | 'EXPIRED';
+import type { DisputeStatus,EscrowStatus } from "./status";
+export type { DisputeStatus,EscrowStatus };
+export { DisputeStatus as DisputeStatusConst,EscrowStatus as EscrowStatusConst } from "./status";
 
 export interface Escrow {
   id: string;
@@ -6,6 +8,7 @@ export interface Escrow {
   buyerId?: string;
   amount: number;
   item: string;
+  description?: string; // Markdown-formatted item description
   contractAddress?: string;
   status: EscrowStatus;
   createdAt: string;
@@ -31,7 +34,7 @@ export interface Dispute {
   reason: string;
   description?: string; // Free-text detail submitted with the dispute
   evidence: string[]; // URLs to evidence
-  status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED';
+  status: DisputeStatus;
   resolution?: 'RELEASE_TO_VENDOR' | 'REFUND_BUYER';
   createdAt: string;
   updatedAt: string;

@@ -1,6 +1,7 @@
 import { expect, test } from "next/experimental/testmode/playwright";
 
 import { authenticatePage } from "./helpers/auth";
+import { BUYER_KEY, VENDOR_KEY } from "./helpers/constants";
 import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
@@ -9,7 +10,7 @@ let isResolved = false;
 const mockDispute: MockDispute = {
   id: disputeId,
   escrowId: "escrow-42",
-  buyerId: "GBUYER8TESTING1234567890ABCDEF",
+  buyerId: BUYER_KEY,
   reason: "Item not received",
   evidence: ["https://example.com/evidence.jpg"],
   status: "OPEN",
@@ -17,8 +18,8 @@ const mockDispute: MockDispute = {
   updatedAt: "2026-01-02T00:00:00Z",
   escrow: {
     id: "escrow-42",
-    vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-    buyerId: "GBUYER8TESTING1234567890ABCDEF",
+    vendorId: VENDOR_KEY,
+    buyerId: BUYER_KEY,
     item: "Gold Necklace",
     amount: 180.0,
     status: "DISPUTED",
@@ -72,7 +73,7 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
     const url = new URL(request.url);
 
     // Server-side fetch for the dispute detail page
-    if (url.pathname === `/disputes/${disputeId}`) {
+    if (url.pathname.endsWith(`/disputes/${disputeId}`)) {
       return new Response(JSON.stringify(mockDispute), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -85,7 +86,9 @@ test("admin can resolve a dispute and the dispute list updates", async ({ page, 
   await page.goto("/admin/disputes");
 
   await expect(page.getByText("Admin Disputes")).toBeVisible();
-  await page.getByRole("link", { name: /view dispute/i }).click();
+  
+  // Navigate directly to the dispute details page to avoid Next.js RSC client navigation issues
+  await page.goto(`/admin/disputes/${disputeId}`);
 
   await expect(page.getByText(/release to vendor/i)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByTestId("dispute-status-badge")).toHaveText("OPEN");

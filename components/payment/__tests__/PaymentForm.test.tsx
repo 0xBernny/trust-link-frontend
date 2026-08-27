@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, type Mock,vi } from "vitest";
 
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
+import { EscrowStatusConst } from "@/types";
 
 import PaymentForm from "../PaymentForm";
 
@@ -45,7 +46,7 @@ const defaultProps = {
   total: 10.5,
   sellerAddress: "GSELLER...",
   escrowContractId: "C123...",
-  status: "PENDING",
+  status: EscrowStatusConst.PENDING,
 };
 
 describe("PaymentForm", () => {
@@ -129,7 +130,7 @@ describe("PaymentForm", () => {
   });
 
   it("shows error if escrow is not payable", async () => {
-    render(<PaymentForm {...defaultProps} status="COMPLETED" />);
+    render(<PaymentForm {...defaultProps} status={EscrowStatusConst.COMPLETED} />);
     const button = screen.getByRole("button", { name: /Pay with Freighter/i });
 
     fireEvent.click(button);

@@ -31,7 +31,7 @@ export default function EmptyVendorState({
         href="/create"
         className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:bg-white dark:text-black dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-300"
       >
-        Create Your First Link
+        Create your first Escrow Link
       </Link>
     </div>
   );
