@@ -14,7 +14,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "audit:tailwind": "node scripts/purge-tailwind-audit.mjs",
-    "lighthouse:ci": "lhci autorun"
+    "lighthouse:ci": "lhci autorun",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.61.0",
@@ -42,7 +43,9 @@
     "swr": "^2.4.1"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
     "@lhci/cli": "^0.13.0",
+    "lint-staged": "^15.5.2",
     "@playwright/test": "^1.51.1",
     "@storybook/addon-essentials": "^8.6.18",
     "@storybook/addon-interactions": "^8.6.18",
