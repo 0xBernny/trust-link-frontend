@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, FormEvent, useEffect, useRef } from "react";
+import React, { FormEvent, useEffect, useRef,useState } from "react";
+
+import { shipEscrow } from "@/lib/api";
+import type { ApiErrorResponse } from "@/types/api";
 
 interface ShipTrackingModalProps {
   escrowId: string;
@@ -83,18 +86,10 @@ export default function ShipTrackingModal({
     setError(null);
 
     try {
-      const response = await fetch(`/escrow/${escrowId}/ship`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ trackingId: trimmedTrackingId, carrier }),
+      await shipEscrow(escrowId, {
+        trackingId: trimmedTrackingId,
+        carrier: carrier,
       });
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.message ?? "Unable to submit shipment details.");
-      }
 
       onSuccess(escrowId);
       onClose();
@@ -129,7 +124,7 @@ export default function ShipTrackingModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/5 dark:hover:text-white"
+            className="rounded-full p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:ring-zinc-300"
             aria-label="Close modal"
           >
             ✕
@@ -149,7 +144,7 @@ export default function ShipTrackingModal({
               required
               aria-invalid={!!error}
               aria-describedby={error ? "tracking-error" : "tracking-hint"}
-              className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
               placeholder="Enter tracking ID"
             />
             <p id="tracking-hint" className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">Required, max 64 characters.</p>
@@ -163,7 +158,7 @@ export default function ShipTrackingModal({
               id="carrier"
               value={carrier}
               onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setCarrier(event.target.value)}
-              className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
             >
               <option>Terminal Africa</option>
               <option>GIGL</option>
@@ -181,14 +176,14 @@ export default function ShipTrackingModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-3xl border border-zinc-300 px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="rounded-3xl border border-zinc-300 px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-3xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-3xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>

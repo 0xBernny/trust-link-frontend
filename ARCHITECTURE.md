@@ -70,3 +70,25 @@ flowchart TD
 5. Tracking and status updates are rendered from the escrow and timeline components.
 
 This structure keeps page routes thin, UI components reusable, and wallet/escrow logic isolated for easier maintenance.
+
+## Wallet Access
+
+Wallet state (connected public key, JWT, connect/disconnect/signTransaction) has a
+single supported entry point:
+
+- **`useWallet` from `@/hooks/useWallet`** — import this in any component that
+  needs wallet state or actions. It must be rendered under `<WalletProvider>`
+  (mounted once in `app/layout.tsx`).
+
+The rest of the wallet stack is internal and should not be imported directly:
+
+- `WalletProvider` (`components/providers/WalletProvider.tsx`) owns the React
+  context and exposes the `<WalletProvider>` wrapper component.
+- `useStellarWallet` (`hooks/useStellarWallet.ts`) implements the actual
+  Freighter connection and SEP-10 challenge/response flow; `WalletProvider` is
+  its only consumer.
+
+```
+useWallet()  →  WalletContext  →  WalletProvider  →  useStellarWallet()  →  Freighter / SEP-10
+(hooks/)        (internal)         (components/)      (hooks/, internal)
+```

@@ -7,9 +7,10 @@
  * while rendering a route segment. Provides a retry (re-run the segment via
  * `reset()`) and home navigation, styled to match the 404 page.
  */
-import { useEffect } from "react";
 import Link from "next/link";
-import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
+import { captureError } from "@/lib/logger";
 
 export default function Error({
   error,
@@ -19,7 +20,11 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    captureError(error, {
+      scope: "ui",
+      action: "route-error-boundary",
+      extra: { digest: error.digest },
+    });
   }, [error]);
 
   return (

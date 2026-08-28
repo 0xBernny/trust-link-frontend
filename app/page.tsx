@@ -1,39 +1,4 @@
-import { Shield, Zap, Lock, ArrowRight } from "lucide-react";
-import FeaturedArtistSection from "@/components/featured/FeaturedArtistSection";
-import FaqAccordion from "@/components/ui/FaqAccordion";
-
-const FAQ_ITEMS = [
-  {
-    question: "How does TrustLink protect my money?",
-    answer:
-      "TrustLink uses smart contracts on the Stellar network to hold funds in escrow. Your money is only released to the vendor after you confirm delivery, ensuring complete protection against fraud.",
-  },
-  {
-    question: "What payment methods are supported?",
-    answer:
-      "We support Stellar (XLM) and various Stellar-based assets. The Stellar network enables fast, low-cost transactions globally, making it perfect for cross-border trade.",
-  },
-  {
-    question: "How long does the escrow process take?",
-    answer:
-      "Most transactions complete within 2-5 business days depending on shipping. The escrow period automatically releases funds 7 days after delivery confirmation if no disputes are raised.",
-  },
-  {
-    question: "What happens if there's a dispute?",
-    answer:
-      "If you don't receive your order or it's not as described, you can raise a dispute within the escrow period. Our team will review the evidence and make a fair decision based on the terms.",
-  },
-  {
-    question: "Are there any hidden fees?",
-    answer:
-      "TrustLink charges a transparent 1.5% fee on successful transactions. There are no hidden charges, setup fees, or monthly costs. You only pay when you complete a sale.",
-  },
-  {
-    question: "Is TrustLink available internationally?",
-    answer:
-      "Yes! Built on the Stellar network, TrustLink works globally. Vendors and buyers from any country can participate, with automatic currency conversion at competitive rates.",
-  },
-];
+import HomePageContent from "@/components/home/HomePageContent";
 
 export const metadata = {
   title: "TrustLink — Secure Escrow for Every Transaction",
@@ -41,16 +6,6 @@ export const metadata = {
     "TrustLink protects buyers and vendors with smart contract escrow on the Stellar network. Fast, secure, and transparent payments with zero trust required.",
 };
 
-/**
- * Home page — intentionally a Server Component so the hero HTML is streamed
- * to the browser with zero JavaScript round-trip, maximising LCP.
- *
- * Only the interactive FAQ accordion is a client component.
- *
- * LCP note: the hero <h1> accent span uses the literal hex value (#7B68EE)
- * rather than var(--accent) so the colour is resolved immediately from the
- * static CSS without waiting for custom-property cascade evaluation.
- */
 export default function Home() {
   return (
     <div className="min-h-screen bg-[var(--muted-bg)]">
@@ -335,4 +290,5 @@ export default function Home() {
       </footer>
     </div>
   );
+  return <HomePageContent />;
 }

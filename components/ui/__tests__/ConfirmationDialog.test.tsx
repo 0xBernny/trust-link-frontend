@@ -1,12 +1,13 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import ConfirmationDialog from "../ConfirmationDialog";
 
 describe("ConfirmationDialog (issue #69)", () => {
-  let onConfirm: ReturnType<typeof vi.fn>;
-  let onCancel: ReturnType<typeof vi.fn>;
+  let onConfirm: () => void;
+  let onCancel: () => void;
 
   beforeEach(() => {
     onConfirm = vi.fn();

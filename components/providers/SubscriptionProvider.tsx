@@ -2,11 +2,13 @@
 
 import React, {
   createContext,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
+
 import { getSubscription } from "@/lib/api";
 import type { Plan, Subscription } from "@/types";
 
@@ -96,7 +98,7 @@ export function SubscriptionProvider({
   const refetch = useCallback(() => fetch_(true), [fetch_]);
 
   useEffect(() => {
-    fetch_();
+    startTransition(() => fetch_());
   }, [fetch_]);
 
   return (

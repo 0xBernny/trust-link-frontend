@@ -1,11 +1,28 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import { NetworkProvider } from "@/components/providers/NetworkProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
 import Navbar from "../Navbar";
 import TestnetBanner from "../TestnetBanner";
-import { NetworkProvider } from "@/components/providers/NetworkProvider";
+
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: query === "(prefers-color-scheme: dark)",
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
 
 function renderWithProvider(ui: React.ReactElement) {
-  return render(<NetworkProvider>{ui}</NetworkProvider>);
+  return render(<ThemeProvider><NetworkProvider>{ui}</NetworkProvider></ThemeProvider>);
 }
 
 describe("Network Components", () => {
@@ -46,8 +63,8 @@ describe("Network Components", () => {
 
     it("does not render banner on Mainnet", () => {
       vi.stubEnv("NEXT_PUBLIC_STELLAR_NETWORK", "mainnet");
-      const { container } = renderWithProvider(<TestnetBanner />);
-      expect(container.firstChild).toBeNull();
+      renderWithProvider(<TestnetBanner />);
+      expect(screen.queryByRole("alert")).toBeNull();
     });
   });
 });

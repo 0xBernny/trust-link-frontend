@@ -1,8 +1,13 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import { GET } from "./route";
 
 vi.mock("@/lib/escrowStore", () => ({
   getEscrowItems: vi.fn(),
+}));
+
+vi.mock("@/lib/rateLimit", () => ({
+  enforceRateLimit: vi.fn().mockResolvedValue(null),
 }));
 
 import { getEscrowItems } from "@/lib/escrowStore";

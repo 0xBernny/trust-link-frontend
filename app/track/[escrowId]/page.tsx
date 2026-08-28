@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import * as Sentry from "@sentry/nextjs";
+
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import TrackingTimeline from "@/components/tracking/TrackingTimeline";
+import TrackingTimelineSkeleton from "@/components/tracking/TrackingTimelineSkeleton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getEscrow } from "@/lib/api";
+import { setEscrowContext } from "@/lib/logger";
+import type { GetEscrowResponse } from "@/types/api";
 import { formatUSDC } from "@/utils/currency";
 
 interface TrackPageProps {
@@ -30,14 +33,13 @@ export async function generateMetadata({ params }: TrackPageProps): Promise<Meta
 export default async function TrackPage({ params }: TrackPageProps) {
   const { escrowId } = await params;
   
-  Sentry.setTag("escrow.id", escrowId);
-  Sentry.setContext("tracking", { escrowId });
-  
+  setEscrowContext(escrowId);
+
   // Fetch initial escrow data
-  let initialEscrow;
+  let initialEscrow: GetEscrowResponse;
   try {
     initialEscrow = await getEscrow(escrowId);
-  } catch (error) {
+  } catch {
     return (
       <main className="min-h-screen bg-zinc-50 p-6 dark:bg-black">
         <div className="mx-auto max-w-4xl">
@@ -46,7 +48,7 @@ export default async function TrackPage({ params }: TrackPageProps) {
               Order Not Found
             </h1>
             <p className="text-red-700 dark:text-red-300">
-              We couldn't find an order with ID: {escrowId}
+              We couldn&apos;t find an order with ID: {escrowId}
             </p>
           </div>
         </div>
@@ -97,22 +99,11 @@ export default async function TrackPage({ params }: TrackPageProps) {
         <ErrorBoundary>
           <Suspense
             fallback={
-              /* Timeline skeleton — each stage row is ~56px tall.
-                 This reserves the correct vertical space so the page height
-                 never jumps when the real timeline mounts (CLS = 0). */
+              /* Timeline skeleton reserves the correct vertical space so the
+                 page height never jumps when the real timeline mounts (CLS = 0). */
               <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                 <Skeleton className="mb-6 h-5 w-1/3" />
-                <div className="space-y-5">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-1/3" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <TrackingTimelineSkeleton />
               </div>
             }
           >

@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach,describe, expect, it } from "vitest";
+
 import {
+  __resetRateLimitMemory,
   checkRateLimit,
   enforceRateLimit,
   getClientId,
-  __resetRateLimitMemory,
 } from "@/lib/rateLimit";
 
 // These tests exercise the in-memory fallback (no UPSTASH_* env configured),

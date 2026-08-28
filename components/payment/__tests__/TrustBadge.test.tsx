@@ -1,8 +1,10 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { TrustBadge } from "../TrustBadge";
+import { afterEach,beforeEach, describe, expect, it, vi } from "vitest";
+
 import { NetworkProvider } from "@/components/providers/NetworkProvider";
+
+import { TrustBadge } from "../TrustBadge";
 
 function renderWithProvider(ui: React.ReactElement) {
   return render(<NetworkProvider>{ui}</NetworkProvider>);
@@ -80,10 +82,10 @@ describe("TrustBadge", () => {
   });
 
   it("is responsive with standard mobile flex layout classes", () => {
-    renderWithProvider(<TrustBadge contractAddress={contractAddress} />);
+    const { container } = renderWithProvider(<TrustBadge contractAddress={contractAddress} />);
     
-    const container = screen.getByText("Funds Protected by Smart Contract").closest('div');
-    expect(container?.className).toContain('flex-col');
-    expect(container?.className).toContain('sm:flex-row');
+    const outerDiv = container.firstElementChild;
+    expect(outerDiv?.className).toContain('flex-col');
+    expect(outerDiv?.className).toContain('sm:flex-row');
   });
 });

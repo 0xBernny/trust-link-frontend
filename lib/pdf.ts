@@ -1,5 +1,6 @@
-import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 import type { Escrow } from '@/types';
 
 export interface PDFExportOptions {
@@ -8,7 +9,15 @@ export interface PDFExportOptions {
 }
 
 /**
- * Generate and download a PDF from an HTML element
+ * Renders an HTML element to a multi-page A4 PDF and triggers a browser download.
+ *
+ * Uses `html2canvas` to rasterise the element at 2× resolution, then tiles the
+ * resulting image across as many jsPDF pages as necessary.
+ *
+ * @param element - The DOM node to render (must be present in the document).
+ * @param options - Optional filename and title overrides.
+ * @returns Promise that resolves when the PDF has been saved.
+ * @throws {Error} When `html2canvas` or jsPDF cannot process the element.
  */
 export async function generatePDFFromElement(
   element: HTMLElement,
@@ -16,7 +25,6 @@ export async function generatePDFFromElement(
 ): Promise<void> {
   const {
     filename = 'export.pdf',
-    title = 'Export',
   } = options;
 
   try {
@@ -24,7 +32,6 @@ export async function generatePDFFromElement(
       scale: 2,
       logging: false,
       useCORS: true,
-      allowTaint: true,
     });
 
     const imgWidth = 210; // A4 width in mm
@@ -52,7 +59,12 @@ export async function generatePDFFromElement(
 }
 
 /**
- * Generate transaction history data from escrows for PDF export
+ * Derives summary statistics and a normalised transaction list from an array of
+ * escrow records, ready for inclusion in a PDF export.
+ *
+ * @param escrows - Full list of escrow records belonging to the vendor.
+ * @returns Object containing total counts, cumulative amount, a status frequency
+ *   map, and an array of simplified transaction rows.
  */
 export function formatTransactionHistoryData(escrows: Escrow[]): {
   totalTransactions: number;
@@ -93,7 +105,16 @@ export function formatTransactionHistoryData(escrows: Escrow[]): {
 }
 
 /**
- * Generate a summary PDF without html2canvas (simpler, more reliable)
+ * Generates and immediately downloads a transaction-history PDF using only
+ * jsPDF (no `html2canvas`), making it suitable for server-compatible or
+ * lightweight client-side use.
+ *
+ * Renders a header, summary section, status breakdown, and a tabular list of
+ * transactions. Automatically adds new pages when content overflows.
+ *
+ * @param escrows - Full list of escrow records to summarise.
+ * @param vendorId - The vendor's public identifier, printed in the report header.
+ * @param filename - Output filename (defaults to `"transaction-history.pdf"`).
  */
 export function generateSummaryPDF(
   escrows: Escrow[],

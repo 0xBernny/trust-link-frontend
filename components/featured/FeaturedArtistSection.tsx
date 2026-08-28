@@ -1,5 +1,6 @@
-import { ArrowRight, Star, ShieldCheck, MapPin } from "lucide-react";
+import { ArrowRight, MapPin,ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
+
 import OptimizedImage from "@/components/ui/OptimizedImage";
 
 interface FeaturedArtist {

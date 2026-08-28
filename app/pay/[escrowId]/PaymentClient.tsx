@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Escrow } from "@/types";
-import { useWallet } from "@/components/providers/WalletProvider";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatUSDC } from "@/utils/currency";
+
+import useWallet from "@/hooks/useWallet";
 import { track } from "@/lib/analytics";
 import { getStellarExpertTxUrl } from "@/lib/explorer";
+import { Escrow } from "@/types";
+import type { FundEscrowResponse } from "@/types/api";
+import { formatUSDC } from "@/utils/currency";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PaymentClient({ escrow }: { escrow: Escrow }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { publicKey, connect, isLoading, error: walletError } = useWallet();
   const isConnected = Boolean(publicKey);
 
@@ -31,7 +33,7 @@ export default function PaymentClient({ escrow }: { escrow: Escrow }) {
         body: JSON.stringify({ buyerPublicKey: publicKey }),
       });
       if (!res.ok) throw new Error("Payment submission failed");
-      const data = await res.json();
+      const data = (await res.json()) as FundEscrowResponse;
       setTxHash(data.txHash ?? data.transactionHash ?? data.hash ?? "mock_tx_hash");
       track("payment_completed", { escrowId: escrow.id });
     } catch (e: unknown) {

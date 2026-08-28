@@ -1,9 +1,12 @@
-import { render, screen, act } from "@testing-library/react";
-import { WalletProvider, useWallet } from "./WalletProvider";
-import { NetworkProvider } from "./NetworkProvider";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as freighter from "@/lib/stellar/freighter";
+import { act,render, screen } from "@testing-library/react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
+import useWallet from "@/hooks/useWallet";
 import * as stellar from "@/lib/stellar";
+import * as freighter from "@/lib/stellar/freighter";
+
+import { NetworkProvider } from "./NetworkProvider";
+import { WalletProvider } from "./WalletProvider";
 
 vi.mock("@/lib/stellar/freighter", () => ({
   getAddress: vi.fn(),
@@ -46,6 +49,7 @@ function renderWithProviders(ui: React.ReactElement) {
 describe("WalletProvider SEP-10 Flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it("completes SEP-10 flow on connect", async () => {
@@ -54,7 +58,9 @@ describe("WalletProvider SEP-10 Flow", () => {
     const mockSignedXdr = "signed-xdr";
     const mockToken = "jwt-token";
 
-    vi.mocked(freighter.isConnected).mockResolvedValue(true);
+    vi.mocked(freighter.isFreighterInstalled).mockResolvedValue(true);
+    vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: true });
+    vi.mocked(freighter.connectFreighter).mockResolvedValue(mockPubKey);
     vi.mocked(freighter.getAddress!).mockResolvedValue({ address: mockPubKey });
     vi.mocked(stellar.getChallenge).mockResolvedValue(mockChallenge);
     vi.mocked(freighter.signTransaction).mockResolvedValue(mockSignedXdr);
@@ -78,7 +84,9 @@ describe("WalletProvider SEP-10 Flow", () => {
   });
 
   it("handles errors during authentication", async () => {
-    vi.mocked(freighter.isConnected).mockResolvedValue(true);
+    vi.mocked(freighter.isFreighterInstalled).mockResolvedValue(true);
+    vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: true });
+    vi.mocked(freighter.connectFreighter).mockResolvedValue("GABC123");
     vi.mocked(freighter.getAddress!).mockResolvedValue({ address: "GABC123" });
     vi.mocked(stellar.getChallenge).mockRejectedValue(
       new Error("Challenge failed")

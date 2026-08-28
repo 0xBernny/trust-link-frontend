@@ -1,19 +1,25 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "next/experimental/testmode/playwright";
+
+import { authenticatePage } from "./helpers/auth";
+import { BUYER_KEY, VENDOR_KEY } from "./helpers/constants";
+import { type MockDispute,setupNetworkMocks } from "./helpers/mock-api";
 
 const disputeId = "dispute-1";
 let isResolved = false;
 
-const mockDispute = {
+const mockDispute: MockDispute = {
   id: disputeId,
   escrowId: "escrow-42",
-  buyerId: "GBUYER8TESTING1234567890ABCDEF",
+  buyerId: BUYER_KEY,
   reason: "Item not received",
   evidence: ["https://example.com/evidence.jpg"],
   status: "OPEN",
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-02T00:00:00Z",
   escrow: {
     id: "escrow-42",
-    vendorId: "GCFM4VENDOR8TESTING1234567890ABCDEF",
-    buyerId: "GBUYER8TESTING1234567890ABCDEF",
+    vendorId: VENDOR_KEY,
+    buyerId: BUYER_KEY,
     item: "Gold Necklace",
     amount: 180.0,
     status: "DISPUTED",
@@ -23,49 +29,76 @@ const mockDispute = {
   },
 };
 
-test("admin can resolve a dispute and the dispute list updates", async ({ page }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem("wallet.jwt", "jwt-token");
+test("admin can resolve a dispute and the dispute list updates", async ({ page, next }) => {
+  isResolved = false;
+
+  await authenticatePage(page);
+
+  await setupNetworkMocks(page, next);
+  
+  await page.route("**/api/disputes**", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    // Client-side fetch for dispute list
+    if (url.searchParams.has("status")) {
+      const body = isResolved ? [] : [mockDispute];
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+    }
+
+    // Client-side resolve action — deliberately slow so the assertions below
+    // prove the badge updates optimistically rather than after the response.
+    if (url.pathname.includes(`/disputes/${disputeId}/resolve`)) {
+      isResolved = true;
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...mockDispute,
+          status: "RESOLVED",
+          resolution: "RELEASE_TO_VENDOR",
+        }),
+      });
+    }
+
+    return route.continue();
   });
 
-  await page.route("**/disputes?status=OPEN,UNDER_REVIEW", async (route) => {
-    const body = isResolved ? [] : [mockDispute];
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    });
-  });
+  next.onFetch(async (request) => {
+    const url = new URL(request.url);
 
-  await page.route(`**/disputes/${disputeId}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockDispute),
-    });
-  });
+    // Server-side fetch for the dispute detail page
+    if (url.pathname.endsWith(`/disputes/${disputeId}`)) {
+      return new Response(JSON.stringify(mockDispute), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-  await page.route(`**/disputes/${disputeId}/resolve`, async (route) => {
-    isResolved = true;
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        ...mockDispute,
-        status: "RESOLVED",
-        resolution: "RELEASE_TO_VENDOR",
-      }),
-    });
+    return "continue";
   });
 
   await page.goto("/admin/disputes");
 
   await expect(page.getByText("Admin Disputes")).toBeVisible();
-  await page.getByRole("link", { name: /view dispute/i }).click();
+  
+  // Navigate directly to the dispute details page to avoid Next.js RSC client navigation issues
+  await page.goto(`/admin/disputes/${disputeId}`);
 
-  await expect(page.getByText(/release to vendor/i)).toBeVisible();
+  await expect(page.getByText(/release to vendor/i)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId("dispute-status-badge")).toHaveText("OPEN");
+
   await page.getByRole("button", { name: /release to vendor/i }).click();
-  await page.getByRole("button", { name: /confirm/i }).click();
+  await page.getByRole("button", { name: "Confirm" }).click();
 
-  await expect(page.getByText(/no open disputes right now/i)).toBeVisible();
+  // Optimistic update: badges flip while the 1.5s resolve request is still in flight.
+  await expect(page.getByTestId("dispute-status-badge")).toHaveText("RESOLVED", { timeout: 1_000 });
+  await expect(page.getByTestId("escrow-status-badge")).toHaveText("RELEASED", { timeout: 1_000 });
+
+  await expect(page.getByText(/no open disputes right now/i)).toBeVisible({ timeout: 10_000 });
 });

@@ -94,6 +94,25 @@ trustlink-frontend/
 └── types/                          # Shared TypeScript types
 ```
 
+### Escrow State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Created
+    Pending --> Funded : Buyer Pays
+    Pending --> Expired : Time Elapsed
+    Funded --> Shipped : Vendor Ships
+    Shipped --> Completed : Buyer Confirms
+    Funded --> Disputed : Buyer Disputes
+    Shipped --> Disputed : Buyer Disputes
+    Disputed --> Released : Admin (to Vendor)
+    Disputed --> Refunded : Admin (to Buyer)
+    Completed --> [*]
+    Released --> [*]
+    Refunded --> [*]
+    Expired --> [*]
+```
+
 ---
 
 ##  Getting Started
@@ -208,6 +227,9 @@ npm run test
 
 # End-to-end tests (Playwright)
 npm run test:e2e
+
+# End-to-end tests in Playwright UI mode (interactive debugging)
+npm run test:e2e:ui
 
 # Type checking
 npm run type-check

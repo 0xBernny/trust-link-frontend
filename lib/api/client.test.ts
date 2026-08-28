@@ -1,4 +1,5 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { ApiError, createApiClient } from "./client";
 
 const fetchMock = vi.fn();
@@ -33,7 +34,7 @@ describe("api client", () => {
   });
 
   it("returns typed JSON and surfaces ApiError on failure", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse({ message: "bad" }, { ok: false, status: 400, statusText: "Bad Request" }));
+    fetchMock.mockResolvedValue(mockResponse({ message: "bad" }, { ok: false, status: 400, statusText: "Bad Request" }));
 
     const client = createApiClient();
 

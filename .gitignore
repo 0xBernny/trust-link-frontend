@@ -26,6 +26,9 @@
 # misc
 .DS_Store
 *.pem
+*.pdf
+*.stackdump
+storybook-static/
 
 # debug
 npm-debug.log*
@@ -43,6 +46,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+plan.txt
 
 fix.md
 WAVE_ISSUES.md

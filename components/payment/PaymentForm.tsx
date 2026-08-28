@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import useWallet from "@/hooks/useWallet";
-import { signTransaction } from "@/lib/stellar/freighter";
-import { getStellarExpertTxUrl } from "@/lib/explorer";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+
 import { useNetwork } from "@/components/providers/NetworkProvider";
-import { formatUSDC } from "@/utils/currency";
+import useWallet from "@/hooks/useWallet";
+import { getStellarExpertTxUrl } from "@/lib/explorer";
+import { signTransaction } from "@/lib/stellar/freighter";
+import { EscrowStatusConst } from "@/types";
+
 
 export interface PaymentFormProps {
   escrowId: string;
@@ -39,16 +41,13 @@ export async function mockSubmitTransaction(signedXdr: string): Promise<string> 
 
 export default function PaymentForm({
   escrowId,
-  itemName,
   amount,
   protocolFee,
   total,
-  sellerAddress,
-  escrowContractId,
   status,
   onPaymentSuccess,
 }: PaymentFormProps) {
-  const { isConnected } = useWallet();
+  const { status: walletStatus } = useWallet();
   const { network } = useNetwork();
   const [formState, setFormState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -62,7 +61,7 @@ export default function PaymentForm({
       return;
     }
 
-    if (status !== "PENDING" && status !== "Active") {
+    if (status !== EscrowStatusConst.PENDING && status !== "Active") {
       setErrorMessage("Escrow is no longer payable");
       setFormState("error");
       toast.error("Escrow is no longer payable");

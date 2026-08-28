@@ -1,9 +1,12 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import PaymentForm from "../PaymentForm";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
+import { beforeEach, describe, expect, it, type Mock,vi } from "vitest";
+
 import useWallet from "@/hooks/useWallet";
 import { signTransaction } from "@/lib/stellar/freighter";
-import { toast } from "sonner";
+import { EscrowStatusConst } from "@/types";
+
+import PaymentForm from "../PaymentForm";
 
 // Mock dependencies
 vi.mock("@/hooks/useWallet", () => ({
@@ -22,10 +25,10 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("@/lib/explorer", () => ({
-  getStellarExpertUrl: vi.fn().mockImplementation((hash, network) => {
+  getStellarExpertUrl: vi.fn().mockImplementation((hash: string) => {
     return `https://testnet.stellarexpert.io/contract/${hash}`;
   }),
-  getStellarExpertTxUrl: vi.fn().mockImplementation((hash, network) => {
+  getStellarExpertTxUrl: vi.fn().mockImplementation((hash: string) => {
     return `https://testnet.stellarexpert.io/tx/${hash}`;
   }),
 }));
@@ -43,28 +46,26 @@ const defaultProps = {
   total: 10.5,
   sellerAddress: "GSELLER...",
   escrowContractId: "C123...",
-  status: "PENDING",
+  status: EscrowStatusConst.PENDING,
 };
 
 describe("PaymentForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useWallet as any).mockReturnValue({ isConnected: true, status: "connected" });
-    vi.mocked(useWallet).mockReturnValue({ isConnected: true });
+    (useWallet as unknown as Mock).mockReturnValue({ isConnected: true, status: "connected" });
   });
 
   it("renders payment summary and shows amount/fee/total correctly", () => {
     render(<PaymentForm {...defaultProps} />);
 
     expect(screen.getByText("Payment Details")).toBeInTheDocument();
-    expect(screen.getByText("10.00 USDC")).toBeInTheDocument();
-    expect(screen.getByText("0.50 USDC")).toBeInTheDocument();
-    expect(screen.getByText("10.50 USDC")).toBeInTheDocument();
+    expect(screen.getByText("XLM 10")).toBeInTheDocument();
+    expect(screen.getByText("XLM 0.5")).toBeInTheDocument();
+    expect(screen.getByText("XLM 10.5")).toBeInTheDocument();
   });
 
   it("is disabled when wallet is disconnected", () => {
-    (useWallet as any).mockReturnValue({ isConnected: false, status: "disconnected" });
-    vi.mocked(useWallet).mockReturnValue({ isConnected: false });
+    (useWallet as unknown as Mock).mockReturnValue({ isConnected: false, status: "disconnected" });
     render(<PaymentForm {...defaultProps} />);
 
     const button = screen.getByRole("button", { name: /Pay with Freighter/i });
@@ -129,7 +130,7 @@ describe("PaymentForm", () => {
   });
 
   it("shows error if escrow is not payable", async () => {
-    render(<PaymentForm {...defaultProps} status="COMPLETED" />);
+    render(<PaymentForm {...defaultProps} status={EscrowStatusConst.COMPLETED} />);
     const button = screen.getByRole("button", { name: /Pay with Freighter/i });
 
     fireEvent.click(button);

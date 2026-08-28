@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/Skeleton";
-import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import { startTransition,useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 async function fetchPaymentData() {
   await new Promise((resolve) => setTimeout(resolve, 150));
@@ -21,7 +22,7 @@ export default function PaymentSection({ loading = false }: { loading?: boolean 
   }, []);
 
   useEffect(() => {
-    loadData();
+    startTransition(() => loadData());
   }, [loadData]);
 
   if (error) {

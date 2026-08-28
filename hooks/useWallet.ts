@@ -1,10 +1,11 @@
 "use client";
 
-import { useWallet as useWalletFromProvider } from "@/components/providers/WalletProvider";
+import { useContext } from "react";
+
+import { WalletContext } from "@/components/providers/WalletProvider";
 
 /**
- * Convenience re-export of the wallet context hook from
- * {@link WalletProvider}.
+ * The single supported entry point for wallet state and actions.
  *
  * Provides access to the current Stellar / Freighter wallet session,
  * including the connected public key, JWT auth token, and helpers
@@ -45,10 +46,9 @@ import { useWallet as useWalletFromProvider } from "@/components/providers/Walle
  * @see {@link WalletProvider} for the context provider that must wrap your component tree.
  */
 export default function useWallet() {
-  const wallet = useWalletFromProvider();
-
-  return {
-    ...wallet,
-    jwt: wallet.jwt ?? wallet.token ?? null,
-  };
+  const context = useContext(WalletContext);
+  if (context === undefined) {
+    throw new Error("useWallet must be used within a WalletProvider");
+  }
+  return context;
 }

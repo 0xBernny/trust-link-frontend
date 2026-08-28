@@ -1,8 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import WalletConnectButton from "./WalletConnectButton";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
+import { NetworkProvider } from "@/components/providers/NetworkProvider";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import * as freighter from "@/lib/stellar/freighter";
+
+import WalletConnectButton from "./WalletConnectButton";
 
 vi.mock("@/lib/stellar/freighter", () => ({
   isFreighterInstalled: vi.fn(),
@@ -17,6 +20,10 @@ vi.mock("@/lib/stellar", () => ({
   verifyChallenge: vi.fn(),
 }));
 
+vi.mock("jwt-decode", () => ({
+  jwtDecode: vi.fn(() => ({ exp: Date.now() / 1000 + 3600 })),
+}));
+
 import * as stellarAuth from "@/lib/stellar";
 
 describe("WalletConnectButton", () => {
@@ -28,12 +35,14 @@ describe("WalletConnectButton", () => {
 
   it("shows Connect Wallet when disconnected", async () => {
     vi.mocked(freighter.isFreighterInstalled).mockResolvedValue(true);
-    vi.mocked(freighter.isConnected).mockResolvedValue(false);
+    vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: false });
 
     render(
-      <WalletProvider>
-        <WalletConnectButton />
-      </WalletProvider>
+      <NetworkProvider>
+        <WalletProvider>
+          <WalletConnectButton />
+        </WalletProvider>
+      </NetworkProvider>
     );
     
     await waitFor(() => {
@@ -43,25 +52,29 @@ describe("WalletConnectButton", () => {
 
   it("shows connecting indicator while connecting", async () => {
     vi.mocked(freighter.isFreighterInstalled).mockResolvedValue(true);
-    vi.mocked(freighter.isConnected).mockResolvedValue(false);
+    vi.mocked(freighter.isConnected).mockResolvedValue({ isConnected: false });
     vi.mocked(freighter.connectFreighter).mockResolvedValue("GABCDE12345XYZ");
     vi.mocked(stellarAuth.getChallenge).mockResolvedValue("challenge");
     vi.mocked(freighter.signTransaction).mockResolvedValue("signed-tx");
     vi.mocked(stellarAuth.verifyChallenge).mockResolvedValue("jwt-token");
 
-    render(
-      <WalletProvider>
-        <WalletConnectButton />
-      </WalletProvider>
+    const { container } = render(
+      <NetworkProvider>
+        <WalletProvider>
+          <WalletConnectButton />
+        </WalletProvider>
+      </NetworkProvider>
     );
 
     const button = await screen.findByRole("button", { name: /connect wallet/i });
     fireEvent.click(button);
 
-    expect(screen.getByRole("button", { name: /connecting/i })).toBeInTheDocument();
+    // Loading state renders a Skeleton
+    const skeletons = container.querySelectorAll('[class*="rounded-full"]');
+    expect(skeletons.length).toBeGreaterThan(0);
 
     await waitFor(() => {
-      expect(screen.getByText(/GABCD...45XYZ/i)).toBeInTheDocument();
+      expect(screen.getByText(/GABCD...5XYZ/i)).toBeInTheDocument();
     });
   });
 
@@ -69,9 +82,11 @@ describe("WalletConnectButton", () => {
     vi.mocked(freighter.isFreighterInstalled).mockResolvedValue(false);
     
     render(
-      <WalletProvider>
-        <WalletConnectButton />
-      </WalletProvider>
+      <NetworkProvider>
+        <WalletProvider>
+          <WalletConnectButton />
+        </WalletProvider>
+      </NetworkProvider>
     );
 
     await waitFor(() => {

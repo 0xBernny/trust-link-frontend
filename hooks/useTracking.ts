@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+
 import { getTracking } from "@/lib/api";
 import { Tracking } from "@/types";
 
@@ -54,7 +55,7 @@ export function useTracking(escrowId: string | null | undefined) {
     },
     {
       // Poll every 30 seconds
-      refreshInterval: (tracking) => {
+      refreshInterval: (tracking: Tracking | undefined) => {
         if (!tracking) return 30000;
         
         // Stop polling if status is terminal

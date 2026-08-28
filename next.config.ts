@@ -1,5 +1,8 @@
-import type { NextConfig } from "next";
+import { loadEnvConfig } from "@next/env";
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
+
+loadEnvConfig(process.cwd());
 
 const REQUIRED_ENV_VARS = [
   "NEXT_PUBLIC_API_URL",
@@ -23,6 +26,10 @@ Missing required environment variable: ${key}
 
 const nextConfig: NextConfig = {
   compress: true,
+  experimental: { testProxy: true },
+  turbopack: {
+    root: process.cwd(),
+  },
 
   images: {
     formats: ["image/avif", "image/webp"],
@@ -68,6 +75,21 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/vendor/signup",
+        destination: "/create",
+        permanent: true,
+      },
+      {
+        source: "/verify",
+        destination: "/track",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     const sorobanRpcUrl =
       process.env.NEXT_PUBLIC_SOROBAN_RPC_URL ?? "https://soroban-testnet.stellar.org";
@@ -93,7 +115,10 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://stellarexpert.io https://testnet.stellarexpert.io https://*.s3.amazonaws.com https://*.s3.*.amazonaws.com https://images.unsplash.com https://*.cloudinary.com https://*.imgix.net",
       "font-src 'self' data:",
       `connect-src ${connectSrc.join(" ")}`,
-      "frame-ancestors 'none'",
+      // Modern clickjacking defence. Kept in lockstep with the X-Frame-Options
+      // header below so browsers converge on the same framing policy: only
+      // pages served from this origin may embed the app in a frame/iframe.
+      "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
@@ -107,12 +132,16 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "no-cache, must-revalidate" },
         ],
       },
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+      ...(process.env.NODE_ENV === "production"
+        ? [
+            {
+              source: "/_next/static/:path*",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+          ]
+        : []),
       {
         source: "/:path*.(jpg|jpeg|png|gif|svg|webp|avif|ico|woff|woff2|ttf|eot|otf)",
         locale: false,
@@ -130,7 +159,11 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          { key: "X-Frame-Options", value: "DENY" },
+          // Prevents UI redress / clickjacking attacks: third-party sites cannot
+          // load TrustLink in a frame and trick users into clicking through to
+          // escrow or dispute actions. Legacy fallback for browsers that do not
+          // support the CSP `frame-ancestors` directive above.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Content-Security-Policy", value: csp },
