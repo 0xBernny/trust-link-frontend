@@ -33,8 +33,8 @@ export function parseMarkdown(markdown: string): string {
     .replace(/\n/g, "<br>");
   
   // Wrap consecutive <li> elements in <ul>
-  html = html.replace(/(<li>.*?<\/li>)(<br>)?(?=<li>|$)/gs, "$1");
-  html = html.replace(/(<li>.*?<\/li>)+/gs, "<ul class=\"list-disc list-inside space-y-1\">$&</ul>");
+  html = html.replace(/(<li>[\s\S]*?<\/li>)(<br>)?(?=<li>|$)/g, "$1");
+  html = html.replace(/(<li>[\s\S]*?<\/li>)+/g, "<ul class=\"list-disc list-inside space-y-1\">$&</ul>");
   
   return html;
 }
