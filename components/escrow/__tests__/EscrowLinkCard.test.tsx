@@ -193,4 +193,87 @@ describe('EscrowLinkCard Component', () => {
       expect(screen.getByRole('button', { name: /share on whatsapp/i })).toBeInTheDocument();
     });
   });
+
+  describe('Card States', () => {
+    test('renders nothing until the link has loaded', () => {
+      const { container } = render(<EscrowLinkCard />);
+      // fetchEscrowLink is still pending on the first synchronous render.
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    test('renders the loaded escrow summary (status, amount, id)', async () => {
+      await renderAndWait(<EscrowLinkCard />);
+
+      expect(screen.getByText('Active')).toBeInTheDocument();
+      expect(screen.getByText('12,450.00 USDC')).toBeInTheDocument();
+      expect(screen.getByText(/escrow id: 1293/i)).toBeInTheDocument();
+      expect(screen.getByTestId('qr-code')).toBeInTheDocument();
+    });
+  });
+
+  describe('Copy edge cases', () => {
+    test('shows an error message when the Clipboard API is unavailable', async () => {
+      Object.assign(navigator, { clipboard: undefined });
+
+      await renderAndWait(<EscrowLinkCard />);
+      await userEvent.click(screen.getByRole('button', { name: /copy url/i }));
+
+      const errorNode = await screen.findByTestId('copy-error');
+      expect(errorNode).toHaveTextContent(/not supported/i);
+      expect(screen.queryByTestId('copy-success')).not.toBeInTheDocument();
+    });
+
+    test('ignores a second click while a copy is already in flight', async () => {
+      let resolveWrite: (() => void) | undefined;
+      const writeText = vi.fn(
+        () => new Promise<void>((resolve) => { resolveWrite = () => resolve(); })
+      );
+      Object.assign(navigator, { clipboard: { writeText } });
+
+      await renderAndWait(<EscrowLinkCard />);
+      const copyButton = screen.getByRole('button', { name: /copy url/i });
+
+      await userEvent.click(copyButton);
+      await userEvent.click(copyButton);
+
+      expect(writeText).toHaveBeenCalledTimes(1);
+
+      resolveWrite?.();
+      await waitFor(() => {
+        expect(screen.getByTestId('copy-success')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Native share integration', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'share');
+    });
+
+    test('WhatsApp uses the Web Share API when available and skips the app fallback', async () => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { share });
+      const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+      await renderAndWait(<EscrowLinkCard />);
+      await userEvent.click(screen.getByRole('button', { name: /share on whatsapp/i }));
+
+      await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+      expect(share.mock.calls[0][0]).toMatchObject({ url: mockUrl });
+      expect(openSpy).not.toHaveBeenCalled();
+
+      openSpy.mockRestore();
+    });
+
+    test('Instagram falls back to copying the share text when Web Share is unavailable', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { clipboard: { writeText }, share: undefined });
+
+      await renderAndWait(<EscrowLinkCard />);
+      await userEvent.click(screen.getByRole('button', { name: /share on instagram/i }));
+
+      await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+      expect(writeText.mock.calls[0][0]).toContain(mockUrl);
+    });
+  });
 });
