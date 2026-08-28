@@ -148,7 +148,7 @@ export default function EscrowLinkCard({
 
   // Share functions for WhatsApp, Instagram, Twitter/X, and QR code download
   const shareWhatsApp = async () => {
-    const text = `Check out this secure escrow payment link: ${link.url}`;
+    const text = `Pay for your order securely using TrustLink: ${link.url}`;
 
     // Track analytics
     await track("link_share_attempt", { platform: "whatsapp" });
@@ -164,19 +164,19 @@ export default function EscrowLinkCard({
         await track("link_shared", { platform: "whatsapp", method: "native" });
         return;
       } catch (err) {
-        // User cancelled or share failed, fall through to wa.me
+        // User cancelled or share failed, fall through to custom scheme
         if ((err as Error).name !== "AbortError") {
           console.error("Share failed:", err);
         }
       }
     }
 
-    // Fallback: Open WhatsApp web/app
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    // Fallback: Open WhatsApp app using URL scheme
+    const waUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
     await track("link_shared", {
       platform: "whatsapp",
-      method: "whatsapp_web",
+      method: "whatsapp_app",
     });
     toast.success("Opening WhatsApp...");
   };

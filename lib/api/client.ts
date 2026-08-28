@@ -9,6 +9,7 @@ import {
 } from "@/types";
 import type {
   ApiErrorResponse,
+  CancelEscrowResponse,
   CreateDisputeResponse,
   CreateEscrowResponse,
   EmptyResponse,
@@ -260,14 +261,31 @@ export async function patchVendorNotifications(prefs: VendorNotificationPreferen
 }
 
 /**
- * Updates buyer contact information for an escrow.
+ * Cancels an unfunded escrow.
+ *
+ * @param escrowId - The escrow ID to cancel.
+ * @param token - Optional Bearer auth token.
+ * @returns Promise resolving to cancellation response.
+ */
+export async function cancelEscrow(escrowId: string, token?: string): Promise<CancelEscrowResponse> {
+  return request<CancelEscrowResponse>(`/escrow/${escrowId}`, {
+    method: "DELETE",
+  }, token);
+}
+
+/**
+ * Updates buyer contact information (email/phone) and email receipt preference.
  *
  * @param escrowId - The escrow ID.
- * @param data - Optional email and/or phone number.
+ * @param data - Contact information and email receipt opt-in flag.
  * @param token - Optional Bearer auth token.
  * @returns Promise resolving to empty response upon success.
  */
-export async function patchBuyerContact(escrowId: string, data: { email?: string; phone?: string }, token?: string): Promise<EmptyResponse> {
+export async function patchBuyerContact(
+  escrowId: string,
+  data: { email?: string; phone?: string; emailReceipt?: boolean },
+  token?: string
+): Promise<EmptyResponse> {
   await request<EmptyResponse>(`/escrow/${escrowId}/buyer-contact`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -307,6 +325,7 @@ export interface ApiClient {
     escrowId: string,
     data: ShipEscrowInput
   ) => Promise<ShipEscrowResponse>;
+  cancelEscrow: (escrowId: string) => Promise<CancelEscrowResponse>;
   getTracking: (escrowId: string) => Promise<GetTrackingResponse>;
   getSubscription: () => Promise<GetSubscriptionResponse>;
   upgradeSubscription: () => Promise<UpgradeSubscriptionResponse>;
@@ -319,7 +338,7 @@ export interface ApiClient {
   ) => Promise<EmptyResponse>;
   patchBuyerContact: (
     escrowId: string,
-    data: { email?: string; phone?: string }
+    data: { email?: string; phone?: string; emailReceipt?: boolean }
   ) => Promise<EmptyResponse>;
   getVendorAnalytics: () => Promise<GetVendorAnalyticsResponse>;
 }
@@ -334,12 +353,13 @@ export function createApiClient(token?: string): ApiClient {
     resolveDispute: (id: string, resolution: "RELEASE_TO_VENDOR" | "REFUND_BUYER") => resolveDispute(id, resolution, token),
     createDispute: (escrowId: string, data: CreateDisputeInput) => createDispute(escrowId, data, token),
     shipEscrow: (escrowId: string, data: ShipEscrowInput) => shipEscrow(escrowId, data, token),
+    cancelEscrow: (escrowId: string) => cancelEscrow(escrowId, token),
     getTracking: (escrowId: string) => getTracking(escrowId, token),
     getSubscription: () => getSubscription(token),
     upgradeSubscription: () => upgradeSubscription(token),
     getVendorNotificationPreferences: (authToken = token ?? "") => getVendorNotificationPreferences(authToken),
     patchVendorNotifications: (prefs: VendorNotificationPreferences, authToken = token ?? "") => patchVendorNotifications(prefs, authToken),
-    patchBuyerContact: (escrowId: string, data: { email?: string; phone?: string }) => patchBuyerContact(escrowId, data, token),
+    patchBuyerContact: (escrowId: string, data: { email?: string; phone?: string; emailReceipt?: boolean }) => patchBuyerContact(escrowId, data, token),
     getVendorAnalytics: () => getVendorAnalytics(token),
   };
 }

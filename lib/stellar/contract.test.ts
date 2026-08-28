@@ -48,7 +48,16 @@ vi.mock("@stellar/stellar-sdk", () => {
     };
   }
 
+  class MockScVal {}
+
   return {
+    Account: vi.fn().mockImplementation(function (accountId: string, sequence: string) {
+      return {
+        accountId: () => accountId,
+        sequenceNumber: () => sequence,
+        incrementSequenceNumber: () => {},
+      };
+    }),
     Contract: vi.fn().mockImplementation(function(id) {
       return {
         id,
@@ -67,13 +76,22 @@ vi.mock("@stellar/stellar-sdk", () => {
       invokeContractFunction: vi.fn().mockReturnValue({}),
       uploadContractWasm: vi.fn().mockReturnValue({}),
     },
+    nativeToScVal: vi.fn().mockImplementation((val: unknown) => ({ type: "mock-scval", value: val })),
     xdr: {
       TransactionEnvelope: {
         fromXDR: vi.fn().mockReturnValue("tx-envelope"),
       },
+      ScVal: MockScVal,
     },
     rpc: {
       Server: vi.fn().mockImplementation(MockServer),
+      Api: {
+        GetTransactionStatus: {
+          SUCCESS: "SUCCESS",
+          NOT_FOUND: "NOT_FOUND",
+          FAILED: "FAILED",
+        },
+      },
     },
     SorobanRpc: {
       Server: vi.fn().mockImplementation(MockServer),
@@ -396,19 +414,18 @@ describe("lib/stellar/contract.ts", () => {
     const validSourceAccount = "GBRPYHIL2CI3WHZDTOOQFC6EB4RRQQ5O5L3RHODOXJWYDOGNXVFC3J3A";
     const validContractId = "CCCZQVD4JFF2Z56XDQY2XHXGTWHBZWBRWQJL4QBFQZR77EAPBFQWKQ6S";
 
-    function mockResultXdr(encoded: string) {
-      return { toXDR: vi.fn().mockReturnValue(encoded) };
-    }
-
-    function mockServer(options: {
-      sendTransaction: ReturnType<typeof vi.fn>;
-      getTransaction?: ReturnType<typeof vi.fn>;
-    }) {
-      vi.mocked(rpc.Server).mockImplementationOnce(function() {
+    it("fundEscrow returns hash and result XDR on success", async () => {
+      const server = rpc.Server;
+      const mockSendTransaction = vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-1" });
+      const mockGetTransaction = vi.fn().mockResolvedValue({
+        status: "SUCCESS",
+        resultXdr: { toXDR: () => "result-xdr" },
+      });
+      vi.mocked(server).mockImplementationOnce(function() {
         return {
           getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
-          sendTransaction: options.sendTransaction,
-          getTransaction: options.getTransaction ?? vi.fn(),
+          sendTransaction: mockSendTransaction,
+          getTransaction: mockGetTransaction,
         } as unknown as rpc.Server;
       });
     }
@@ -431,25 +448,18 @@ describe("lib/stellar/contract.ts", () => {
       expect(mockGetTransaction).toHaveBeenCalledWith("hash-1");
     });
 
-    it("propagates TxFailed errors from sendTransaction", async () => {
-      mockServer({
-        sendTransaction: vi.fn().mockResolvedValue({
-          status: "ERROR",
-          errorResult: mockResultXdr("TxFailed: bad"),
-        }),
-      });
-
-      await expect(fundEscrow(validContractId, [], validSourceAccount, "TESTNET"))
-        .rejects.toThrow("TxFailed");
-    });
-
-    it("propagates TxFailed errors from getTransaction", async () => {
-      mockServer({
-        sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-failed" }),
-        getTransaction: vi.fn().mockResolvedValue({
-          status: "FAILED",
-          resultXdr: mockResultXdr("TxFailed: bad"),
-        }),
+    it("propagates TxFailed errors", async () => {
+      const server = rpc.Server;
+      vi.mocked(server).mockImplementationOnce(function() {
+        return {
+          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
+          sendTransaction: vi.fn().mockResolvedValue({
+            status: "ERROR",
+            hash: "hash-err",
+            errorResult: { result: () => ({ switch: () => ({ name: "TxFailed" }) }) },
+          }),
+          getTransaction: vi.fn(),
+        } as unknown as rpc.Server;
       });
 
       await expect(fundEscrow(validContractId, [], validSourceAccount, "TESTNET"))
@@ -457,11 +467,16 @@ describe("lib/stellar/contract.ts", () => {
     });
 
     it("propagates TxExpired errors", async () => {
-      mockServer({
-        sendTransaction: vi.fn().mockResolvedValue({
-          status: "ERROR",
-          errorResult: mockResultXdr("TxExpired: expired"),
-        }),
+      const server = rpc.Server;
+      vi.mocked(server).mockImplementationOnce(function() {
+        return {
+          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
+          sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-2" }),
+          getTransaction: vi.fn().mockResolvedValue({
+            status: "FAILED",
+            resultXdr: { result: () => ({ switch: () => ({ name: "TxExpired" }) }) },
+          }),
+        } as unknown as rpc.Server;
       });
 
       await expect(confirmDelivery(validContractId, [], validSourceAccount, "TESTNET"))
@@ -469,12 +484,16 @@ describe("lib/stellar/contract.ts", () => {
     });
 
     it("raises dispute through its contract method", async () => {
-      mockServer({
-        sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-2" }),
-        getTransaction: vi.fn().mockResolvedValue({
-          status: "SUCCESS",
-          resultXdr: mockResultXdr("result-xdr-2"),
-        }),
+      const server = rpc.Server;
+      vi.mocked(server).mockImplementationOnce(function() {
+        return {
+          getAccount: vi.fn().mockResolvedValue({ accountId: validSourceAccount, sequenceNumber: "0" }),
+          sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-2" }),
+          getTransaction: vi.fn().mockResolvedValue({
+            status: "SUCCESS",
+            resultXdr: { toXDR: () => "result-xdr-2" },
+          }),
+        } as unknown as rpc.Server;
       });
 
       const result = await raiseDispute(validContractId, ["reason"], validSourceAccount, "TESTNET");
