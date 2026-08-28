@@ -116,8 +116,7 @@ export default function FeaturedArtistSection() {
                   the correct space even before the img intrinsic size is known.
                 */}
                 <div
-                  className="w-20 h-20 flex-shrink-0 rounded-full bg-[var(--muted-bg)] overflow-hidden mb-4 ring-2 ring-[var(--border)] group-hover:ring-[var(--accent)] transition-all"
-                  style={{ aspectRatio: "1 / 1" }}
+                  className="w-20 h-20 flex-shrink-0 aspect-square rounded-full bg-[var(--muted-bg)] overflow-hidden mb-4 ring-2 ring-[var(--border)] group-hover:ring-[var(--accent)] transition-all"
                 >
                   <OptimizedImage
                     src={artist.imageUrl}

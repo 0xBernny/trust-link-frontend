@@ -68,25 +68,22 @@ export default function Home() {
           aria-hidden="true"
         >
           <div
-            className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float"
-            style={{ willChange: "transform" }}
+            className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float will-change-transform"
           />
           <div
-            className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-float"
-            style={{ animationDelay: "2s", willChange: "transform" }}
+            className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-float will-change-transform [animation-delay:2s]"
           />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
           <div className="text-center">
             {/*
               LCP candidate. Plain white text — no extra CSS-variable lookup.
-              The accent line uses the literal colour value so it paints
-              immediately without waiting for custom-property resolution.
+              The accent line uses Tailwind utility class text-[#a89eff].
             */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
               Secure Escrow for
-              {/* Literal hex keeps this span from blocking first paint */}
-              <span className="block" style={{ color: "#a89eff" }}>
+              {/* Tailwind utility keeps this span from blocking first paint */}
+              <span className="block text-[#a89eff]">
                 Every Transaction
               </span>
             </h1>
