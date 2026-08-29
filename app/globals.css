@@ -39,7 +39,7 @@
      success = funded/released, warning = pending action, destructive = dispute
      or failure. Theme-independent so status colour never shifts meaning. */
   --success: #22C55E;
-  --warning: #F59E0B;
+  --warning: #D97706;
   --destructive: #EF4444;
 
   /* --- Neutral / chrome --------------------------------------------------

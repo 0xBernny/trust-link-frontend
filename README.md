@@ -260,7 +260,7 @@ TrustLink uses **shadcn/ui** components built on Radix UI primitives, styled wit
 | `--primary` | `#1B2A6B` (navy) | CTAs, headers |
 | `--accent` | `#7B68EE` (stellar purple) | Highlights, links |
 | `--success` | `#22C55E` | Delivery confirmed, funds released |
-| `--warning` | `#F59E0B` | In transit, awaiting confirmation |
+| `--warning` | `#D97706` | In transit, awaiting confirmation |
 | `--destructive` | `#EF4444` | Dispute raised, errors |
 
 ### Component Rules

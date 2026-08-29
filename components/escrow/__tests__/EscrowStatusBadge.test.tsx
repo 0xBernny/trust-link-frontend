@@ -22,7 +22,7 @@ describe("EscrowStatusBadge", () => {
     (state) => {
       const { label, variant } = ESCROW_STATUS_MAP[state];
       render(<EscrowStatusBadge status={state} />);
-      const badge = screen.getByText(label);
+      const badge = screen.getByText(`Status updated to: ${label}`);
       expect(badge).toBeInTheDocument();
       expect(badge.className).toContain(VARIANT_CLASSES[variant as string]);
     }
@@ -30,19 +30,19 @@ describe("EscrowStatusBadge", () => {
 
   it("normalizes case-insensitive status strings", () => {
     render(<EscrowStatusBadge status="pEnDiNg" />);
-    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.getByText("Status updated to: Pending")).toBeInTheDocument();
   });
 
   it("handles unknown states safely", () => {
     render(<EscrowStatusBadge status="UNKNOWN_STATE" />);
-    const badge = screen.getByText("UNKNOWN_STATE");
+    const badge = screen.getByText("Status updated to: UNKNOWN_STATE");
     expect(badge).toBeInTheDocument();
     expect(badge.className).toContain("bg-zinc-100");
   });
 
   it("accepts and applies custom className", () => {
     render(<EscrowStatusBadge status="Funded" className="custom-class" />);
-    const badge = screen.getByText("Funded");
+    const badge = screen.getByText("Status updated to: Funded");
     expect(badge.className).toContain("custom-class");
   });
 });
