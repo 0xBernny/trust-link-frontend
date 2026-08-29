@@ -175,7 +175,12 @@ export default function TrackingTimeline({
 
               return (
                 <div key={stage.id} className="w-full flex-shrink-0 md:w-auto md:flex-shrink">
-                  <div className="flex items-start gap-4">
+                  <div
+                    tabIndex={0}
+                    role="listitem"
+                    aria-current={isCurrent ? "step" : undefined}
+                    className="flex items-start gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
                     {/* Icon */}
                     <div
                       className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${
