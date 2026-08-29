@@ -428,11 +428,24 @@ describe("lib/stellar/contract.ts", () => {
           getTransaction: mockGetTransaction,
         } as unknown as rpc.Server;
       });
+    }
+
+    it("fundEscrow returns hash and result XDR on success", async () => {
+      const mockSendTransaction = vi.fn().mockResolvedValue({ status: "PENDING", hash: "hash-1" });
+      const mockGetTransaction = vi.fn().mockResolvedValue({
+        status: "SUCCESS",
+        resultXdr: mockResultXdr("result-xdr"),
+      });
+      mockServer({
+        sendTransaction: mockSendTransaction,
+        getTransaction: mockGetTransaction,
+      });
 
       const result = await fundEscrow(validContractId, ["arg"], validSourceAccount, "TESTNET");
 
       expect(result).toEqual({ hash: "hash-1", resultXdr: "result-xdr" });
       expect(freighter.signTransaction).toHaveBeenCalled();
+      expect(mockGetTransaction).toHaveBeenCalledWith("hash-1");
     });
 
     it("propagates TxFailed errors", async () => {
