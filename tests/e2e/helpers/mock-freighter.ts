@@ -21,6 +21,21 @@ export async function mockFreighter(
   await page.addInitScript(
     ({ pubKey, signedTx, rejectSignature }) => {
       (window as unknown as Record<string, unknown>).freighter = 'mocked';
+
+      (window as unknown as Record<string, unknown>).freighterApi = {
+        getPublicKey: async () => pubKey,
+        signTransaction: async (_xdr: string) => {
+          if (rejectSignature) {
+            throw new Error("User declined access");
+          }
+          return { signedTxXdr: signedTx, signerAddress: pubKey };
+        },
+        isConnected: async () => true,
+        isAllowed: async () => true,
+        setAllowed: async () => true,
+        getNetwork: async () => ({ network: "TESTNET", networkUrl: "", networkPassphrase: "Test SDF Network ; September 2015" }),
+      };
+
       window.addEventListener('message', (e: MessageEvent) => {
         if (e.source !== window || !e.data) return;
         if (e.data.source !== 'FREIGHTER_EXTERNAL_MSG_REQUEST') return;
