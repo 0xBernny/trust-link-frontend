@@ -128,10 +128,9 @@ export default function FocusTrap({
     <div
       ref={containerRef}
       onKeyDown={handleKeyDown}
-      className={className}
+      className={className ? `${className} outline-none` : "outline-none"}
       // Ensure the container itself is not in the natural tab order.
       tabIndex={-1}
-      style={{ outline: "none" }}
     >
       {children}
     </div>
