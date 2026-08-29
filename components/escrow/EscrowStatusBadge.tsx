@@ -22,8 +22,12 @@ export function EscrowStatusBadge({ status, className }: EscrowStatusBadgeProps)
   };
 
   return (
-    <Badge variant={config.variant} className={cn("whitespace-nowrap", className)}>
-      {config.label}
+    <Badge
+      variant={config.variant}
+      className={cn("whitespace-nowrap", className)}
+      aria-live="polite"
+    >
+      Status updated to: {config.label}
     </Badge>
   );
 }
