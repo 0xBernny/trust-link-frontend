@@ -54,6 +54,8 @@
     "freighterNotInstalled": "Freighter n'est pas installé. Veuillez installer Freighter pour continuer.",
     "signatureCompleted": "Signature Freighter effectuée. Votre autorisation de paiement a été enregistrée.",
     "walletSignatureError": "Impossible de déclencher la signature du portefeuille.",
+    "sendReceipt": "M'envoyer un reçu",
+    "emailReceipt": "Adresse e-mail pour le reçu",
     "payNow": "Payer maintenant",
     "waitingForFreighter": "En attente de Freighter...",
     "expiredCountdown": "Expiré"

@@ -54,6 +54,8 @@
     "freighterNotInstalled": "Freighter is not installed. Please install Freighter to continue.",
     "signatureCompleted": "Freighter signature completed. Your payment authorization was captured.",
     "walletSignatureError": "Unable to trigger wallet signature.",
+    "sendReceipt": "Send me a receipt",
+    "emailReceipt": "Email address for receipt",
     "payNow": "Pay Now",
     "waitingForFreighter": "Waiting for Freighter...",
     "expiredCountdown": "Expired"
