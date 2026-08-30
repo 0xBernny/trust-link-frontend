@@ -265,6 +265,31 @@ describe('EscrowLinkCard Component', () => {
       openSpy.mockRestore();
     });
 
+    test('renders native share button and calls navigator.share with title, text, and url when supported', async () => {
+      const share = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { share });
+
+      await renderAndWait(<EscrowLinkCard />);
+      const shareBtn = screen.getByRole('button', { name: /native share/i });
+      expect(shareBtn).toBeInTheDocument();
+
+      await userEvent.click(shareBtn);
+      await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+      expect(share).toHaveBeenCalledWith({
+        title: 'Escrow Agreement 1293',
+        text: expect.stringContaining('Pay for your order securely using TrustLink: https://trustlink.example.com/pay/1293'),
+        url: mockUrl,
+      });
+    });
+
+    test('falls back to copy link button when navigator.share is unsupported', async () => {
+      Object.assign(navigator, { share: undefined });
+
+      await renderAndWait(<EscrowLinkCard />);
+      expect(screen.queryByRole('button', { name: /native share/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /copy url/i })).toBeInTheDocument();
+    });
+
     test('Instagram falls back to copying the share text when Web Share is unavailable', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       Object.assign(navigator, { clipboard: { writeText }, share: undefined });
@@ -277,3 +302,4 @@ describe('EscrowLinkCard Component', () => {
     });
   });
 });
+
