@@ -4,18 +4,23 @@ import Link from "next/link";
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useCurrency } from "@/components/providers/CurrencyProvider";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import { formatTimeAgo } from "@/lib/utils";
 import type { Escrow } from "@/types";
-import { formatUSDC } from "@/utils/currency";
 
 interface EscrowTableRowProps {
   escrow: Escrow;
   onMarkShipped: (escrow: Escrow) => void;
+  onCancelEscrow: (escrow: Escrow) => void;
 }
 
-function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps) {
+function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: EscrowTableRowProps) {
   const { i18n } = useTranslation();
+  const { formatAmount } = useCurrency();
+  
+  const isPending = escrow.status === "PENDING";
+  const isFunded = escrow.status === "FUNDED";
 
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -38,7 +43,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps)
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
               <span>Buyer: {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : "Unknown"}</span>
               <span>•</span>
-              <span>Amount: {formatUSDC(escrow.amount)}</span>
+              <span>Amount: {formatAmount(escrow.amount)}</span>
               <span>•</span>
               <span>Created: {formatTimeAgo(escrow.createdAt, i18n.language)}</span>
             </div>
@@ -55,20 +60,36 @@ function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps)
             >
               View
             </Link>
-            <button
-              type="button"
-              onClick={() => onMarkShipped(escrow)}
-              onKeyDown={(e) => {
-                if ((e.key === "Enter" || e.key === " ") && escrow.status === "FUNDED") {
-                  e.preventDefault();
-                  onMarkShipped(escrow);
-                }
-              }}
-              disabled={escrow.status !== "FUNDED"}
-              className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              Mark Shipped
-            </button>
+            {isPending && (
+              <button
+                type="button"
+                onClick={() => onCancelEscrow(escrow)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onCancelEscrow(escrow);
+                  }
+                }}
+                className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+              >
+                Cancel
+              </button>
+            )}
+            {isFunded && (
+              <button
+                type="button"
+                onClick={() => onMarkShipped(escrow)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onMarkShipped(escrow);
+                  }
+                }}
+                className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              >
+                Mark Shipped
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -79,7 +100,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped }: EscrowTableRowProps)
 /**
  * Memoized table row for the vendor dashboard escrow list.
  * Prevents unnecessary re-renders when parent state changes (e.g. search query, filters).
- * Only re-renders when the escrow data or onMarkShipped callback changes.
+ * Only re-renders when the escrow data or callbacks change.
  */
 const EscrowTableRow = memo(EscrowTableRowComponent);
 

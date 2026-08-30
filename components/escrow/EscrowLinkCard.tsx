@@ -5,6 +5,7 @@ import {
   Download,
   Image as ImageIcon,
   MessageCircle,
+  Share2,
   X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -78,6 +79,8 @@ export default function EscrowLinkCard({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const canShare = typeof navigator !== "undefined" && Boolean(navigator.share);
+
   const loadLink = useCallback(() => {
     setError(null);
     fetchEscrowLink().then(setLink).catch(setError);
@@ -116,6 +119,23 @@ export default function EscrowLinkCard({
 
   if (!link) return null;
 
+  const handleNativeShare = async () => {
+    if (!navigator.share || !link) return;
+
+    try {
+      await navigator.share({
+        title: link.title,
+        text: `Pay for your order securely using TrustLink: ${link.url}`,
+        url: link.url,
+      });
+      await track("link_shared", { platform: "native", method: "escrow_card" });
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    }
+  };
+
   const handleCopy = async () => {
     if (isCopying) return;
 
@@ -148,7 +168,7 @@ export default function EscrowLinkCard({
 
   // Share functions for WhatsApp, Instagram, Twitter/X, and QR code download
   const shareWhatsApp = async () => {
-    const text = `Check out this secure escrow payment link: ${link.url}`;
+    const text = `Pay for your order securely using TrustLink: ${link.url}`;
 
     // Track analytics
     await track("link_share_attempt", { platform: "whatsapp" });
@@ -164,19 +184,19 @@ export default function EscrowLinkCard({
         await track("link_shared", { platform: "whatsapp", method: "native" });
         return;
       } catch (err) {
-        // User cancelled or share failed, fall through to wa.me
+        // User cancelled or share failed, fall through to custom scheme
         if ((err as Error).name !== "AbortError") {
           console.error("Share failed:", err);
         }
       }
     }
 
-    // Fallback: Open WhatsApp web/app
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    // Fallback: Open WhatsApp app using URL scheme
+    const waUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
     await track("link_shared", {
       platform: "whatsapp",
-      method: "whatsapp_web",
+      method: "whatsapp_app",
     });
     toast.success("Opening WhatsApp...");
   };
@@ -284,16 +304,29 @@ export default function EscrowLinkCard({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleCopy}
-            disabled={isCopying}
-            aria-label="Copy URL"
-            title="Copy link to clipboard"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
+          {canShare ? (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNativeShare}
+              aria-label="Native Share"
+              title="Share via native share sheet"
+              className="hover:bg-blue-50 dark:hover:bg-blue-950"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopy}
+              disabled={isCopying}
+              aria-label="Copy URL"
+              title="Copy link to clipboard"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="outline"
             size="icon"

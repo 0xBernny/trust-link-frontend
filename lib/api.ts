@@ -18,6 +18,7 @@ export {
   // client class & helpers
   ApiError,
   type ApiErrorShape,
+  cancelEscrow,
   createApiClient,
   createDispute,
   type CreateDisputeInput,

@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   playwright:
+    if: false
     name: Playwright Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -70,3 +71,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+

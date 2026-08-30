@@ -1,80 +1,20 @@
 "use client";
 
-import { type FormEvent,useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import ShareModal from "@/components/escrow/ShareModal";
+import { FormField } from "@/components/ui/FormField";
+import { QrCode } from "@/components/ui/QrCode";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
-import { EscrowCreateSchema, EscrowCreateValues, shippingOptions, type ShippingWindow } from "@/lib/validations";
-
-const defaultValues: EscrowCreateValues = {
-  itemName: "",
-  priceUSDC: "",
-  description: "",
-  shippingWindow: shippingOptions[0],
-};
-
-function buildQrMatrix(value: string) {
-  const size = 21;
-  const matrix = Array.from({ length: size }, () => Array<boolean>(size).fill(false));
-  const seed = Array.from(value).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-  const setFinder = (row: number, col: number) => {
-    for (let y = 0; y < 7; y += 1) {
-      for (let x = 0; x < 7; x += 1) {
-        const isBorder = x === 0 || y === 0 || x === 6 || y === 6;
-        const isCenter = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-        matrix[row + y][col + x] = isBorder || isCenter;
-      }
-    }
-  };
-
-  setFinder(0, 0);
-  setFinder(0, size - 7);
-  setFinder(size - 7, 0);
-
-  for (let i = 8; i < size - 8; i += 1) {
-    matrix[6][i] = i % 2 === 0;
-    matrix[i][6] = i % 2 === 0;
-  }
-
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      if (matrix[row][col]) {
-        continue;
-      }
-
-      const shouldFill = ((row * 11 + col * 17 + seed) % 7) < 3;
-      if (shouldFill) {
-        matrix[row][col] = true;
-      }
-    }
-  }
-
-  return matrix;
-}
-
-function QrCode({ value }: { value: string }) {
-  const matrix = buildQrMatrix(value);
-
-  return (
-    <svg
-      data-testid="qr-code"
-      role="img"
-      aria-label={`QR code for ${value}`}
-      viewBox="0 0 21 21"
-      className="h-48 w-48 rounded-3xl border border-zinc-200 bg-white p-3 shadow-inner dark:border-zinc-800"
-      shapeRendering="crispEdges"
-    >
-      <rect width="21" height="21" fill="white" />
-      {matrix.map((row, y) =>
-        row.map((filled, x) =>
-          filled ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="black" /> : null
-        )
-      )}
-    </svg>
-  );
-}
+import { renderMarkdown } from "@/lib/markdown";
+import {
+  EscrowCreateSchema,
+  EscrowCreateValues,
+  shippingOptions,
+  type ShippingWindow,
+} from "@/lib/validations";
 
 export default function EscrowCreateForm() {
   const [values, setValues] = useState<EscrowCreateValues>({
@@ -83,14 +23,20 @@ export default function EscrowCreateForm() {
     description: "",
     shippingWindow: shippingOptions[0],
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof EscrowCreateValues, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof EscrowCreateValues, string>>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const updateField = <K extends keyof EscrowCreateValues>(field: K, value: EscrowCreateValues[K]) => {
+  const updateField = <K extends keyof EscrowCreateValues>(
+    field: K,
+    value: EscrowCreateValues[K]
+  ) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
@@ -138,9 +84,13 @@ export default function EscrowCreateForm() {
       }
 
       setResultUrl(response.url);
+      setIsModalOpen(true);
       track("link_created");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unexpected error creating the link.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unexpected error creating the link.";
       setSubmitError(message);
       toast.error(message);
     } finally {
@@ -151,10 +101,14 @@ export default function EscrowCreateForm() {
   const downloadQR = () => {
     const canvas = canvasRef.current;
     if (!canvas || !resultUrl) return;
-    const svgEl = document.querySelector<SVGSVGElement>("[data-testid=\"qr-code\"]");
+    const svgEl = document.querySelector<SVGSVGElement>(
+      '[data-testid="qr-code"]'
+    );
     if (!svgEl) return;
     const svgData = new XMLSerializer().serializeToString(svgEl);
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
     const url = URL.createObjectURL(svgBlob);
     const img = new Image();
     img.onload = () => {
@@ -178,10 +132,7 @@ export default function EscrowCreateForm() {
   return (
     <div className="mx-auto w-full max-w-2xl rounded-[32px] border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-8">
       <form onSubmit={onSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="itemName" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Item name
-          </label>
+        <FormField label="Item name" id="itemName" error={errors.itemName}>
           <input
             id="itemName"
             name="itemName"
@@ -191,20 +142,10 @@ export default function EscrowCreateForm() {
             disabled={isSubmitting}
             placeholder="Awesome Widget"
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
-            aria-invalid={Boolean(errors.itemName)}
-            aria-describedby={errors.itemName ? "itemName-error" : undefined}
           />
-          {errors.itemName ? (
-            <p id="itemName-error" role="alert" className="mt-2 text-sm text-red-600">
-              {errors.itemName}
-            </p>
-          ) : null}
-        </div>
+        </FormField>
 
-        <div>
-          <label htmlFor="priceUSDC" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Price (USDC)
-          </label>
+        <FormField label="Price (USDC)" id="priceUSDC" error={errors.priceUSDC}>
           <input
             id="priceUSDC"
             name="priceUSDC"
@@ -215,54 +156,46 @@ export default function EscrowCreateForm() {
             disabled={isSubmitting}
             placeholder="123.45"
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
-            aria-invalid={Boolean(errors.priceUSDC)}
-            aria-describedby={errors.priceUSDC ? "priceUSDC-error" : undefined}
           />
-          {errors.priceUSDC ? (
-            <p id="priceUSDC-error" role="alert" className="mt-2 text-sm text-red-600">
-              {errors.priceUSDC}
-            </p>
-          ) : null}
-        </div>
+        </FormField>
 
-        <div>
-          <label
-            htmlFor="description"
-            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Description
-          </label>
-          <input
+        <FormField
+          label="Description"
+          id="description"
+          error={errors.description}
+        >
+          <textarea
             id="description"
             name="description"
-            type="text"
             value={values.description}
             onChange={(event) => updateField("description", event.target.value)}
             disabled={isSubmitting}
-            placeholder="Brief description"
+            placeholder="Brief description (markdown supported: **bold**, *italic*, [link](url))"
+            rows={3}
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
-            aria-invalid={Boolean(errors.description)}
-            aria-describedby={errors.description ? "description-error" : undefined}
           />
-          {errors.description ? (
-            <p id="description-error" role="alert" className="mt-2 text-sm text-red-600">
-              {errors.description}
-            </p>
-          ) : null}
-        </div>
+          {values.description && (
+            <div className="mt-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
+              <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">Preview:</p>
+              <div 
+                className="text-sm text-zinc-700 dark:text-zinc-300"
+                dangerouslySetInnerHTML={renderMarkdown(values.description)}
+              />
+            </div>
+          )}
+        </FormField>
 
-        <div>
-          <label
-            htmlFor="shippingWindow"
-            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Shipping window
-          </label>
+        <FormField label="Shipping window" id="shippingWindow">
           <select
             id="shippingWindow"
             name="shippingWindow"
             value={values.shippingWindow}
-            onChange={(event) => updateField("shippingWindow", event.target.value as ShippingWindow)}
+            onChange={(event) =>
+              updateField(
+                "shippingWindow",
+                event.target.value as ShippingWindow
+              )
+            }
             disabled={isSubmitting}
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
           >
@@ -272,10 +205,13 @@ export default function EscrowCreateForm() {
               </option>
             ))}
           </select>
-        </div>
+        </FormField>
 
         {submitError ? (
-          <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+          <p
+            role="alert"
+            className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300"
+          >
             {submitError}
           </p>
         ) : null}
@@ -313,7 +249,10 @@ export default function EscrowCreateForm() {
           </div>
 
           <div className="mt-5">
-            <label htmlFor="shareable-url" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label
+              htmlFor="shareable-url"
+              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
               Shareable URL
             </label>
             <input
@@ -323,7 +262,9 @@ export default function EscrowCreateForm() {
               value={resultUrl}
               className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 font-mono text-sm text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
             />
-            {copyStatus ? <p className="mt-2 text-sm text-emerald-600">{copyStatus}</p> : null}
+            {copyStatus ? (
+              <p className="mt-2 text-sm text-emerald-600">{copyStatus}</p>
+            ) : null}
           </div>
 
           <div className="mt-6 flex flex-col items-center gap-3">
@@ -339,6 +280,15 @@ export default function EscrowCreateForm() {
           </div>
         </section>
       ) : null}
+
+      {resultUrl && (
+        <ShareModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={resultUrl}
+          escrowId={resultUrl.split("/").pop() || "escrow"}
+        />
+      )}
     </div>
   );
 }

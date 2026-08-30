@@ -1,6 +1,5 @@
 import { expect,test } from "next/experimental/testmode/playwright";
 
-import { MOCK_TX_HASH } from "./helpers/constants";
 import { type MockEscrow,setupNetworkMocks, setupNextOnFetch } from "./helpers/mock-api";
 import { mockFreighter } from "./helpers/mock-freighter";
 
@@ -63,5 +62,48 @@ test.describe("Buyer payment flow", () => {
 
     await expect(page.getByText(/This escrow is already funded/i)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/Shipment Tracking/i)).toBeVisible();
+  });
+});
+
+test.describe("Buyer payment flow — wallet rejection", () => {
+  test.beforeEach(async ({ page, next }) => {
+    await setupNetworkMocks(page, next, { escrowId: TEST_ESCROW_ID, mockEscrow });
+
+    // Freighter connects fine, but the user presses "Reject" on the signing
+    // dialog, so `signTransaction` comes back with an error instead of an XDR.
+    await mockFreighter(page, MOCK_PUBLIC_KEY, MOCK_SIGNED_XDR, { rejectSignature: true });
+  });
+
+  test("shows an error toast and no success state when the user rejects the signature", async ({ page }) => {
+    await page.goto(`/pay/${TEST_ESCROW_ID}`);
+
+    const payBtn = page.getByRole("button", { name: /Pay Now/i });
+    // The button stays disabled until the wallet provider finishes initialising,
+    // which also means the payment form has hydrated and won't reset our input.
+    await expect(payBtn).toBeEnabled({ timeout: 15_000 });
+
+    const emailInput = page.getByLabel(/Email address/i);
+    const errorToast = page
+      .locator('[data-sonner-toast][data-type="error"]')
+      .filter({ hasText: /sign|authentication/i });
+
+    // Enter contact details and submit. Retry the whole interaction: a stray
+    // keystroke landing before React finished hydrating the controlled input
+    // would otherwise trip the "provide a contact method" guard instead of
+    // reaching the wallet.
+    await expect(async () => {
+      await emailInput.fill("");
+      await emailInput.pressSequentially("buyer@example.com", { delay: 15 });
+      await expect(emailInput).toHaveValue("buyer@example.com");
+      await payBtn.click();
+      await expect(errorToast.first()).toBeVisible({ timeout: 5_000 });
+    }).toPass({ timeout: 20_000 });
+
+    // The success confirmation must never appear on a rejected signature.
+    await expect(page.getByText(/Freighter signature completed/i)).toHaveCount(0);
+
+    // The button recovers so the buyer can retry.
+    await expect(payBtn).toBeEnabled();
+    await expect(payBtn).toHaveText(/Pay Now/i);
   });
 });

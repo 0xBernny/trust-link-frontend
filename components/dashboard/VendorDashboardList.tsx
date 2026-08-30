@@ -1,28 +1,54 @@
 "use client";
 
-import { Download,Search } from "lucide-react";
-import { startTransition, useCallback,useEffect, useMemo, useState } from "react";
+import { Download, Search } from "lucide-react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import ShipTrackingModal from "@/components/dashboard/ShipTrackingModal";
 import TransactionHistoryExport from "@/components/dashboard/TransactionHistoryExport";
-import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import FetchErrorState, {
+  getFetchErrorMessage,
+} from "@/components/ui/FetchErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getVendorEscrows } from "@/lib/api";
-import { type Escrow,EscrowStatusConst } from "@/types";
+import { cancelEscrow, getVendorEscrows } from "@/lib/api";
+import { type Escrow, EscrowStatusConst } from "@/types";
 import { downloadCsv } from "@/utils/exportCsv";
 
 import EmptyVendorState from "./EmptyVendorState";
 import EscrowTableRow from "./EscrowTableRow";
 
-const STATUS_TABS = ["ALL", EscrowStatusConst.PENDING, EscrowStatusConst.FUNDED, EscrowStatusConst.SHIPPED, EscrowStatusConst.COMPLETED, EscrowStatusConst.DISPUTED, EscrowStatusConst.RELEASED, EscrowStatusConst.REFUNDED, EscrowStatusConst.EXPIRED] as const;
+const STATUS_TABS = [
+  "ALL",
+  EscrowStatusConst.PENDING,
+  EscrowStatusConst.FUNDED,
+  EscrowStatusConst.SHIPPED,
+  EscrowStatusConst.COMPLETED,
+  EscrowStatusConst.DISPUTED,
+  EscrowStatusConst.RELEASED,
+  EscrowStatusConst.REFUNDED,
+  EscrowStatusConst.EXPIRED,
+] as const;
 const ITEMS_PER_PAGE = 10;
 
-export default function VendorDashboardList({ loading = false }: { loading?: boolean }) {
-  useTranslation();
+export default function VendorDashboardList({
+  loading = false,
+}: {
+  loading?: boolean;
+}) {
+  const { t } = useTranslation();
   const [escrows, setEscrows] = useState<Escrow[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(null);
+  const [escrowToCancel, setEscrowToCancel] = useState<Escrow | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [fromDate, setFromDate] = useState("");
@@ -51,11 +77,13 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
         (escrow.buyerId && escrow.buyerId.toLowerCase().includes(query)) ||
         (escrow.item && escrow.item.toLowerCase().includes(query));
 
-      const matchesStatus = statusFilter === "ALL" || escrow.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "ALL" || escrow.status === statusFilter;
 
       const created = new Date(escrow.createdAt).getTime();
       const matchesDate =
-        (start === null || created >= start) && (end === null || created <= end);
+        (start === null || created >= start) &&
+        (end === null || created <= end);
 
       return matchesSearch && matchesStatus && matchesDate;
     });
@@ -65,7 +93,9 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
     setFromDate("");
     setToDate("");
   };
-  const totalPages = filteredEscrows ? Math.ceil(filteredEscrows.length / ITEMS_PER_PAGE) : 0;
+  const totalPages = filteredEscrows
+    ? Math.ceil(filteredEscrows.length / ITEMS_PER_PAGE)
+    : 0;
 
   const paginatedEscrows = useMemo(() => {
     if (!filteredEscrows) return [];
@@ -80,7 +110,9 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       const data = await getVendorEscrows(token);
       setEscrows(data);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to load vendor escrows."));
+      setError(
+        err instanceof Error ? err : new Error("Failed to load vendor escrows.")
+      );
     }
   };
 
@@ -89,11 +121,42 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
   }, []);
 
   const handleShipmentSuccess = (escrowId: string) => {
-    setEscrows((current) =>
-      current?.map((item) =>
-        item.id === escrowId ? { ...item, status: EscrowStatusConst.SHIPPED } : item
-      ) ?? current
+    setEscrows(
+      (current) =>
+        current?.map((item) =>
+          item.id === escrowId
+            ? { ...item, status: EscrowStatusConst.SHIPPED }
+            : item
+        ) ?? current
     );
+  };
+
+  const handleCancelEscrow = useCallback((escrow: Escrow) => {
+    setEscrowToCancel(escrow);
+  }, []);
+
+  const confirmCancelEscrow = async () => {
+    if (!escrowToCancel) return;
+    
+    setIsCancelling(true);
+    try {
+      const token = window.localStorage.getItem("wallet.jwt") || undefined;
+      await cancelEscrow(escrowToCancel.id, token);
+      
+      // Remove cancelled escrow from the list
+      setEscrows((current) => 
+        current?.filter((item) => item.id !== escrowToCancel.id) ?? current
+      );
+      
+      toast.success("Escrow cancelled successfully");
+      setEscrowToCancel(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to cancel escrow.";
+      toast.error(message);
+      setError(new Error(message));
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const handleExportCsv = useCallback(() => {
@@ -129,7 +192,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div
+            key={index}
+            className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+          >
             <Skeleton className="mb-4 h-5 w-1/3" />
             <div className="space-y-3">
               <Skeleton className="h-4 w-full" />
@@ -152,7 +218,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
-            placeholder="Search escrows..."
+            placeholder={t("dashboard.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-white dark:focus:ring-white dark:focus-visible:ring-zinc-300"
@@ -176,14 +242,17 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
             className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            {t("dashboard.exportCsv")}
           </button>
         </div>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
         {STATUS_TABS.map((s) => {
-          const count = s === "ALL" ? escrows.length : escrows.filter((e) => e.status === s).length;
+          const count =
+            s === "ALL"
+              ? escrows.length
+              : escrows.filter((e) => e.status === s).length;
           return (
             <button
               key={s}
@@ -201,7 +270,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
                   : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
-              {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()} ({count})
+              {s === "ALL"
+                ? t("dashboard.allFilter")
+                : s.charAt(0) + s.slice(1).toLowerCase()}{" "}
+              ({count})
             </button>
           );
         })}
@@ -209,7 +281,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       {/* Date range filter */}
       <div className="mb-6 flex flex-wrap items-end gap-3">
         <div className="flex flex-col">
-          <label htmlFor="escrow-from-date" className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label
+            htmlFor="escrow-from-date"
+            className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400"
+          >
             From
           </label>
           <input
@@ -222,7 +297,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
           />
         </div>
         <div className="flex flex-col">
-          <label htmlFor="escrow-to-date" className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label
+            htmlFor="escrow-to-date"
+            className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400"
+          >
             To
           </label>
           <input
@@ -253,7 +331,9 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
 
       {filteredEscrows!.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-zinc-200 py-12 text-center dark:border-zinc-800">
-          <p className="text-zinc-500 dark:text-zinc-400">No escrows found matching your criteria.</p>
+          <p className="text-zinc-500 dark:text-zinc-400">
+            No escrows found matching your criteria.
+          </p>
           <button
             onClick={() => {
               setSearchQuery("");
@@ -280,6 +360,7 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
               key={escrow.id}
               escrow={escrow}
               onMarkShipped={handleMarkShipped}
+              onCancelEscrow={handleCancelEscrow}
             />
           ))}
         </div>
@@ -288,7 +369,14 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
       {filteredEscrows!.length > 0 && totalPages > 1 && (
         <div className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Showing page <span className="font-medium text-zinc-900 dark:text-zinc-100">{currentPage}</span> of <span className="font-medium text-zinc-900 dark:text-zinc-100">{totalPages}</span>
+            Showing page{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {currentPage}
+            </span>{" "}
+            of{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {totalPages}
+            </span>
           </p>
           <div className="flex gap-2">
             <button
@@ -307,7 +395,10 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               onKeyDown={(e) => {
-                if ((e.key === "Enter" || e.key === " ") && currentPage < totalPages) {
+                if (
+                  (e.key === "Enter" || e.key === " ") &&
+                  currentPage < totalPages
+                ) {
                   e.preventDefault();
                   setCurrentPage((p) => Math.min(totalPages, p + 1));
                 }
@@ -327,12 +418,24 @@ export default function VendorDashboardList({ loading = false }: { loading?: boo
           vendorName={selectedEscrow.item}
           open={Boolean(selectedEscrow)}
           onClose={() => setSelectedEscrow(null)}
-                    onSuccess={(escrowId) => {
-              handleShipmentSuccess(escrowId);
-              loadItems();
-            }}
+          onSuccess={(escrowId) => {
+            handleShipmentSuccess(escrowId);
+            loadItems();
+          }}
         />
       )}
+
+      <ConfirmationDialog
+        open={Boolean(escrowToCancel)}
+        title="Cancel Escrow"
+        description={`Are you sure you want to cancel this escrow for "${escrowToCancel?.item}"? This action cannot be undone.`}
+        confirmLabel="Cancel Escrow"
+        cancelLabel="Keep Escrow"
+        onConfirm={confirmCancelEscrow}
+        onCancel={() => setEscrowToCancel(null)}
+        variant="danger"
+        loading={isCancelling}
+      />
     </>
   );
 }

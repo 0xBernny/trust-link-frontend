@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
+  Account,
   BASE_FEE,
   Contract,
+  nativeToScVal,
   Networks,
   Operation,
   rpc,
@@ -113,6 +114,41 @@ function getNetworkPassphrase(
     : Networks.TESTNET;
 }
 
+/** Converts a {@link ContractArg} into the `xdr.ScVal` the Soroban SDK operations require. */
+function toScVal(arg: ContractArg): xdr.ScVal {
+  return arg instanceof xdr.ScVal ? arg : nativeToScVal(arg);
+}
+
+/** Best-effort extraction of the XDR result-code name (e.g. `"txFAILED"`) from a transaction result. */
+function transactionResultCode(result?: xdr.TransactionResult): string | undefined {
+  try {
+    return result?.result().switch().name;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Polls `getTransaction` until the transaction leaves the `NOT_FOUND` state
+ * (i.e. the submitting ledger has closed) or the attempt budget is spent.
+ */
+async function pollTransaction(
+  server: rpc.Server,
+  hash: string,
+  { attempts = 10, intervalMs = 1000 }: { attempts?: number; intervalMs?: number } = {}
+): Promise<rpc.Api.GetTransactionResponse> {
+  let response = await server.getTransaction(hash);
+  let remaining = attempts;
+
+  while (response.status === rpc.Api.GetTransactionStatus.NOT_FOUND && remaining > 0) {
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    response = await server.getTransaction(hash);
+    remaining -= 1;
+  }
+
+  return response;
+}
+
 function toTxError(error: unknown, fallback: string): Error {
   const message = error instanceof Error ? error.message : String(error ?? fallback);
   const normalized = message.includes("TxFailed") || message.includes("tx_failed")
@@ -129,6 +165,16 @@ function toTxError(error: unknown, fallback: string): Error {
     (wrapped as Error & { name?: string }).name = "TxExpired";
   }
   return wrapped;
+}
+
+function encodeTransactionResult(
+  result: xdr.TransactionResult | undefined
+): string {
+  if (!result) {
+    return "";
+  }
+
+  return result.toXDR("base64");
 }
 
 async function invokeSorobanContract(
@@ -161,7 +207,7 @@ async function invokeSorobanContract(
 
   try {
     const account = await server.getAccount(sourceAccount);
-    const tx = new TransactionBuilder(account as any, {
+    const tx = new TransactionBuilder(account, {
       fee,
       networkPassphrase,
     })
@@ -169,8 +215,8 @@ async function invokeSorobanContract(
         Operation.invokeContractFunction({
           contract: contractId,
           function: method,
-          args: args as any,
-        } as any)
+          args: args.map(toScVal),
+        })
       )
       .setTimeout(30)
       .build();
@@ -180,24 +226,23 @@ async function invokeSorobanContract(
       TransactionBuilder.fromXDR(signedXdr, networkPassphrase)
     );
 
-    if ((response as any)?.status === "ERROR" || (response as any)?.status === "FAILED") {
-      throw toTxError((response as any)?.errorResultXdr || (response as any)?.error, "Transaction failed");
+    if (response.status === "ERROR") {
+      throw toTxError(transactionResultCode(response.errorResult), "Transaction failed");
     }
 
-    if ((response as any)?.status === "PENDING") {
-      const txResponse = await server.getTransaction((response as any).hash);
-      if ((txResponse as any).status === "FAILED") {
-        throw toTxError((txResponse as any).errorResultXdr || (txResponse as any).resultXdr, "Transaction failed");
-      }
-      return {
-        hash: (response as any).hash,
-        resultXdr: (txResponse as any).resultXdr || "",
-      };
+    const txResponse = await pollTransaction(server, response.hash);
+
+    if (txResponse.status === rpc.Api.GetTransactionStatus.FAILED) {
+      throw toTxError(transactionResultCode(txResponse.resultXdr), "Transaction failed");
+    }
+
+    if (txResponse.status === rpc.Api.GetTransactionStatus.NOT_FOUND) {
+      throw toTxError(undefined, "Timed out waiting for transaction to be included in a ledger");
     }
 
     return {
-      hash: (response as any).hash || "",
-      resultXdr: (response as any).resultXdr || "",
+      hash: response.hash,
+      resultXdr: txResponse.resultXdr.toXDR("base64"),
     };
   } catch (error) {
     throw toTxError(error, "Transaction submission failed");
@@ -293,24 +338,16 @@ export function buildContractInvocation(options: ContractCallOptions): string {
   // Build the contract instance
   const contract = new Contract(contractId);
 
-  // Create a mock account for transaction building
-  // In real usage, this would be fetched from the network
-  const account = {
-    accountId: sourceAccount,
-    sequenceNumber: "0",
-    incrementSequenceNumber: () => {},
-  };
+  // Placeholder account (sequence 0) for transaction building.
+  // In real usage, this would be fetched from the network via server.getAccount().
+  const account = new Account(sourceAccount, "0");
 
   // Build transaction with contract invocation
-  const transaction = new TransactionBuilder(account as any, {
+  const transaction = new TransactionBuilder(account, {
     fee,
     networkPassphrase,
   })
-    .addOperation(
-      Operation.invokeHostFunction({
-        func: contract.call(method, ...(args as unknown as xdr.ScVal[])) as any,
-      })
-    )
+    .addOperation(contract.call(method, ...args.map(toScVal)))
     .setTimeout(30)
     .build();
 
@@ -405,7 +442,7 @@ export function parseContractResult<TResult = unknown>(
 /**
  * Validate contract method parameters
  * @param {string} method - Method name
- * @param {any[]} args - Method arguments
+ * @param {ContractArg[]} args - Method arguments
  * @returns {{ valid: boolean; error?: string }} Validation result with error message if invalid
  * @example
  * const validation = validateContractMethodCall("transfer", [from, to, amount]);
@@ -460,13 +497,11 @@ export function buildContractDeployment(
   const networkPassphrase =
     network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
 
-  const account = {
-    accountId: sourceAccount,
-    sequenceNumber: "0",
-    incrementSequenceNumber: () => {},
-  };
+  // Placeholder account (sequence 0) for transaction building.
+  // In real usage, this would be fetched from the network via server.getAccount().
+  const account = new Account(sourceAccount, "0");
 
-  const transaction = new TransactionBuilder(account as any, {
+  const transaction = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase,
   })
@@ -483,7 +518,7 @@ export function buildContractDeployment(
 
 /**
  * Check if a response indicates successful contract execution
- * @param {any} response - Contract response
+ * @param {unknown} response - Contract response
  * @returns {boolean} True if successful
  * @example
  * const response = await invokeContract();
