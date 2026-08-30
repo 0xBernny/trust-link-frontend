@@ -5,6 +5,7 @@ import {
   Download,
   Image as ImageIcon,
   MessageCircle,
+  Share2,
   X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -78,6 +79,8 @@ export default function EscrowLinkCard({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const canShare = typeof navigator !== "undefined" && Boolean(navigator.share);
+
   const loadLink = useCallback(() => {
     setError(null);
     fetchEscrowLink().then(setLink).catch(setError);
@@ -115,6 +118,23 @@ export default function EscrowLinkCard({
   }
 
   if (!link) return null;
+
+  const handleNativeShare = async () => {
+    if (!navigator.share || !link) return;
+
+    try {
+      await navigator.share({
+        title: link.title,
+        text: `Pay for your order securely using TrustLink: ${link.url}`,
+        url: link.url,
+      });
+      await track("link_shared", { platform: "native", method: "escrow_card" });
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    }
+  };
 
   const handleCopy = async () => {
     if (isCopying) return;
@@ -284,16 +304,29 @@ export default function EscrowLinkCard({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleCopy}
-            disabled={isCopying}
-            aria-label="Copy URL"
-            title="Copy link to clipboard"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
+          {canShare ? (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNativeShare}
+              aria-label="Native Share"
+              title="Share via native share sheet"
+              className="hover:bg-blue-50 dark:hover:bg-blue-950"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopy}
+              disabled={isCopying}
+              aria-label="Copy URL"
+              title="Copy link to clipboard"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="outline"
             size="icon"

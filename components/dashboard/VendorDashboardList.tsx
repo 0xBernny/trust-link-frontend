@@ -148,9 +148,11 @@ export default function VendorDashboardList({
         current?.filter((item) => item.id !== escrowToCancel.id) ?? current
       );
       
+      toast.success("Escrow cancelled successfully");
       setEscrowToCancel(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to cancel escrow.";
+      toast.error(message);
       setError(new Error(message));
     } finally {
       setIsCancelling(false);

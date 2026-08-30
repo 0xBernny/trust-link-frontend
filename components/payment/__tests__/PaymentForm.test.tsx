@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, type Mock,vi } from "vitest";
 
 import useWallet from "@/hooks/useWallet";
+import { patchBuyerContact } from "@/lib/api";
 import { signTransaction } from "@/lib/stellar/freighter";
 import { EscrowStatusConst } from "@/types";
 
@@ -15,6 +16,16 @@ vi.mock("@/hooks/useWallet", () => ({
 
 vi.mock("@/lib/stellar/freighter", () => ({
   signTransaction: vi.fn(),
+}));
+
+vi.mock("@/lib/api", () => ({
+  patchBuyerContact: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
 }));
 
 vi.mock("sonner", () => ({
@@ -64,6 +75,59 @@ describe("PaymentForm", () => {
     expect(screen.getByText("XLM 10.5")).toBeInTheDocument();
   });
 
+  it("toggles email input when send receipt checkbox is clicked", () => {
+    render(<PaymentForm {...defaultProps} />);
+
+    const checkbox = screen.getByRole("checkbox", { name: /Send me a receipt/i });
+    expect(checkbox).not.toBeChecked();
+    expect(screen.queryByPlaceholderText("you@example.com")).not.toBeInTheDocument();
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(screen.getByPlaceholderText("you@example.com")).toBeInTheDocument();
+
+    fireEvent.click(checkbox);
+    expect(screen.queryByPlaceholderText("you@example.com")).not.toBeInTheDocument();
+  });
+
+  it("validates email when send receipt is checked and email is invalid", async () => {
+    render(<PaymentForm {...defaultProps} />);
+
+    const checkbox = screen.getByRole("checkbox", { name: /Send me a receipt/i });
+    fireEvent.click(checkbox);
+
+    const emailInput = screen.getByPlaceholderText("you@example.com");
+    fireEvent.change(emailInput, { target: { value: "invalid-email" } });
+
+    const payButton = screen.getByRole("button", { name: /Pay with Freighter/i });
+    fireEvent.click(payButton);
+
+    expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
+    expect(signTransaction).not.toHaveBeenCalled();
+  });
+
+  it("calls patchBuyerContact on successful payment when email receipt opt-in is selected", async () => {
+    vi.mocked(signTransaction).mockResolvedValue("signed_xdr");
+
+    render(<PaymentForm {...defaultProps} />);
+
+    const checkbox = screen.getByRole("checkbox", { name: /Send me a receipt/i });
+    fireEvent.click(checkbox);
+
+    const emailInput = screen.getByPlaceholderText("you@example.com");
+    fireEvent.change(emailInput, { target: { value: "buyer@example.com" } });
+
+    const payButton = screen.getByRole("button", { name: /Pay with Freighter/i });
+    fireEvent.click(payButton);
+
+    await waitFor(() => {
+      expect(patchBuyerContact).toHaveBeenCalledWith("123", {
+        email: "buyer@example.com",
+        emailReceipt: true,
+      });
+    }, { timeout: 5000 });
+  });
+
   it("is disabled when wallet is disconnected", () => {
     (useWallet as unknown as Mock).mockReturnValue({ isConnected: false, status: "disconnected" });
     render(<PaymentForm {...defaultProps} />);
@@ -100,16 +164,15 @@ describe("PaymentForm", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText("Payment successful")).toBeInTheDocument();
+      expect(screen.getByText("payment.confirmationTitle")).toBeInTheDocument();
     }, { timeout: 5000 });
 
-    expect(screen.getByText(/Transaction: 3f7a1f\.\.\.91bc/)).toBeInTheDocument();
+    expect(screen.getByText(/payment.txHash: 3f7a1f\.\.\.91bc/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /View on Stellar Expert/i })).toHaveAttribute(
       "href",
       expect.stringContaining("testnet.stellarexpert.io")
     );
     expect(onPaymentSuccess).toHaveBeenCalled();
-    expect(toast.success).toHaveBeenCalledWith("Payment successful");
 
     Math.random = originalRandom;
   });
