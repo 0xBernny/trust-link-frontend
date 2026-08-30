@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 
 import { buildQrMatrix } from "@/lib/utils/qrcode";
 
 export function QrCode({ value }: { value: string }) {
-  const matrix = buildQrMatrix(value);
+  const matrix = useMemo(() => buildQrMatrix(value), [value]);
 
   return (
     <svg
