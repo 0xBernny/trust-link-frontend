@@ -1,7 +1,10 @@
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-
 import type { Escrow } from '@/types';
+
+// `jspdf` and `html2canvas` are large (~100kb+ combined) and only needed when a
+// user actually triggers a PDF export, so they're dynamically imported inside
+// each function below rather than imported statically at module scope. This
+// keeps them out of the initial JS payload and lets bundlers split them into
+// their own on-demand chunk. See #573.
 
 export interface PDFExportOptions {
   filename?: string;
@@ -28,6 +31,11 @@ export async function generatePDFFromElement(
   } = options;
 
   try {
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
+
     const canvas = await html2canvas(element, {
       scale: 2,
       logging: false,
@@ -116,11 +124,13 @@ export function formatTransactionHistoryData(escrows: Escrow[]): {
  * @param vendorId - The vendor's public identifier, printed in the report header.
  * @param filename - Output filename (defaults to `"transaction-history.pdf"`).
  */
-export function generateSummaryPDF(
+export async function generateSummaryPDF(
   escrows: Escrow[],
   vendorId: string,
   filename = 'transaction-history.pdf'
-): void {
+): Promise<void> {
+  const { default: jsPDF } = await import('jspdf');
+
   const data = formatTransactionHistoryData(escrows);
   const pdf = new jsPDF('p', 'mm', 'a4');
 
