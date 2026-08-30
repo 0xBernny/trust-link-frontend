@@ -151,7 +151,7 @@ export default function VendorAnalyticsSection() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(123,104,238,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] p-4 pb-24 sm:p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(123,104,238,0.18),_transparent_30%),linear-gradient(180deg,_#050505_0%,_#0a0a0a_100%)]">
+      <main className="analytics-page-background min-h-screen p-4 pb-24 sm:p-6">
         <div className="mx-auto flex max-w-6xl flex-col gap-4">
           <Link
             href="/dashboard"
@@ -176,7 +176,7 @@ export default function VendorAnalyticsSection() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(123,104,238,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] p-4 pb-24 sm:p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(123,104,238,0.18),_transparent_30%),linear-gradient(180deg,_#050505_0%,_#0a0a0a_100%)]">
+    <main className="analytics-page-background min-h-screen p-4 pb-24 sm:p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
@@ -214,7 +214,7 @@ export default function VendorAnalyticsSection() {
             label="Total transaction volume"
             value={formatUSDC(metrics.totalTransactionVolume)}
             hint="Aggregate volume for the selected period"
-            icon={<TrendingUp className="h-5 w-5 text-[#1B2A6B] dark:text-[#8DA0FF]" />}
+            icon={<TrendingUp className="h-5 w-5 text-brand-primary dark:text-brand-primary-dark" />}
             tone="bg-blue-50 dark:bg-blue-500/10"
           />
           <MetricCard
@@ -249,7 +249,7 @@ export default function VendorAnalyticsSection() {
               </p>
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-[#1B2A6B]" />
+              <span className="h-2 w-2 rounded-full bg-brand-primary" />
               Transaction volume
             </div>
           </div>

@@ -16,6 +16,6 @@ export const DisputeFormSchema = z.object({
   agreeToTerms: z
     .boolean()
     .refine((val) => val === true, "You must agree to the terms"),
-});
+}).strict();
 
 export type DisputeFormValues = z.infer<typeof DisputeFormSchema>;

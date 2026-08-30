@@ -80,7 +80,7 @@ export default function VendorProfileClient({ address }: { address: string }) {
               <div className="flex gap-3">
                 <button
                   aria-label="Start a trade with this vendor"
-                  className="rounded-full bg-[#1B2A6B] px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#152052] transition"
+                  className="rounded-full bg-brand-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-primary-hover"
                 >
                   Start Trade
                 </button>
@@ -123,7 +123,7 @@ export default function VendorProfileClient({ address }: { address: string }) {
             {vendor.recentTransactions.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between rounded-2xl border border-zinc-100 p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900/50">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-[#1B2A6B] dark:bg-blue-900/30 dark:text-blue-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-brand-primary dark:bg-blue-900/30 dark:text-brand-primary-dark">
                     <Package className="h-5 w-5" />
                   </div>
                   <div>
