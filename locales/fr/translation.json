@@ -35,7 +35,7 @@
     "orderNotFoundDesc": "Nous n'avons pas trouvé de séquestre avec l'ID :",
     "completeTitle": "Finaliser le paiement",
     "escrowIdPrefix": "ID de séquestre : {{id}}",
-    "offerValidFor": "Offre valable encore {{time}}",
+    "timeRemaining": "Temps restant",
     "orderDetailsTitle": "Détails de la commande",
     "vendorAddress": "Adresse du vendeur",
     "platformFee": "Frais de plateforme ({{percent}} %)",

@@ -16,7 +16,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { JSX } from "react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -48,6 +48,8 @@ const STATUS_BG: Record<string, string> = {
   REFUNDED:  "bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400",
   EXPIRED:   "bg-zinc-100 text-zinc-400 dark:bg-zinc-800",
 };
+
+const NOTIFICATIONS_PER_PAGE = 20;
 
 function NotificationRow({ n, onRead }: { n: AppNotification; onRead: (id: string) => void }) {
   return (
@@ -116,6 +118,22 @@ function NotificationsContent() {
   const [isChecking, setIsChecking] = useState(true);
   const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } =
     useNotifications();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(notifications.length / NOTIFICATIONS_PER_PAGE)
+  );
+
+  // Live updates can shrink the list out from under the current page.
+  useEffect(() => {
+    setCurrentPage((p) => Math.min(p, totalPages));
+  }, [totalPages]);
+
+  const paginatedNotifications = useMemo(() => {
+    const startIndex = (currentPage - 1) * NOTIFICATIONS_PER_PAGE;
+    return notifications.slice(startIndex, startIndex + NOTIFICATIONS_PER_PAGE);
+  }, [notifications, currentPage]);
 
   useEffect(() => {
     const jwt = window.localStorage.getItem("wallet.jwt");
@@ -198,11 +216,48 @@ function NotificationsContent() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {notifications.map((n) => (
-              <NotificationRow key={n.id} n={n} onRead={markAsRead} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-2">
+              {paginatedNotifications.map((n) => (
+                <NotificationRow key={n.id} n={n} onRead={markAsRead} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Showing page{" "}
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {currentPage}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {totalPages}
+                  </span>
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>

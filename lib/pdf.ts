@@ -252,3 +252,154 @@ export async function generateSummaryPDF(
 
   pdf.save(filename);
 }
+
+/** TrustLink brand primary (`#1B2A6B`) as jsPDF RGB components. */
+const BRAND_PRIMARY_RGB: [number, number, number] = [27, 42, 107];
+
+/** Details printed on a buyer's payment receipt. */
+export interface ReceiptData {
+  /** Escrow the payment funded. */
+  escrowId: string;
+  /** Human-readable item name. */
+  itemName: string;
+  /** Item amount, before fees. */
+  amount: number;
+  /** Protocol fee charged on top of `amount`. */
+  protocolFee?: number;
+  /** Amount actually paid; defaults to `amount + protocolFee`. */
+  total?: number;
+  /** On-chain transaction hash for the funding payment. */
+  txHash: string;
+  /** When the payment settled; defaults to now. */
+  timestamp?: string | Date;
+}
+
+/**
+ * Generates and downloads a single-page, TrustLink-branded payment receipt for
+ * a buyer.
+ *
+ * Uses jsPDF only (no `html2canvas`) so the receipt can be produced straight
+ * from transaction data rather than by rasterising the page. Like the other
+ * exports here, jsPDF is imported on demand to keep it out of the initial
+ * bundle.
+ *
+ * @param receipt - Escrow, item, amount, transaction hash, and timestamp.
+ * @param filename - Output filename (defaults to `trustlink-receipt-{escrowId}.pdf`).
+ */
+export async function generateReceiptPDF(
+  receipt: ReceiptData,
+  filename = `trustlink-receipt-${receipt.escrowId}.pdf`
+): Promise<void> {
+  const { default: jsPDF } = await import('jspdf');
+
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 15;
+
+  const protocolFee = receipt.protocolFee ?? 0;
+  const total = receipt.total ?? receipt.amount + protocolFee;
+  const paidAt = receipt.timestamp ? new Date(receipt.timestamp) : new Date();
+
+  const [brandR, brandG, brandB] = BRAND_PRIMARY_RGB;
+
+  // Branded header band
+  pdf.setFillColor(brandR, brandG, brandB);
+  pdf.rect(0, 0, pageWidth, 32, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(20);
+  pdf.text('TrustLink', margin, 15);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(11);
+  pdf.text('Payment Receipt', margin, 24);
+
+  pdf.setTextColor(0, 0, 0);
+  let yPosition = 48;
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text(`Issued: ${new Date().toLocaleString()}`, margin, yPosition);
+  yPosition += 12;
+
+  // Transaction details
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Transaction Details', margin, yPosition);
+  yPosition += 3;
+  pdf.setDrawColor(brandR, brandG, brandB);
+  pdf.setLineWidth(0.5);
+  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 9;
+
+  const labelWidth = 45;
+  const rows: Array<[string, string]> = [
+    ['Escrow ID', receipt.escrowId],
+    ['Item', receipt.itemName],
+    ['Paid At', paidAt.toLocaleString()],
+    ['Transaction Hash', receipt.txHash],
+  ];
+
+  pdf.setFontSize(10);
+  rows.forEach(([label, value]) => {
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${label}:`, margin, yPosition);
+    pdf.setFont('helvetica', 'normal');
+    // Hashes and long item names wrap rather than run off the page.
+    const lines = pdf.splitTextToSize(
+      value,
+      pageWidth - margin * 2 - labelWidth
+    ) as string[];
+    pdf.text(lines, margin + labelWidth, yPosition);
+    yPosition += 7 * lines.length;
+  });
+
+  yPosition += 5;
+
+  // Amount summary
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Amount', margin, yPosition);
+  yPosition += 3;
+  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 9;
+
+  const amountRows: Array<[string, number]> = [['Item Amount', receipt.amount]];
+  if (protocolFee > 0) {
+    amountRows.push(['Protocol Fee', protocolFee]);
+  }
+
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  amountRows.forEach(([label, value]) => {
+    pdf.text(label, margin, yPosition);
+    pdf.text(`${value.toFixed(2)} XLM`, pageWidth - margin, yPosition, { align: 'right' });
+    yPosition += 7;
+  });
+
+  pdf.setDrawColor(200, 200, 200);
+  pdf.line(margin, yPosition - 3, pageWidth - margin, yPosition - 3);
+  yPosition += 4;
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(11);
+  pdf.text('Total Paid', margin, yPosition);
+  pdf.text(`${total.toFixed(2)} XLM`, pageWidth - margin, yPosition, { align: 'right' });
+
+  // Footer
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(8);
+  pdf.setTextColor(120, 120, 120);
+  pdf.text(
+    'Funds are held in a Stellar smart contract until the order is completed.',
+    margin,
+    pageHeight - 14
+  );
+  pdf.text(
+    'This receipt was generated automatically by TrustLink.',
+    margin,
+    pageHeight - 10
+  );
+
+  pdf.save(filename);
+}

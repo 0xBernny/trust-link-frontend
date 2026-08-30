@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { startTransition,useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import EscrowCountdown from "@/components/payment/EscrowCountdown";
 import { TrustBadge } from "@/components/payment/TrustBadge";
 import TrackingTimelineSkeleton from "@/components/tracking/TrackingTimelineSkeleton";
 import useWallet from "@/hooks/useWallet";
@@ -62,7 +63,7 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   const [phone, setPhone] = useState("");
   const [emailReceipt, setEmailReceipt] = useState(true);
   const [contactErrors, setContactErrors] = useState<ContactErrors>({});
-  const [timeLeft, setTimeLeft] = useState<string | null>(null);
+  const [hasExpired, setHasExpired] = useState(false);
 
   const amount = escrow.amount;
   const fee = useMemo(() => Number(((amount * PLATFORM_FEE_PERCENT) / 100).toFixed(2)), [amount]);
@@ -70,36 +71,11 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
   const contractAddress = escrow.contractAddress ?? process.env.NEXT_PUBLIC_CONTRACT_ID ?? escrow.id;
 
   const isFunded = escrow.status === EscrowStatusConst.FUNDED;
-  const isExpired = escrow.status === EscrowStatusConst.EXPIRED;
+  // The countdown can expire the escrow client-side before the backend status
+  // catches up, so either signal blocks funding.
+  const isExpired = escrow.status === EscrowStatusConst.EXPIRED || hasExpired;
 
-  // Countdown logic for expiresAt
-  useEffect(() => {
-    if (!escrow.expiresAt) {
-      startTransition(() => setTimeLeft(null));
-      return;
-    }
-    const update = () => {
-      const now = new Date();
-      const expiry = new Date(escrow.expiresAt as string);
-      const diff = expiry.getTime() - now.getTime();
-      if (diff <= 0) {
-        setTimeLeft(t("payment.expiredCountdown"));
-        return;
-      }
-      const totalMinutes = Math.floor(diff / 60000);
-      const days = Math.floor(totalMinutes / (24 * 60));
-      const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
-      const minutes = totalMinutes % 60;
-      const parts = [];
-      if (days > 0) parts.push(`${days}d`);
-      if (hours > 0) parts.push(`${hours}h`);
-      if (minutes > 0) parts.push(`${minutes}m`);
-      setTimeLeft(parts.join(' '));
-    };
-    update();
-    const interval = setInterval(update, 60000);
-    return () => clearInterval(interval);
-  }, [escrow.expiresAt, t]);
+  const handleExpire = useCallback(() => setHasExpired(true), []);
 
   const handlePayNow = async () => {
     setError(null);
@@ -146,10 +122,12 @@ export function PaymentEscrowClient({ escrow, escrowId }: PaymentEscrowClientPro
         <p className="mt-1 text-sm text-zinc-500">{t("payment.escrowIdPrefix", { id: escrowId })}</p>
       </header>
 
-      {timeLeft && !isFunded && !isExpired && (
-        <p aria-live="polite" className="text-sm text-zinc-600 dark:text-zinc-400">
-          {t("payment.offerValidFor", { time: timeLeft })}
-        </p>
+      {escrow.expiresAt && !isFunded && (
+        <EscrowCountdown
+          expiresAt={escrow.expiresAt}
+          onExpire={handleExpire}
+          forceExpired={escrow.status === EscrowStatusConst.EXPIRED}
+        />
       )}
 
       <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">

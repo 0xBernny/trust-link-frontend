@@ -16,11 +16,13 @@ import type {
   GetDisputeResponse,
   GetDisputesResponse,
   GetEscrowResponse,
+  GetPublicVendorEscrowsResponse,
   GetSubscriptionResponse,
   GetTrackingResponse,
   GetVendorAnalyticsResponse,
   GetVendorEscrowsResponse,
   GetVendorNotificationPreferencesResponse,
+  GetVendorProfileResponse,
   ResolveDisputeResponse,
   ShipEscrowResponse,
   UpgradeSubscriptionResponse,
@@ -304,6 +306,30 @@ export async function getVendorAnalytics(token?: string): Promise<GetVendorAnaly
 }
 
 /**
+ * Fetches a vendor's public profile. Deliberately unauthenticated — the
+ * `/vendor/[id]` page is publicly accessible.
+ *
+ * @param vendorId - The vendor's public address.
+ * @returns Promise resolving to the vendor's public profile.
+ */
+export async function getVendorProfile(vendorId: string): Promise<GetVendorProfileResponse> {
+  return request<GetVendorProfileResponse>(`/vendor/${encodeURIComponent(vendorId)}/profile`);
+}
+
+/**
+ * Fetches the escrow links a vendor has published publicly. Unauthenticated,
+ * for the same reason as {@link getVendorProfile}.
+ *
+ * @param vendorId - The vendor's public address.
+ * @returns Promise resolving to the vendor's public escrows.
+ */
+export async function getPublicVendorEscrows(
+  vendorId: string
+): Promise<GetPublicVendorEscrowsResponse> {
+  return request<GetPublicVendorEscrowsResponse>(`/vendor/${encodeURIComponent(vendorId)}/escrows`);
+}
+
+/**
  * Return type of {@link createApiClient}. Each method is a thin wrapper around
  * the corresponding standalone API function, pre-bound to the supplied token.
  */
@@ -341,6 +367,8 @@ export interface ApiClient {
     data: { email?: string; phone?: string; emailReceipt?: boolean }
   ) => Promise<EmptyResponse>;
   getVendorAnalytics: () => Promise<GetVendorAnalyticsResponse>;
+  getVendorProfile: (vendorId: string) => Promise<GetVendorProfileResponse>;
+  getPublicVendorEscrows: (vendorId: string) => Promise<GetPublicVendorEscrowsResponse>;
 }
 
 export function createApiClient(token?: string): ApiClient {
@@ -361,5 +389,7 @@ export function createApiClient(token?: string): ApiClient {
     patchVendorNotifications: (prefs: VendorNotificationPreferences, authToken = token ?? "") => patchVendorNotifications(prefs, authToken),
     patchBuyerContact: (escrowId: string, data: { email?: string; phone?: string; emailReceipt?: boolean }) => patchBuyerContact(escrowId, data, token),
     getVendorAnalytics: () => getVendorAnalytics(token),
+    getVendorProfile: (vendorId: string) => getVendorProfile(vendorId),
+    getPublicVendorEscrows: (vendorId: string) => getPublicVendorEscrows(vendorId),
   };
 }

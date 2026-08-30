@@ -20,6 +20,7 @@ import type {
   Tracking,
   VendorAnalyticsResponse,
   VendorNotificationPreferences,
+  VendorProfile,
 } from "@/types";
 
 /* -------------------------------------------------------------------------- */
@@ -141,6 +142,12 @@ export type GetVendorNotificationPreferencesResponse = VendorNotificationPrefere
 
 /** `GET /vendor/analytics`. */
 export type GetVendorAnalyticsResponse = VendorAnalyticsResponse;
+
+/** `GET /vendor/:id/profile` — public vendor profile, no auth required. */
+export type GetVendorProfileResponse = VendorProfile;
+
+/** `GET /vendor/:id/escrows` — a vendor's publicly listed escrow links. */
+export type GetPublicVendorEscrowsResponse = Escrow[];
 
 /**
  * Endpoints that answer with `204 No Content` (or an empty body we ignore):

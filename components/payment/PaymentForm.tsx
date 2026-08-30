@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { useNetwork } from "@/components/providers/NetworkProvider";
 import useWallet from "@/hooks/useWallet";
 import { patchBuyerContact } from "@/lib/api";
 import { getStellarExpertTxUrl } from "@/lib/explorer";
+import { generateReceiptPDF } from "@/lib/pdf";
 import { signTransaction } from "@/lib/stellar/freighter";
 import { EscrowStatusConst } from "@/types";
 
@@ -43,6 +44,7 @@ export async function mockSubmitTransaction(signedXdr: string): Promise<string> 
 
 export default function PaymentForm({
   escrowId,
+  itemName,
   amount,
   protocolFee,
   total,
@@ -55,6 +57,8 @@ export default function PaymentForm({
   const [formState, setFormState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [paidAt, setPaidAt] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [sendReceipt, setSendReceipt] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -112,6 +116,7 @@ export default function PaymentForm({
       }
 
       setTxHash(hash);
+      setPaidAt(new Date().toISOString());
       setFormState("success");
       toast.success(t("payment.confirmationTitle") || "Payment successful");
       onPaymentSuccess?.(hash);
@@ -132,6 +137,28 @@ export default function PaymentForm({
       setErrorMessage(msg);
       setFormState("error");
       toast.error(msg);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!txHash) return;
+
+    try {
+      setIsDownloading(true);
+      await generateReceiptPDF({
+        escrowId,
+        itemName,
+        amount,
+        protocolFee,
+        total,
+        txHash,
+        timestamp: paidAt ?? undefined,
+      });
+    } catch (err) {
+      console.error("Receipt download failed:", err);
+      toast.error("Failed to generate receipt");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -180,6 +207,26 @@ export default function PaymentForm({
           >
             View on Stellar Expert
           </a>
+          <button
+            type="button"
+            onClick={handleDownloadReceipt}
+            disabled={isDownloading}
+            aria-disabled={isDownloading}
+            data-testid="download-receipt-btn"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-green-300 bg-white px-4 py-2.5 text-sm font-semibold text-green-800 transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200 dark:hover:bg-green-900/40"
+          >
+            {isDownloading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span aria-live="polite">Preparing receipt...</span>
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download Receipt
+              </>
+            )}
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
