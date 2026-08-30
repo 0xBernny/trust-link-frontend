@@ -4,6 +4,7 @@ import { FileDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { generateSummaryPDF } from "@/lib/pdf";
 import type { Escrow } from "@/types";
 
 export interface TransactionHistoryExportProps {
@@ -25,9 +26,8 @@ export default function TransactionHistoryExport({
 
     try {
       setIsExporting(true);
-      const { generateSummaryPDF } = await import("@/lib/pdf");
       const filename = `trustlink-transactions-${new Date().toISOString().split('T')[0]}.pdf`;
-      generateSummaryPDF(escrows, vendorId, filename);
+      await generateSummaryPDF(escrows, vendorId, filename);
       toast.success("PDF exported successfully");
     } catch (error) {
       console.error("Export failed:", error);
