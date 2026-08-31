@@ -30,6 +30,7 @@ const STORAGE_KEY = "vendor.onboarding.state";
 interface ValidationErrors {
   shopName?: string;
   description?: string;
+  website?: string;
 }
 
 const defaultState: VendorOnboardingState = {
@@ -124,6 +125,18 @@ export default function VendorOnboardingWizard() {
     }
   };
 
+  const normalizeAndValidateUrl = (input: string): string | null => {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    const withProto = /^(https?:\/\/)/i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    try {
+      const parsed = new URL(withProto);
+      return parsed.toString();
+    } catch {
+      return null;
+    }
+  };
+
   const validateStep1 = (): boolean => {
     const newErrors: ValidationErrors = {};
     if (!state.shopName.trim()) {
@@ -133,6 +146,16 @@ export default function VendorOnboardingWizard() {
       newErrors.description = "Description is required.";
     } else if (state.description.trim().length < 20) {
       newErrors.description = "Description must be at least 20 characters.";
+    }
+    // Website is optional but must be a valid URL when provided.
+    if (state.website && state.website.trim()) {
+      const normalized = normalizeAndValidateUrl(state.website);
+      if (!normalized) {
+        newErrors.website = "Please enter a valid website URL.";
+      } else if (normalized !== state.website) {
+        // Save normalized url (auto-prepend https:// when missing)
+        setState((current) => ({ ...current, website: normalized }));
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -288,9 +311,16 @@ export default function VendorOnboardingWizard() {
                   name="website"
                   value={state.website}
                   onChange={(event) => updateField("website", event.target.value)}
+                  aria-invalid={!!errors.website}
+                  aria-describedby={errors.website ? "website-error" : undefined}
                   className="mt-2 w-full rounded-3xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-black focus:ring-2 focus:ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-300"
                   placeholder="https://"
                 />
+                {errors.website && (
+                  <p id="website-error" role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    {errors.website}
+                  </p>
+                )}
               </label>
 
               <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
