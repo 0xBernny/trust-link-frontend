@@ -40,7 +40,7 @@ interface WalletContextType {
   signTransaction: (xdr: string, network?: string) => Promise<string>;
   isLoading: boolean;
   walletReady: boolean;
-  error: string | null;
+  error: Error | null;
 }
 
 /**
@@ -58,7 +58,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [walletReady, setWalletReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const { network } = useNetwork();
 
   const stellarNetworkLabel = network === "mainnet" ? "PUBLIC" : "TESTNET";
@@ -132,7 +132,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const installed = await isFreighterInstalled();
       if (!installed) {
         toast.error("Freighter is not installed");
-        setError("Freighter is not installed");
+        setError(new Error("Freighter is not installed"));
         return false;
       }
 
@@ -150,7 +150,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to connect wallet";
-      setError(message);
+      setError(new Error(message));
       toast.error(message);
       return false;
     } finally {
