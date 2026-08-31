@@ -1,15 +1,29 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+
+const themes = ["light", "dark", "system"] as const;
+type Theme = (typeof themes)[number];
+
+const themeOrder: Record<Theme, Theme> = {
+  light: "dark",
+  dark: "system",
+  system: "light",
+};
+
+const themeLabels: Record<Theme, string> = {
+  light: "Switch to dark mode",
+  dark: "Switch to system theme",
+  system: "Switch to light mode",
+};
 
 export default function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-   
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -20,16 +34,26 @@ export default function ThemeToggle() {
     );
   }
 
-  const isDark = resolvedTheme === "dark";
+  const currentTheme = (resolvedTheme === "dark" ? "dark" : "light") as Theme;
+
+  const cycleTheme = () => {
+    setTheme(themeOrder[currentTheme]);
+  };
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={cycleTheme}
+      aria-label={themeLabels[currentTheme]}
       className="flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300"
     >
-      {isDark ? <Sun size={15} /> : <Moon size={15} />}
+      {currentTheme === "dark" ? (
+        <Sun size={15} />
+      ) : currentTheme === "light" ? (
+        <Moon size={15} />
+      ) : (
+        <Monitor size={15} />
+      )}
     </button>
   );
 }
