@@ -55,6 +55,7 @@ export default function EscrowCreateForm() {
     event.preventDefault();
 
     if (submittingRef.current) return;
+    // set lock synchronously to prevent double-submit before state updates
     submittingRef.current = true;
 
     setCopyStatus(null);
@@ -70,6 +71,8 @@ export default function EscrowCreateForm() {
         }
       }
       setErrors(fieldErrors);
+      // release the synchronous lock so the user can correct validation errors
+      submittingRef.current = false;
       return;
     }
 
@@ -224,7 +227,7 @@ export default function EscrowCreateForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || submittingRef.current}
           className="inline-flex w-full items-center justify-center rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
         >
           {isSubmitting ? "Creating link..." : "Create escrow link"}
