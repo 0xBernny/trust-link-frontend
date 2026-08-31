@@ -1,6 +1,10 @@
 "use client";
 
-import { Download, Search } from "lucide-react";
+import { Download, LayoutGrid, Search, Table2 } from "lucide-react";
+import Link from "next/link";
+
+import { useCurrency } from "@/components/providers/CurrencyProvider";
+import { formatTimeAgo } from "@/lib/utils";
 import {
   startTransition,
   useCallback,
@@ -37,13 +41,15 @@ const STATUS_TABS = [
   EscrowStatusConst.EXPIRED,
 ] as const;
 const ITEMS_PER_PAGE = 10;
+const VIEW_PREF_KEY = "vendor.dashboard.viewMode";
+type ViewMode = "card" | "table";
 
 export default function VendorDashboardList({
   loading = false,
 }: {
   loading?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [escrows, setEscrows] = useState<Escrow[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(null);
@@ -54,6 +60,29 @@ export default function VendorDashboardList({
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
+  const { formatAmount } = useCurrency();
+
+  // Load persisted view preference
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VIEW_PREF_KEY);
+      if (saved === "card" || saved === "table") {
+        setViewMode(saved);
+      }
+    } catch {
+      // ignore - localStorage unavailable
+    }
+  }, []);
+
+  // Persist view preference
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_PREF_KEY, viewMode);
+    } catch {
+      // ignore
+    }
+  }, [viewMode]);
 
   useEffect(() => {
     startTransition(() => setCurrentPage(1));
@@ -225,6 +254,40 @@ export default function VendorDashboardList({
           />
         </div>
         <div className="flex items-center gap-3">
+          <div
+            role="group"
+            aria-label={t("dashboard.viewModeLabel") || "View mode"}
+            className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-1 dark:border-zinc-800 dark:bg-zinc-900"
+          >
+            <button
+              type="button"
+              aria-pressed={viewMode === "card"}
+              aria-label={t("dashboard.cardView") || "Card view"}
+              onClick={() => setViewMode("card")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300 ${
+                viewMode === "card"
+                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Card
+            </button>
+            <button
+              type="button"
+              aria-pressed={viewMode === "table"}
+              aria-label={t("dashboard.tableView") || "Table view"}
+              onClick={() => setViewMode("table")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300 ${
+                viewMode === "table"
+                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              }`}
+            >
+              <Table2 className="h-4 w-4" />
+              Table
+            </button>
+          </div>
           <TransactionHistoryExport
             escrows={escrows}
             vendorId={escrows[0]?.vendorId || "vendor"}
@@ -353,7 +416,7 @@ export default function VendorDashboardList({
             {t("dashboard.clearFilters")}
           </button>
         </div>
-      ) : (
+      ) : viewMode === "card" ? (
         <div className="space-y-4">
           {paginatedEscrows.map((escrow) => (
             <EscrowTableRow
@@ -363,6 +426,79 @@ export default function VendorDashboardList({
               onCancelEscrow={handleCancelEscrow}
             />
           ))}
+        </div>
+      ) : (
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="min-w-[720px] px-4 sm:px-0">
+            <table className="w-full border-collapse rounded-2xl border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-950">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                  <th className="px-4 py-3 whitespace-nowrap">{t("dashboard.tableHeaders.item") || "Item"}</th>
+                  <th className="px-4 py-3 whitespace-nowrap">{t("dashboard.tableHeaders.buyer") || "Buyer"}</th>
+                  <th className="px-4 py-3 whitespace-nowrap">{t("dashboard.tableHeaders.amount") || "Amount"}</th>
+                  <th className="px-4 py-3 whitespace-nowrap">{t("dashboard.tableHeaders.status") || "Status"}</th>
+                  <th className="px-4 py-3 whitespace-nowrap">{t("dashboard.tableHeaders.created") || "Created"}</th>
+                  <th className="px-4 py-3 whitespace-nowrap text-right">{t("dashboard.tableHeaders.actions") || "Actions"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedEscrows.map((escrow) => {
+                  const isPending = escrow.status === "PENDING";
+                  const isFunded = escrow.status === "FUNDED";
+                  return (
+                    <tr
+                      key={escrow.id}
+                      className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900/50"
+                    >
+                      <td className="px-4 py-3 max-w-[180px] truncate font-medium text-zinc-900 dark:text-zinc-100">
+                        {escrow.item}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-zinc-600 dark:text-zinc-400">
+                        {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : t("dashboard.unknown")}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-zinc-900 dark:text-zinc-100">{formatAmount(escrow.amount)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                          {escrow.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-zinc-600 dark:text-zinc-400">
+                        {formatTimeAgo(escrow.createdAt, i18n.language)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/escrow/${escrow.id}`}
+                            className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
+                          >
+                            {t("dashboard.view")}
+                          </Link>
+                          {isPending && (
+                            <button
+                              type="button"
+                              onClick={() => handleCancelEscrow(escrow)}
+                              className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                            >
+                              {t("dashboard.cancel")}
+                            </button>
+                          )}
+                          {isFunded && (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkShipped(escrow)}
+                              className="rounded-full bg-black px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                            >
+                              {t("dashboard.markShipped")}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
