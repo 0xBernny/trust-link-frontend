@@ -1,9 +1,9 @@
 "use client";
 
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -79,7 +79,7 @@ export default function VendorAnalyticsChart({
 }: VendorAnalyticsChartProps) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
         <defs>
           <linearGradient id="volumeStroke" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.95} />
@@ -110,16 +110,17 @@ export default function VendorAnalyticsChart({
           tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
         />
         <Tooltip content={<AnalyticsTooltip />} />
-        <Line
+        <Area
           type="monotone"
           dataKey="transactionVolume"
           stroke="url(#volumeStroke)"
           strokeWidth={3}
           fill="url(#volumeFill)"
+          fillOpacity={1}
           dot={false}
           activeDot={{ r: 5, strokeWidth: 0 }}
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   );
 }

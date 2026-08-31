@@ -1,7 +1,7 @@
 "use client";
 
-import { Copy, MessageCircle, Share2 } from "lucide-react";
-import React, { useState } from "react";
+import { Check, Copy, MessageCircle, Share2 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import QRCodeComponent from "@/components/ui/QRCodeComponent";
@@ -16,15 +16,29 @@ interface ShareModalProps {
 
 export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModalProps) {
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canShare = typeof navigator !== "undefined" && navigator.share;
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeout.current) clearTimeout(copyTimeout.current);
+    };
+  }, []);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
+      setCopied(true);
       setCopyStatus("Link copied!");
       track("link_copied", { method: "share_modal" });
-      setTimeout(() => setCopyStatus(null), 2000);
+      if (copyTimeout.current) clearTimeout(copyTimeout.current);
+      copyTimeout.current = setTimeout(() => {
+        setCopied(false);
+        setCopyStatus(null);
+      }, 2000);
     } catch (_err) {
+      setCopied(false);
       setCopyStatus("Failed to copy");
     }
   };
@@ -97,7 +111,13 @@ export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModa
             </div>
             
             {copyStatus && (
-              <p className="text-center text-sm font-medium text-emerald-600">
+              <p
+                role="status"
+                aria-live="polite"
+                className={`text-center text-sm font-medium ${
+                  copied ? "text-emerald-600" : "text-red-600"
+                }`}
+              >
                 {copyStatus}
               </p>
             )}
@@ -116,10 +136,26 @@ export default function ShareModal({ isOpen, onClose, url, escrowId }: ShareModa
               <button
                 type="button"
                 onClick={handleCopy}
-                className="flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 font-medium text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+                aria-label={copied ? "Link copied to clipboard" : "Copy link to clipboard"}
+                className={`flex items-center justify-center gap-2 rounded-full border px-4 py-2.5 font-medium transition ${
+                  copied
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300"
+                    : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+                }`}
               >
-                <Copy className="h-4 w-4" />
-                Copy Link
+                <span className="relative flex h-4 w-4 items-center justify-center">
+                  <Copy
+                    className={`absolute h-4 w-4 transition-all duration-200 ${
+                      copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                    }`}
+                  />
+                  <Check
+                    className={`absolute h-4 w-4 transition-all duration-200 ${
+                      copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                    }`}
+                  />
+                </span>
+                {copied ? "Copied!" : "Copy Link"}
               </button>
               <button
                 type="button"
