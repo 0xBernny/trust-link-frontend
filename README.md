@@ -206,7 +206,7 @@ npm start
    ```bash
    cp .env.example .env.local
    ```
-2. Fill in the required variables (see `ENV_VARS.md` for details):
+ 2. Fill in the required variables (see `docs/ENV_VARS.md` for details):
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:3001
    NEXT_PUBLIC_STELLAR_NETWORK=testnet
@@ -321,7 +321,7 @@ PORT=3001 npm run dev
 
 For more detailed configuration information, see:
 
-- `ENV_VARS.md` - Complete environment variable documentation
+- `docs/ENV_VARS.md` - Complete environment variable documentation (also available as `ENV_VARS.md` at root)
 - `DEPLOYMENT.md` - Production deployment checklist
 - `CONTRIBUTING.md` - Development workflow and guidelines
 
