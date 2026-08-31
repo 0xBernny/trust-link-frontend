@@ -11,6 +11,7 @@ import CurrencyDropdown from "@/components/dashboard/CurrencyDropdown";
 import DashboardSection from "@/components/dashboard/DashboardSection";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import UpgradeCTA from "@/components/subscription/UpgradeCTA";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
@@ -88,6 +89,7 @@ export default function DashboardClient() {
         {showUpgradeBanner && (
           <UpgradeBanner onDismiss={() => setShowUpgradeBanner(false)} />
         )}
+        <UpgradeCTA />
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-semibold text-zinc-950 dark:text-white">

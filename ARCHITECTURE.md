@@ -80,15 +80,14 @@ single supported entry point:
   needs wallet state or actions. It must be rendered under `<WalletProvider>`
   (mounted once in `app/layout.tsx`).
 
-The rest of the wallet stack is internal and should not be imported directly:
+The wallet implementation lives entirely inside `WalletProvider` and should not
+be imported directly:
 
 - `WalletProvider` (`components/providers/WalletProvider.tsx`) owns the React
-  context and exposes the `<WalletProvider>` wrapper component.
-- `useStellarWallet` (`hooks/useStellarWallet.ts`) implements the actual
-  Freighter connection and SEP-10 challenge/response flow; `WalletProvider` is
-  its only consumer.
+  context, implements the Freighter connection and SEP-10 challenge/response
+  flow, and exposes the `<WalletProvider>` wrapper component.
 
 ```
-useWallet()  →  WalletContext  →  WalletProvider  →  useStellarWallet()  →  Freighter / SEP-10
-(hooks/)        (internal)         (components/)      (hooks/, internal)
+useWallet()  →  WalletContext  →  WalletProvider  →  Freighter / SEP-10
+(hooks/)        (internal)         (components/)
 ```
