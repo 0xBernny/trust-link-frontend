@@ -35,7 +35,7 @@ function UpgradeBanner({ onDismiss }: { onDismiss: () => void }) {
       <button
         type="button"
         onClick={onDismiss}
-        aria-label="Dismiss"
+        aria-label={t("dashboard.dismiss")}
         className="shrink-0 rounded-full p-1 text-amber-600 transition hover:bg-amber-100 dark:hover:bg-amber-900/40"
       >
         <X className="h-4 w-4" />

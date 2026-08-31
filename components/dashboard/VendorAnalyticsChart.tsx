@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import {
   CartesianGrid,
   Line,
@@ -17,18 +18,18 @@ function formatRate(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
-function formatAxisLabel(value: string, compact: boolean): string {
+function formatAxisLabel(value: string, compact: boolean, locale: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
 
-  return parsed.toLocaleDateString("en-US", compact
+  return parsed.toLocaleDateString(locale, compact
     ? { month: "numeric", day: "numeric" }
     : { month: "short", day: "numeric" }
   );
 }
 
-function formatCompactVolume(value: number): string {
-  return new Intl.NumberFormat("en-US", {
+function formatCompactVolume(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
@@ -49,6 +50,7 @@ function AnalyticsTooltip({
   label?: string;
 }) {
   const { formatAmount } = useCurrency();
+  const { i18n, t } = useTranslation();
   if (!active || !payload?.length) return null;
 
   const point = payload[0].payload;
@@ -56,13 +58,13 @@ function AnalyticsTooltip({
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white/95 p-4 text-sm shadow-xl backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
       <p className="font-semibold text-zinc-950 dark:text-white">
-        {label ? formatAxisLabel(label, false) : "Daily snapshot"}
+        {label ? formatAxisLabel(label, false, i18n.language) : t("dashboard.analyticsPage.dailySnapshot")}
       </p>
       <div className="mt-3 space-y-1 text-zinc-600 dark:text-zinc-300">
-        <p>Transaction volume: {formatAmount(point.transactionVolume)}</p>
-        <p>Average order: {formatAmount(point.averageOrderValue)}</p>
-        <p>Completion rate: {formatRate(normalizeRate(point.completionRate))}</p>
-        <p>Dispute rate: {formatRate(normalizeRate(point.disputeRate))}</p>
+        <p>{t("dashboard.analyticsPage.tooltipTransactionVolume", { amount: formatAmount(point.transactionVolume) })}</p>
+        <p>{t("dashboard.analyticsPage.tooltipAverageOrder", { amount: formatAmount(point.averageOrderValue) })}</p>
+        <p>{t("dashboard.analyticsPage.tooltipCompletionRate", { rate: formatRate(normalizeRate(point.completionRate)) })}</p>
+        <p>{t("dashboard.analyticsPage.tooltipDisputeRate", { rate: formatRate(normalizeRate(point.disputeRate)) })}</p>
       </div>
     </div>
   );
@@ -77,6 +79,7 @@ export default function VendorAnalyticsChart({
   data,
   isMobile,
 }: VendorAnalyticsChartProps) {
+  const { i18n } = useTranslation();
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
@@ -98,7 +101,7 @@ export default function VendorAnalyticsChart({
           tickMargin={12}
           interval={isMobile ? 5 : 2}
           minTickGap={isMobile ? 24 : 16}
-          tickFormatter={(value: string | number) => formatAxisLabel(String(value), isMobile)}
+          tickFormatter={(value: string | number) => formatAxisLabel(String(value), isMobile, i18n.language)}
           tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
         />
         <YAxis
@@ -106,7 +109,7 @@ export default function VendorAnalyticsChart({
           axisLine={false}
           tickMargin={10}
           width={isMobile ? 44 : 64}
-          tickFormatter={(value: string | number) => formatCompactVolume(Number(value))}
+          tickFormatter={(value: string | number) => formatCompactVolume(Number(value), i18n.language)}
           tick={{ fill: "#71717a", fontSize: isMobile ? 11 : 12 }}
         />
         <Tooltip content={<AnalyticsTooltip />} />

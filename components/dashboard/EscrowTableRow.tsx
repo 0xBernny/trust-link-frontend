@@ -16,7 +16,7 @@ interface EscrowTableRowProps {
 }
 
 function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: EscrowTableRowProps) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { formatAmount } = useCurrency();
   
   const isPending = escrow.status === "PENDING";
@@ -30,7 +30,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: Escr
             <div className="flex-shrink-0 overflow-hidden rounded-xl">
               <OptimizedImage
                 src={escrow.imageUrl}
-                alt={`${escrow.item} thumbnail`}
+                alt={t("dashboard.thumbnailAlt", { item: escrow.item })}
                 width={80}
                 height={80}
                 className="h-20 w-20 object-cover"
@@ -41,11 +41,11 @@ function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: Escr
           <div>
             <p className="text-base font-semibold text-zinc-950 dark:text-zinc-100">{escrow.item}</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-              <span>Buyer: {escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : "Unknown"}</span>
+              <span>{t("dashboard.buyer", { buyer: escrow.buyerId ? `${escrow.buyerId.slice(0, 4)}...${escrow.buyerId.slice(-4)}` : t("dashboard.unknown") })}</span>
               <span>•</span>
-              <span>Amount: {formatAmount(escrow.amount)}</span>
+              <span>{t("dashboard.amount", { amount: formatAmount(escrow.amount) })}</span>
               <span>•</span>
-              <span>Created: {formatTimeAgo(escrow.createdAt, i18n.language)}</span>
+              <span>{t("dashboard.created", { time: formatTimeAgo(escrow.createdAt, i18n.language) })}</span>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: Escr
               href={`/escrow/${escrow.id}`}
               className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-white dark:hover:bg-zinc-900"
             >
-              View
+              {t("dashboard.view")}
             </Link>
             {isPending && (
               <button
@@ -72,7 +72,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: Escr
                 }}
                 className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
               >
-                Cancel
+                {t("dashboard.cancel")}
               </button>
             )}
             {isFunded && (
@@ -87,7 +87,7 @@ function EscrowTableRowComponent({ escrow, onMarkShipped, onCancelEscrow }: Escr
                 }}
                 className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
               >
-                Mark Shipped
+                {t("dashboard.markShipped")}
               </button>
             )}
           </div>
