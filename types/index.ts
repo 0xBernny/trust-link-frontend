@@ -2,6 +2,12 @@ import type { DisputeStatus,EscrowStatus } from "./status";
 export type { DisputeStatus,EscrowStatus };
 export { DisputeStatus as DisputeStatusConst,EscrowStatus as EscrowStatusConst } from "./status";
 
+export interface FetchHookResult<T> {
+  data: T | null;
+  error: Error | null;
+  isLoading: boolean;
+}
+
 export interface Escrow {
   id: string;
   vendorId: string;
@@ -124,6 +130,12 @@ export interface VendorAnalyticsResponse {
   disputeRate?: number;
   periodLabel?: string;
   generatedAt?: string;
+  /** Normalized chart points for all supported API response variants. */
+  dataPoints: VendorAnalyticsPoint[];
+}
+
+/** The vendor analytics shapes returned by different API versions. */
+export interface VendorAnalyticsApiResponse extends Omit<VendorAnalyticsResponse, "dataPoints"> {
   dailyMetrics?: VendorAnalyticsPoint[];
   series?: VendorAnalyticsPoint[];
   data?: VendorAnalyticsPoint[];

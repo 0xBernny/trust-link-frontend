@@ -69,7 +69,7 @@ export default function TrackingTimeline({
   loading = false,
 }: TrackingTimelineProps) {
   const { t, i18n } = useTranslation();
-  const { escrow, isLoading, error: fetchError, refetch } = useEscrow(escrowId, {
+  const { data: escrow, isLoading, error: fetchError, refetch } = useEscrow(escrowId, {
     initialData: initialEscrow,
     refreshInterval: 30000,
   });

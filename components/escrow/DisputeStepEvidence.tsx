@@ -1,5 +1,6 @@
 import React from "react";
 
+import { FormField } from "@/components/ui/FormField";
 import type { DisputeFormValues } from "@/lib/validations/dispute";
 
 interface Props {
@@ -13,8 +14,15 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
   return (
     <div className="step step-3" data-testid="step-3">
       <h2>Step 3: Upload Evidence</h2>
-      <div className="form-group">
-        <label htmlFor="files">Upload Supporting Documents *</label>
+      <FormField
+        id="files"
+        label="Upload Supporting Documents *"
+        error={errors.files as string | undefined}
+        hint="Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)"
+        className="form-group"
+        labelClassName=""
+        errorClassName="error"
+      >
         <input
           id="files"
           type="file"
@@ -22,14 +30,9 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
           accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf"
           onChange={handleFileUpload}
           aria-label="upload files"
-          aria-invalid={!!errors.files}
-          aria-describedby={errors.files ? "files-error" : "files-hint"}
           data-testid="file-input"
         />
-        <small id="files-hint">
-          Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)
-        </small>
-      </div>
+      </FormField>
 
       {formData.files.length > 0 && (
         <div className="file-list" data-testid="file-list">
@@ -56,12 +59,6 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
             ))}
           </ul>
         </div>
-      )}
-
-      {errors.files && (
-        <span id="files-error" className="error" role="alert">
-          {errors.files as string}
-        </span>
       )}
     </div>
   );
