@@ -12,37 +12,33 @@
  *   - VendorAnalyticsResponse
  */
 
-// Re-export every function + interface from the canonical client
-export {
-  type ApiClient,
-  // client class & helpers
+import {
   ApiError,
+  cancelEscrow as cancelEscrowRaw,
+  createApiClient as createApiClientRaw,
+  createDispute as createDisputeRaw,
+  createEscrow as createEscrowRaw,
+  getAdminDisputes as getAdminDisputesRaw,
+  getDispute as getDisputeRaw,
+  getEscrow as getEscrowRaw,
+  getPublicVendorEscrows as getPublicVendorEscrowsRaw,
+  getSubscription as getSubscriptionRaw,
+  getTracking as getTrackingRaw,
+  getVendorAnalytics as getVendorAnalyticsRaw,
+  getVendorEscrows as getVendorEscrowsRaw,
+  getVendorNotificationPreferences as getVendorNotificationPreferencesRaw,
+  getVendorProfile as getVendorProfileRaw,
+  patchBuyerContact as patchBuyerContactRaw,
+  patchVendorNotifications as patchVendorNotificationsRaw,
+  resolveDispute as resolveDisputeRaw,
+  shipEscrow as shipEscrowRaw,
+  upgradeSubscription as upgradeSubscriptionRaw,
+  type ApiClient,
   type ApiErrorShape,
-  cancelEscrow,
-  createApiClient,
-  createDispute,
   type CreateDisputeInput,
-  // functions
-  createEscrow,
-  // input / response interfaces
   type EscrowInput,
   type EscrowResponse,
-  getAdminDisputes,
-  getDispute,
-  getEscrow,
-  getPublicVendorEscrows,
-  getSubscription,
-  getTracking,
-  getVendorAnalytics,
-  getVendorEscrows,
-  getVendorNotificationPreferences,
-  getVendorProfile,
-  patchBuyerContact,
-  patchVendorNotifications,
-  resolveDispute,
-  shipEscrow,
   type ShipEscrowInput,
-  upgradeSubscription,
 } from "@/lib/api/client";
 
 // Re-export types that were historically defined here but now live in @/types
@@ -53,11 +49,72 @@ export type {
   VendorNotificationPreferences,
 } from "@/types";
 
-/**
- * BuyerContactInput — kept for backward-compatibility.
- * The canonical client uses an inline `{ email?: string; phone?: string }`.
- */
 export interface BuyerContactInput {
   email?: string;
   phone?: string;
+}
+
+export { ApiError };
+export type { ApiClient, ApiErrorShape, CreateDisputeInput, EscrowInput, EscrowResponse, ShipEscrowInput };
+
+/**
+ * Wraps an API call so that 401 responses are handled gracefully:
+ * - clears the expired JWT from localStorage
+ * - redirects the user to reconnect their wallet
+ *
+ * @param fn the API function to wrap
+ * @returns the wrapped function with identical signature
+ */
+function withSessionExpiryHandling<T extends (...args: any[]) => Promise<any>>(fn: T): T {
+  return (async (...args: any[]) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        // Only manipulate the browser environment if available
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("wallet.jwk");
+          // Direct the user to reconnect their wallet
+          window.location.assign("/wallet/reconnect?reason=session_expired");
+        }
+      }
+      throw error;
+    }
+  }) as T;
+}
+
+// Wrap each individual API function
+export const cancelEscrow = withSessionExpiryHandling(cancelEscrowRaw);
+export const createDispute = withSessionExpiryHandling(createDisputeRaw);
+export const createEscrow = withSessionExpiryHandling(createEscrowRaw);
+export const getAdminDisputes = withSessionExpiryHandling(getAdminDisputesRaw);
+export const getDispute = withSessionExpiryHandling(getDisputeRaw);
+export const getEscrow = withSessionExpiryHandling(getEscrowRaw);
+export const getPublicVendorEscrows = withSessionExpiryHandling(getPublicVendorEscrowsRaw);
+export const getSubscription = withSessionExpiryHandling(getSubscriptionRaw);
+export const getTracking = withSessionExpiryHandling(getTrackingRaw);
+export const getVendorAnalytics = withSessionExpiryHandling(getVendorAnalyticsRaw);
+export const getVendorEscrows = withSessionExpiryHandling(getVendorEscrowsRaw);
+export const getVendorNotificationPreferences = withSessionExpiryHandling(getVendorNotificationPreferencesRaw);
+export const getVendorProfile = withSessionExpiryHandlinn(getVendorProfileRaw);
+export const patchBuyerContact = withSessionExpiryHandling(patchBuyerContactRaw);
+export const patchVendorNotifications = withSessionExpiryHandling(patchVendorNotificationsRaw);
+export const resolveDispute = withSessionExpiryHandling(resolveDisputeRaw);
+export const shipEscrow = withSessionExpiryHandling(shipEscrowRaw);
+export const upgradeSubscription = withSessionExpiryHandling(upgradeSubscriptionRaw);
+
+/**
+ * Creates a new API client and wraps all of its methods with
+ * session-expiry handling.
+ */
+export function createApiClient(...args: Parameters<typeof createApiClientRaw>): ApiClient {
+  const client = createApiClientRaw(...args);
+  const wrappedClient = { ...client } as ApiClient & Record<string, unknown>;
+  for (const key of Object.keys(wrappedClient)) {
+    const value = wrappedClient[key];
+    if (typeof value === "function") {
+      wrappedClient[key] = withSessionExpiryHandling(value as never);
+    }
+  }
+  return wrappedClient;
 }
