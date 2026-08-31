@@ -24,6 +24,11 @@ export interface PaymentFormProps {
   escrowContractId: string;
   status: string;
   onPaymentSuccess?: (txHash: string) => void;
+  /** Storybook preview overrides. */
+  previewFormState?: "idle" | "loading" | "success" | "error";
+  previewErrorMessage?: string | null;
+  previewTxHash?: string | null;
+  previewWalletDisconnected?: boolean;
 }
 
 function truncateHash(hash: string) {
@@ -50,20 +55,29 @@ export default function PaymentForm({
   total,
   status,
   onPaymentSuccess,
+  previewFormState,
+  previewErrorMessage,
+  previewTxHash,
+  previewWalletDisconnected,
 }: PaymentFormProps) {
   const { t } = useTranslation();
   const { status: walletStatus } = useWallet();
   const { network } = useNetwork();
-  const [formState, setFormState] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [internalFormState, setInternalFormState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [internalErrorMessage, setInternalErrorMessage] = useState<string | null>(null);
+  const [internalTxHash, setInternalTxHash] = useState<string | null>(null);
   const [paidAt, setPaidAt] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [sendReceipt, setSendReceipt] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
+  const formState = previewFormState ?? internalFormState;
+  const errorMessage =
+    previewFormState === "error" ? previewErrorMessage ?? "Transaction was rejected in wallet" : previewErrorMessage ?? internalErrorMessage;
+  const txHash =
+    previewFormState === "success" ? previewTxHash ?? "3f7a91bc" : previewTxHash ?? internalTxHash;
 
-  const isDisconnected = walletStatus !== "connected";
+  const isDisconnected = previewWalletDisconnected ?? (walletStatus !== "connected");
 
   const validateEmail = (email: string) => {
     if (!email.trim()) return false;
@@ -77,8 +91,8 @@ export default function PaymentForm({
     }
 
     if (status !== EscrowStatusConst.PENDING && status !== "Active") {
-      setErrorMessage("Escrow is no longer payable");
-      setFormState("error");
+      setInternalErrorMessage("Escrow is no longer payable");
+      setInternalFormState("error");
       toast.error("Escrow is no longer payable");
       return;
     }
@@ -92,8 +106,8 @@ export default function PaymentForm({
     setEmailError(null);
 
     try {
-      setFormState("loading");
-      setErrorMessage(null);
+      setInternalFormState("loading");
+      setInternalErrorMessage(null);
 
       const xdr = await mockFetchTransactionXdr(escrowId);
 
@@ -115,9 +129,9 @@ export default function PaymentForm({
         }
       }
 
-      setTxHash(hash);
+      setInternalTxHash(hash);
       setPaidAt(new Date().toISOString());
-      setFormState("success");
+      setInternalFormState("success");
       toast.success(t("payment.confirmationTitle") || "Payment successful");
       onPaymentSuccess?.(hash);
     } catch (err: unknown) {
@@ -134,8 +148,8 @@ export default function PaymentForm({
         msg = err;
       }
 
-      setErrorMessage(msg);
-      setFormState("error");
+      setInternalErrorMessage(msg);
+      setInternalFormState("error");
       toast.error(msg);
     }
   };
