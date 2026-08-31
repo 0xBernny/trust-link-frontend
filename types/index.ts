@@ -76,6 +76,31 @@ export interface Subscription {
   expiresAt?: string;
 }
 
+/**
+ * Public-facing vendor profile, populated from the data the onboarding wizard
+ * collects. Everything but `id` and `shopName` is optional because a vendor can
+ * finish onboarding with only the required fields filled in.
+ */
+export interface VendorProfile {
+  /** Vendor's Stellar address — the `/vendor/[id]` route segment. */
+  id: string;
+  shopName: string;
+  description?: string;
+  website?: string;
+  /**
+   * Shipping destinations. The wizard collects a comma-separated string, so the
+   * API may hand back either form; use `parseShippingLocations` to normalise.
+   */
+  shippingLocations?: string[] | string;
+  joinedAt?: string;
+  rating?: number;
+  reviewsCount?: number;
+  verificationLevel?: string;
+  totalTransactions?: number;
+  successfulEscrows?: number;
+  disputeRate?: number;
+}
+
 export interface VendorNotificationPreferences {
   funded: { email: boolean; sms: boolean };
   shipped: { email: boolean; sms: boolean };

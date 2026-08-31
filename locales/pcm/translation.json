@@ -38,7 +38,7 @@
     "orderNotFoundDesc": "We no see escrow with ID:",
     "completeTitle": "Complete Payment",
     "escrowIdPrefix": "Escrow ID: {{id}}",
-    "offerValidFor": "Offer dey valid for {{time}}",
+    "timeRemaining": "Time wey remain",
     "orderDetailsTitle": "Order Details",
     "vendorAddress": "Vendor Address",
     "platformFee": "Platform Fee ({{percent}}%)",
