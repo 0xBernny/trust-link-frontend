@@ -1,9 +1,9 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 import { Skeleton } from "@/components/ui/Skeleton";
+import FetchErrorState, { getFetchErrorMessage } from "@/components/ui/FetchErrorState";
 import useEscrow from "@/hooks/useEscrow";
 import { formatUSDC } from "@/utils/currency";
 
@@ -49,7 +49,7 @@ function DisputePageSkeleton() {
 }
 
 export default function DisputePageClient({ id }: { id: string }) {
-  const { escrow, isLoading, error } = useEscrow(id);
+  const { data: escrow, isLoading, error } = useEscrow(id);
 
   if (isLoading) {
     return <DisputePageSkeleton />;
@@ -58,20 +58,23 @@ export default function DisputePageClient({ id }: { id: string }) {
   if (error || !escrow) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-zinc-50 dark:bg-black">
-        <div className="max-w-md w-full bg-white dark:bg-zinc-950 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 text-center shadow-sm">
-          <div className="w-16 h-16 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mx-auto mb-6 text-[var(--destructive)]">
-            <AlertTriangle size={32} />
+        <div className="max-w-md w-full">
+          <FetchErrorState
+            title="Order Not Found"
+            message={
+              error
+                ? getFetchErrorMessage(error, `Could not retrieve details for order #${id}.`)
+                : `Could not retrieve the details for order #${id}. Please verify the ID and try again.`
+            }
+          />
+          <div className="mt-4 text-center">
+            <Link
+              href="/"
+              className="inline-block w-full py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl font-bold transition-transform active:scale-95"
+            >
+              Go Home
+            </Link>
           </div>
-          <h1 className="text-xl font-bold mb-2">Order Not Found</h1>
-          <p className="text-sm text-[var(--muted)] mb-8">
-            We could not retrieve the details for order #{id}. Please verify the ID and try again.
-          </p>
-          <Link
-            href="/"
-            className="block w-full py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl font-bold transition-transform active:scale-95"
-          >
-            Go Home
-          </Link>
         </div>
       </div>
     );
