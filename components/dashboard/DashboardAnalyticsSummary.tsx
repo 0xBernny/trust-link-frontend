@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo,useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { getVendorAnalytics, type VendorAnalyticsResponse } from "@/lib/api";
 
@@ -16,6 +17,7 @@ const VendorAnalyticsChart = dynamic(
 );
 
 export default function DashboardAnalyticsSummary() {
+  const { t } = useTranslation();
   const [analytics, setAnalytics] = useState<VendorAnalyticsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -62,7 +64,7 @@ export default function DashboardAnalyticsSummary() {
   if (chartData.length === 0) {
     return (
       <div className="flex h-[250px] items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
-        No analytics data available.
+        {t("dashboard.analyticsPage.noData")}
       </div>
     );
   }

@@ -111,7 +111,7 @@ export default function VendorDashboardList({
       setEscrows(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to load vendor escrows.")
+        err instanceof Error ? err : new Error(t("dashboard.loadEscrowsError"))
       );
     }
   };
@@ -148,10 +148,10 @@ export default function VendorDashboardList({
         current?.filter((item) => item.id !== escrowToCancel.id) ?? current
       );
       
-      toast.success("Escrow cancelled successfully");
+      toast.success(t("dashboard.cancelEscrowSuccess"));
       setEscrowToCancel(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to cancel escrow.";
+      const message = err instanceof Error ? err.message : t("dashboard.cancelEscrowError");
       toast.error(message);
       setError(new Error(message));
     } finally {
@@ -164,22 +164,22 @@ export default function VendorDashboardList({
     downloadCsv(
       filteredEscrows as unknown as Record<string, unknown>[],
       [
-        { key: "id", header: "Escrow ID" },
-        { key: "item", header: "Item" },
-        { key: "buyerId", header: "Buyer" },
-        { key: "amount", header: "Amount (USDC)" },
-        { key: "status", header: "Status" },
-        { key: "createdAt", header: "Created At" },
+        { key: "id", header: t("dashboard.csvHeaders.escrowId") },
+        { key: "item", header: t("dashboard.csvHeaders.item") },
+        { key: "buyerId", header: t("dashboard.csvHeaders.buyer") },
+        { key: "amount", header: t("dashboard.csvHeaders.amount") },
+        { key: "status", header: t("dashboard.csvHeaders.status") },
+        { key: "createdAt", header: t("dashboard.csvHeaders.createdAt") },
       ],
       `trustlink-escrows-${new Date().toISOString().slice(0, 10)}.csv`
     );
-  }, [filteredEscrows]);
+  }, [filteredEscrows, t]);
 
   if (error) {
     return (
       <FetchErrorState
-        title="We couldn't load your escrows"
-        message={getFetchErrorMessage(error, "Failed to load vendor escrows.")}
+        title={t("dashboard.loadEscrowsTitle")}
+        message={getFetchErrorMessage(error, t("dashboard.loadEscrowsError"))}
         onRetry={() => {
           setEscrows(null);
           void loadItems();
@@ -285,7 +285,7 @@ export default function VendorDashboardList({
             htmlFor="escrow-from-date"
             className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400"
           >
-            From
+            {t("dashboard.fromLabel")}
           </label>
           <input
             id="escrow-from-date"
@@ -301,7 +301,7 @@ export default function VendorDashboardList({
             htmlFor="escrow-to-date"
             className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400"
           >
-            To
+            {t("dashboard.toLabel")}
           </label>
           <input
             id="escrow-to-date"
@@ -324,7 +324,7 @@ export default function VendorDashboardList({
             }}
             className="rounded-full border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
           >
-            Clear dates
+            {t("dashboard.clearDates")}
           </button>
         )}
       </div>
@@ -332,7 +332,7 @@ export default function VendorDashboardList({
       {filteredEscrows!.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-zinc-200 py-12 text-center dark:border-zinc-800">
           <p className="text-zinc-500 dark:text-zinc-400">
-            No escrows found matching your criteria.
+            {t("dashboard.noEscrowsFound")}
           </p>
           <button
             onClick={() => {
@@ -350,7 +350,7 @@ export default function VendorDashboardList({
             }}
             className="mt-4 text-sm font-medium text-black hover:underline dark:text-white"
           >
-            Clear filters
+            {t("dashboard.clearFilters")}
           </button>
         </div>
       ) : (
@@ -369,14 +369,10 @@ export default function VendorDashboardList({
       {filteredEscrows!.length > 0 && totalPages > 1 && (
         <div className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Showing page{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {currentPage}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {totalPages}
-            </span>
+            {t("dashboard.showingPage")} {" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">{currentPage}</span>{" "}
+            {t("dashboard.ofPages")} {" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">{totalPages}</span>
           </p>
           <div className="flex gap-2">
             <button
@@ -390,7 +386,7 @@ export default function VendorDashboardList({
               disabled={currentPage === 1}
               className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              Previous
+              {t("dashboard.previous")}
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -406,7 +402,7 @@ export default function VendorDashboardList({
               disabled={currentPage === totalPages}
               className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              Next
+              {t("dashboard.next")}
             </button>
           </div>
         </div>
@@ -427,10 +423,10 @@ export default function VendorDashboardList({
 
       <ConfirmationDialog
         open={Boolean(escrowToCancel)}
-        title="Cancel Escrow"
-        description={`Are you sure you want to cancel this escrow for "${escrowToCancel?.item}"? This action cannot be undone.`}
-        confirmLabel="Cancel Escrow"
-        cancelLabel="Keep Escrow"
+        title={t("dashboard.cancelEscrowTitle")}
+        description={t("dashboard.cancelEscrowDescription", { item: escrowToCancel?.item })}
+        confirmLabel={t("dashboard.cancelEscrowTitle")}
+        cancelLabel={t("dashboard.keepEscrow")}
         onConfirm={confirmCancelEscrow}
         onCancel={() => setEscrowToCancel(null)}
         variant="danger"

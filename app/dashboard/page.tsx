@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import translation from "@/locales/en/translation.json";
+
 import DashboardClient from "./DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard | TrustLink",
-  description:
-    "Manage your escrows, track shipments, and review your TrustLink dashboard.",
+  title: translation.dashboard.metadata.pageTitle,
+  description: translation.dashboard.metadata.pageDescription,
 };
 
 export default function DashboardPage() {

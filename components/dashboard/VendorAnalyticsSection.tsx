@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { getVendorAnalytics, type VendorAnalyticsPoint, type VendorAnalyticsResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -84,6 +85,7 @@ function MetricCard({
 }
 
 export default function VendorAnalyticsSection() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [analytics, setAnalytics] = useState<VendorAnalyticsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -119,7 +121,7 @@ export default function VendorAnalyticsSection() {
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : "Failed to load vendor analytics.");
+          setError(err instanceof Error ? err.message : t("dashboard.analyticsPage.loadError"));
         }
       } finally {
         if (mounted) {
@@ -133,14 +135,14 @@ export default function VendorAnalyticsSection() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [router, t]);
 
   const chartData = useMemo(() => {
     return analytics?.dailyMetrics ?? analytics?.series ?? analytics?.data ?? [];
   }, [analytics]);
 
   const metrics = pickMetrics(analytics, chartData);
-  const periodLabel = analytics?.periodLabel ?? "Last 30 days";
+  const periodLabel = analytics?.periodLabel ?? t("dashboard.analyticsPage.defaultPeriod");
   const generatedAt = analytics?.generatedAt
     ? new Date(analytics.generatedAt).toLocaleString()
     : null;
@@ -160,14 +162,14 @@ export default function VendorAnalyticsSection() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="rounded-[2rem] border border-rose-200 bg-rose-50 p-6 text-rose-900 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100">
-            <p className="text-lg font-semibold">We couldn’t load your analytics.</p>
+            <p className="text-lg font-semibold">{t("dashboard.analyticsPage.loadErrorTitle")}</p>
             <p className="mt-2 text-sm text-rose-700 dark:text-rose-200">{error}</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
             >
-              Retry
+              {t("dashboard.analyticsPage.retry")}
             </button>
           </div>
         </div>
@@ -189,13 +191,13 @@ export default function VendorAnalyticsSection() {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                 <BarChart3 className="h-3.5 w-3.5" />
-                Vendor analytics
+                {t("dashboard.analyticsPage.badge")}
               </div>
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
-                Performance dashboard
+                {t("dashboard.analyticsPage.title")}
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400 sm:text-base">
-                Monitor transaction volume, average order size, completion rate, and dispute rate across the last {periodLabel.toLowerCase()}.
+                {t("dashboard.analyticsPage.description", { period: periodLabel.toLowerCase() })}
               </p>
             </div>
           </div>
@@ -205,36 +207,36 @@ export default function VendorAnalyticsSection() {
               <Clock3 className="h-4 w-4 text-[var(--accent)]" />
               {periodLabel}
             </div>
-            {generatedAt ? <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Updated {generatedAt}</p> : null}
+            {generatedAt ? <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{t("dashboard.analyticsPage.updated", { date: generatedAt })}</p> : null}
           </div>
         </div>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Total transaction volume"
+            label={t("dashboard.analyticsPage.totalTransactionVolume")}
             value={formatUSDC(metrics.totalTransactionVolume)}
-            hint="Aggregate volume for the selected period"
+            hint={t("dashboard.analyticsPage.totalTransactionVolumeHint")}
             icon={<TrendingUp className="h-5 w-5 text-brand-primary dark:text-brand-primary-dark" />}
             tone="bg-blue-50 dark:bg-blue-500/10"
           />
           <MetricCard
-            label="Average order value"
+            label={t("dashboard.analyticsPage.averageOrderValue")}
             value={formatUSDC(metrics.averageOrderValue)}
-            hint="Mean ticket size across completed orders"
+            hint={t("dashboard.analyticsPage.averageOrderValueHint")}
             icon={<ShoppingBag className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}
             tone="bg-emerald-50 dark:bg-emerald-500/10"
           />
           <MetricCard
-            label="Completion rate"
+            label={t("dashboard.analyticsPage.completionRate")}
             value={formatRate(metrics.completionRate)}
-            hint="Share of orders that reached completion"
+            hint={t("dashboard.analyticsPage.completionRateHint")}
             icon={<BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
             tone="bg-amber-50 dark:bg-amber-500/10"
           />
           <MetricCard
-            label="Dispute rate"
+            label={t("dashboard.analyticsPage.disputeRate")}
             value={formatRate(metrics.disputeRate)}
-            hint="Share of orders escalated into disputes"
+            hint={t("dashboard.analyticsPage.disputeRateHint")}
             icon={<ShieldAlert className="h-5 w-5 text-rose-600 dark:text-rose-400" />}
             tone="bg-rose-50 dark:bg-rose-500/10"
           />
@@ -243,21 +245,21 @@ export default function VendorAnalyticsSection() {
         <section className="rounded-[2rem] border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">Transaction volume trend</h2>
+              <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">{t("dashboard.analyticsPage.trendTitle")}</h2>
               <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-                The line chart shows daily transaction volume over the last 30 days. Hover or tap a point to review the full daily snapshot.
+                {t("dashboard.analyticsPage.trendDescription")}
               </p>
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
               <span className="h-2 w-2 rounded-full bg-brand-primary" />
-              Transaction volume
+              {t("dashboard.analyticsPage.trendLegend")}
             </div>
           </div>
 
           <div className="mt-6 h-[320px] w-full sm:h-[360px]">
             {chartData.length === 0 ? (
               <div className="flex h-full items-center justify-center rounded-[1.75rem] border border-dashed border-zinc-200 bg-zinc-50 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
-                No analytics points were returned for this period.
+                {t("dashboard.analyticsPage.noPoints")}
               </div>
             ) : (
               <VendorAnalyticsChart data={chartData} isMobile={isMobile} />
