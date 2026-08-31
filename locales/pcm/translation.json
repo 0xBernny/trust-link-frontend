@@ -57,6 +57,8 @@
     "freighterNotInstalled": "Freighter never install. Abeg install Freighter make you fit continue.",
     "signatureCompleted": "Freighter signature don complete. Your payment authorization don capture.",
     "walletSignatureError": "E no fit trigger wallet signature.",
+    "sendReceipt": "Send me receipt",
+    "emailReceipt": "Email address for receipt",
     "payNow": "Pay Now",
     "waitingForFreighter": "E dey wait for Freighter...",
     "expiredCountdown": "Don expire"
