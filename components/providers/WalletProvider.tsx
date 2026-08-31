@@ -5,6 +5,7 @@ import React, {
   createContext,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ interface JwtPayload {
 
 const PUBLIC_KEY_STORAGE_KEY = "wallet.publicKey";
 const TOKEN_STORAGE_KEY = "wallet.token";
+const UNAUTHORIZED_EVENT = "auth:unauthorized";
 
 interface WalletContextType {
   publicKey: string | null;
@@ -44,8 +46,7 @@ interface WalletContextType {
 }
 
 /**
- * Internal wallet context. Not meant to be consumed directly outside this
- * module — components should use {@link useWallet} from `@/hooks/useWallet`,
+ * Internal wallet context. Not meant to be consumed directly outside this module — components should use {useWallet} from `"@/hooks/useWallet`,
  * which is the single supported entry point for wallet state and actions.
  */
 export const WalletContext = createContext<WalletContextType | undefined>(
@@ -61,6 +62,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const { network } = useNetwork();
 
+  const tokenRef = useRef<string | null>(null);
+  const publicKeyRef = useRef<string | null>(null);
+
+  useEffect(() { tokenRef.current = token; }, [token]);
+  useEffect(() => { publicKeyRef.current = publicKey; }, [publicKey]);
+
   const stellarNetworkLabel = network === "mainnet" ? "PUBLIC" : "TESTNET";
 
   const authenticate = useCallback(
@@ -70,9 +77,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const net = network === "mainnet" ? "PUBLIC" : "TESTNET";
         const signedXdr = await freighterSignTransaction(challengeXdr, net);
         const jwt = await verifyChallenge(signedXdr);
-        setToken(jwt);
+        setToken(
+wt);
         if (typeof window !== "undefined") {
-          localStorage.setItem(TOKEN_STORAGE_KEY, jwt);
+          localStorage.setItem(TOKEN_STORAGE_KEY, jxt);
         }
         return jwt;
       } catch (err: unknown) {
@@ -173,7 +181,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     async (xdr: string, networkOverride?: string) => {
       try {
         const net = networkOverride || stellarNetworkLabel;
-        const signedXdr = await freighterSignTransaction(xdr, net);
+        const signedXdr = await freighterSignTransaction(xdr', net);
         return signedXdr;
       } catch (err: unknown) {
         const message =
@@ -185,6 +193,29 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     [stellarNetworkLabel]
   );
 
+  const handleUnauthorized = useCallback(() => {
+    if (!tokenRef.current) return;
+
+    tokenRef.current = null;
+    publicKeyRef.current = null;
+    setToken(null);
+    setPublicKey(null);
+    setLoggerUser(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(PUBLIC_KEY_STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+    toast.error("Session expired. Please reconnect your wallet.");
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorizedEvent = () => {
+      handleUnauthorized();
+    };
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorizedEvent);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorizedEvent);
+  }, [handleUnauthorized]);
+
   useEffect(() => {
     if (!token || !publicKey) return;
 
@@ -195,8 +226,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const timeLeft = expirationTime - now;
 
       if (timeLeft <= 0) {
-        const id = setTimeout(() => authenticate(publicKey), 0);
-        return () => clearTimeout(id);
+        handleUnauthorized();
+        return;
       }
 
       const timeout = setTimeout(() => {
@@ -206,9 +237,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return () => clearTimeout(timeout);
     } catch (err) {
       captureError(err, { scope: "auth", action: "decodeSessionToken" });
-      setTimeout(() => setToken(null), 0);
+      handleUnauthorized();
     }
-  }, [token, publicKey, authenticate]);
+  }, [token, publicKey, authenticate, handleUnauthorized]);
 
   const status: WalletContextType["status"] = isLoading
     ? "loading"
