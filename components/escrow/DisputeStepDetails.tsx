@@ -1,5 +1,6 @@
 import React from "react";
 
+import { FormField } from "@/components/ui/FormField";
 import type { DisputeFormValues } from "@/lib/validations/dispute";
 
 interface Props {
@@ -12,15 +13,19 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
   return (
     <div className="step step-2" data-testid="step-2">
       <h2>Step 2: Dispute Details</h2>
-      <div className="form-group">
-        <label htmlFor="reason">Reason for Dispute *</label>
+      <FormField
+        id="reason"
+        label="Reason for Dispute *"
+        error={errors.reason}
+        className="form-group"
+        labelClassName=""
+        errorClassName="error"
+      >
         <select
           id="reason"
           value={formData.reason}
           onChange={(e) => updateField("reason", e.target.value)}
           aria-label="reason"
-          aria-invalid={!!errors.reason}
-          aria-describedby={errors.reason ? "reason-error" : undefined}
         >
           <option value="">Select a reason</option>
           <option value="product_not_received">Product not received</option>
@@ -29,15 +34,17 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
           <option value="defective_product">Defective product</option>
           <option value="billing_error">Billing error</option>
         </select>
-        {errors.reason && (
-          <span id="reason-error" className="error" role="alert">
-            {errors.reason}
-          </span>
-        )}
-      </div>
+      </FormField>
 
-      <div className="form-group">
-        <label htmlFor="description">Description *</label>
+      <FormField
+        id="description"
+        label="Description *"
+        error={errors.description}
+        hint={`${formData.description.length}/20 characters minimum`}
+        className="form-group"
+        labelClassName=""
+        errorClassName="error"
+      >
         <textarea
           id="description"
           value={formData.description}
@@ -45,16 +52,8 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
           rows={5}
           placeholder="Please provide detailed information about your dispute (minimum 20 characters)"
           aria-label="description"
-          aria-invalid={!!errors.description}
-          aria-describedby={errors.description ? "description-error" : undefined}
         />
-        {errors.description && (
-          <span id="description-error" className="error" role="alert">
-            {errors.description}
-          </span>
-        )}
-        <small>{formData.description.length}/20 characters minimum</small>
-      </div>
+      </FormField>
     </div>
   );
 }
