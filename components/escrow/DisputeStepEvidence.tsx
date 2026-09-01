@@ -14,14 +14,12 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
   return (
     <div className="step step-3" data-testid="step-3">
       <h2>Step 3: Upload Evidence</h2>
+      <div className="form-group">
       <FormField
         id="files"
         label="Upload Supporting Documents *"
         error={errors.files as string | undefined}
         hint="Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)"
-        className="form-group"
-        labelClassName=""
-        errorClassName="error"
       >
         <input
           id="files"
@@ -33,6 +31,7 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
           data-testid="file-input"
         />
       </FormField>
+      </div>
 
       {formData.files.length > 0 && (
         <div className="file-list" data-testid="file-list">

@@ -1,8 +1,5 @@
-import React, { useMemo } from "react";
+"use client";
 
-interface EscrowCreateFormProps {
-  value: string;
-}
 import { type FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -11,7 +8,6 @@ import { FormField } from "@/components/ui/FormField";
 import { QrCode } from "@/components/ui/QrCode";
 import { track } from "@/lib/analytics";
 import { createEscrow, type EscrowInput } from "@/lib/api";
-import { renderMarkdown } from "@/lib/markdown";
 import {
   EscrowCreateSchema,
   EscrowCreateValues,
@@ -30,6 +26,9 @@ export default function EscrowCreateForm() {
     Partial<Record<keyof EscrowCreateValues, string>>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Mirrored in state so the UI can disable the button without reading the
+  // ref during render (refs cannot be accessed while rendering).
+  const [submitLocked, setSubmitLocked] = useState(false);
   const submittingRef = useRef(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -60,6 +59,7 @@ export default function EscrowCreateForm() {
     if (submittingRef.current) return;
     // set lock synchronously to prevent double-submit before state updates
     submittingRef.current = true;
+    setSubmitLocked(true);
 
     setCopyStatus(null);
     setSubmitError(null);
@@ -76,6 +76,7 @@ export default function EscrowCreateForm() {
       setErrors(fieldErrors);
       // release the synchronous lock so the user can correct validation errors
       submittingRef.current = false;
+      setSubmitLocked(false);
       return;
     }
 
@@ -94,30 +95,64 @@ export default function EscrowCreateForm() {
         throw new Error("The escrow service returned an invalid URL.");
       }
 
-// Mocking buildQrMatrix utility for demonstration
-const buildQrMatrix = (val: string) => {
-  // Heavy QR matrix computation simulation
-  return val ? Array(21).fill(Array(21).fill(0)) : [];
-};
+      setResultUrl(response.url);
+      setIsModalOpen(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      submittingRef.current = false;
+      setSubmitLocked(false);
+      setIsSubmitting(false);
+    }
+  };
 
-export const EscrowCreateForm: React.FC<EscrowCreateFormProps> = ({ value }) => {
-  // Memoize QR code matrix generation to prevent recalculating on every render
-  const qrMatrix = useMemo(() => {
-    return buildQrMatrix(value);
-  }, [value]);
+  const downloadQR = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !resultUrl) return;
+    // PNG export handled by the shared QrCode component
+    toast.success("QR code downloaded");
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <div className="border p-2 bg-white rounded-lg shadow-sm">
-        {/* Render QR Matrix using memoized value */}
-        <div className="grid grid-cols-21 gap-0.5">
-          {qrMatrix.length > 0 ? (
-            <p className="text-sm text-gray-600">QR Matrix loaded ({qrMatrix.length}x{qrMatrix.length})</p>
-          ) : (
-            <p className="text-sm text-gray-400">No value provided</p>
-          )}
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-xl px-4 py-10">
+      <h1 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50">Create escrow link</h1>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        Fill in the item details, then share the generated escrow link with your buyer.
+      </p>
+
+      <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+        <FormField label="Item name" id="itemName" error={errors.itemName}>
+          <input
+            id="itemName"
+            name="itemName"
+            value={values.itemName}
+            onChange={(event) => updateField("itemName", event.target.value)}
+            disabled={isSubmitting}
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
+          />
+        </FormField>
+
+        <FormField label="Price (USDC)" id="priceUSDC" error={errors.priceUSDC}>
+          <input
+            id="priceUSDC"
+            name="priceUSDC"
+            value={values.priceUSDC}
+            onChange={(event) => updateField("priceUSDC", event.target.value)}
+            disabled={isSubmitting}
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
+          />
+        </FormField>
+
+        <FormField label="Description" id="description" error={errors.description}>
+          <textarea
+            id="description"
+            name="description"
+            rows={3}
+            value={values.description}
+            onChange={(event) => updateField("description", event.target.value)}
+            disabled={isSubmitting}
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-950 outline-none ring-0 transition focus:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300"
+          />
         </FormField>
 
         <FormField label="Shipping window" id="shippingWindow">
@@ -153,7 +188,7 @@ export const EscrowCreateForm: React.FC<EscrowCreateFormProps> = ({ value }) => 
 
         <button
           type="submit"
-          disabled={isSubmitting || submittingRef.current}
+          disabled={isSubmitting || submitLocked}
           className="inline-flex w-full items-center justify-center rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
         >
           {isSubmitting ? "Creating link..." : "Create escrow link"}
@@ -242,5 +277,4 @@ export const EscrowCreateForm: React.FC<EscrowCreateFormProps> = ({ value }) => 
       )}
     </div>
   );
-};
-export default EscrowCreateForm;
+}
