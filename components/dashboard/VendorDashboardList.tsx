@@ -246,7 +246,9 @@ export default function VendorDashboardList({
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <input
+            id="escrow-search"
             type="text"
+            aria-label={t("dashboard.searchPlaceholder") || "Search escrows"}
             placeholder={t("dashboard.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
