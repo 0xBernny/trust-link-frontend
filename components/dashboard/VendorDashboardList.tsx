@@ -11,6 +11,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -240,6 +241,22 @@ export default function VendorDashboardList({
     return <EmptyVendorState />;
   }
 
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex = index;
+    if (e.key === "ArrowRight") {
+      nextIndex = (index + 1) % STATUS_TABS.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (index - 1 + STATUS_TABS.length) % STATUS_TABS.length;
+    }
+    
+    if (nextIndex !== index) {
+      e.preventDefault();
+      tabRefs.current[nextIndex]?.focus();
+    }
+  };
+
   return (
     <>
       <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -310,8 +327,8 @@ export default function VendorDashboardList({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {STATUS_TABS.map((s) => {
+      <div className="mb-4 flex flex-wrap gap-2" role="tablist">
+        {STATUS_TABS.map((s, index) => {
           const count =
             s === "ALL"
               ? escrows.length
@@ -319,12 +336,19 @@ export default function VendorDashboardList({
           return (
             <button
               key={s}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
+              role="tab"
+              aria-selected={statusFilter === s}
               type="button"
               onClick={() => setStatusFilter(s)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   setStatusFilter(s);
+                } else {
+                  handleTabKeyDown(e, index);
                 }
               }}
               className={`rounded-full px-3 py-1 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-300 ${
