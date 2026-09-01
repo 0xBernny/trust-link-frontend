@@ -6,11 +6,14 @@ import EscrowTableRow from "../EscrowTableRow";
 
 const mockEscrow = {
   id: "escrow-1",
+  vendorId: "v1",
   item: "Test Product",
-  buyer: "GBUYER...",
+  buyerId: "GBUYER...",
   amount: 100,
   status: "PENDING" as const,
   createdAt: "2026-05-01",
+  updatedAt: "2026-05-01",
+  history: [],
 };
 
 describe("EscrowTableRow", () => {
@@ -24,7 +27,7 @@ describe("EscrowTableRow", () => {
           <EscrowTableRow
             escrow={mockEscrow}
             onCancelEscrow={handleCancel}
-            onCopyLink={handleCopy}
+            onMarkShipped={handleCopy}
           />
         </tbody>
       </table>
@@ -41,7 +44,7 @@ describe("EscrowTableRow", () => {
     const handleCancel = vi.fn();
     const handleCopy = vi.fn();
 
-    const activeEscrow = { ...mockEscrow, status: "FUNDED" };
+    const activeEscrow = { ...mockEscrow, status: "FUNDED" as const };
 
     render(
       <table>
@@ -49,7 +52,7 @@ describe("EscrowTableRow", () => {
           <EscrowTableRow
             escrow={activeEscrow}
             onCancelEscrow={handleCancel}
-            onCopyLink={handleCopy}
+            onMarkShipped={handleCopy}
           />
         </tbody>
       </table>
