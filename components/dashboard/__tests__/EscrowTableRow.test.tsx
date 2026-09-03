@@ -10,6 +10,7 @@ const mockEscrow = {
   item: "Test Product",
   buyerId: "GBUYER...",
   amount: 100,
+  item: "Test Product",
   status: "PENDING" as const,
   createdAt: "2026-05-01",
   updatedAt: "2026-05-01",
@@ -19,13 +20,13 @@ const mockEscrow = {
 describe("EscrowTableRow", () => {
   it("renders cancel button for PENDING escrows and handles click", () => {
     const handleCancel = vi.fn();
-    const handleCopy = vi.fn();
 
     render(
       <table>
         <tbody>
           <EscrowTableRow
             escrow={mockEscrow}
+            onMarkShipped={vi.fn()}
             onCancelEscrow={handleCancel}
             onMarkShipped={handleCopy}
           />
@@ -42,7 +43,6 @@ describe("EscrowTableRow", () => {
 
   it("does not render cancel button for non-PENDING escrows", () => {
     const handleCancel = vi.fn();
-    const handleCopy = vi.fn();
 
     const activeEscrow = { ...mockEscrow, status: "FUNDED" as const };
 
@@ -51,6 +51,7 @@ describe("EscrowTableRow", () => {
         <tbody>
           <EscrowTableRow
             escrow={activeEscrow}
+            onMarkShipped={vi.fn()}
             onCancelEscrow={handleCancel}
             onMarkShipped={handleCopy}
           />

@@ -33,7 +33,7 @@ test.describe("Buyer payment flow", () => {
 
     await expect(page).toHaveURL(`/pay/${TEST_ESCROW_ID}`);
     // Escrow item name appears on page in a definition element
-    await expect(page.locator("dd").filter({ hasText: "Test Product" })).toBeVisible();
+    await expect(page.locator("dd").filter({ hasText: "Test Product" }).first()).toBeVisible();
   });
 
   test("submits payment and shows success message", async ({ page }) => {
@@ -42,17 +42,17 @@ test.describe("Buyer payment flow", () => {
     const payBtn = page.getByRole("button", { name: /Pay Now/i });
     await expect(payBtn).toBeVisible();
     
-    // Fill contact info to bypass validation
+    // Fill contact info and submit. The button exists in SSR HTML before React
+    // hydrates, so retry the whole interaction until the click lands and the
+    // success indicator appears (same pattern as the wallet-rejection test).
     const emailInput = page.getByLabel(/Email address/i);
     await expect(async () => {
       await emailInput.fill("buyer@example.com");
-      expect(await emailInput.inputValue()).toBe("buyer@example.com");
-    }).toPass({ timeout: 5000 });
-    
-    await payBtn.click();
-
-    // After connecting and signing, the success indicator appears
-    await expect(page.getByText(/Freighter signature completed/i)).toBeVisible({ timeout: 10_000 });
+      await expect(emailInput).toHaveValue("buyer@example.com");
+      await payBtn.click();
+      // After connecting and signing, the success indicator appears
+      await expect(page.getByText(/Freighter signature completed/i).first()).toBeVisible({ timeout: 5_000 });
+    }).toPass({ timeout: 20_000 });
   });
 
   test("displays tracking timeline when escrow is funded", async ({ page, next }) => {

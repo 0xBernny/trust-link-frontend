@@ -43,7 +43,7 @@ const escrow = {
   history: [],
 };
 
-function dispute(id: string, status: DisputeStatus = DisputeStatusConst.OPEN) {
+function dispute(id: string, status: Dispute["status"] = DisputeStatusConst.OPEN) {
   return {
     id,
     escrowId: escrow.id,
