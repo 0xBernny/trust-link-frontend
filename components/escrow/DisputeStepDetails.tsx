@@ -17,9 +17,6 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
         id="reason"
         label="Reason for Dispute *"
         error={errors.reason}
-        className="form-group"
-        labelClassName=""
-        errorClassName="error"
       >
         <select
           id="reason"
@@ -41,9 +38,6 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
         label="Description *"
         error={errors.description}
         hint={`${formData.description.length}/20 characters minimum`}
-        className="form-group"
-        labelClassName=""
-        errorClassName="error"
       >
         <textarea
           id="description"
