@@ -79,7 +79,9 @@ export default function VendorDashboardList({
     } catch {
       // ignore - localStorage unavailable
     }
-  }, []);
+    return "card";
+  });
+  const { formatAmount } = useCurrency();
 
   // Persist view preference
   useEffect(() => {
@@ -192,7 +194,8 @@ export default function VendorDashboardList({
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
   // ----------------------------------------------------------------------
 
-  const loadItems = async () => {
+  
+  const loadItems = useCallback(async () => {
     try {
       setError(null);
       const token = window.localStorage.getItem("wallet.jwt") || undefined;
@@ -203,11 +206,11 @@ export default function VendorDashboardList({
         err instanceof Error ? err : new Error(t("dashboard.loadEscrowsError"))
       );
     }
-  };
+  , [t]);
 
   useEffect(() => {
     startTransition(() => loadItems());
-  }, []);
+  }, [loadItems]);
 
   const handleShipmentSuccess = (escrowId: string) => {
     setEscrows(

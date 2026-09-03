@@ -19,9 +19,6 @@ export function DisputeStepEvidence({ formData, errors, handleFileUpload, remove
         label="Upload Supporting Documents *"
         error={errors.files as string | undefined}
         hint="Accepted formats: JPEG, PNG, WebP, PDF (Max 10MB each)"
-        className="form-group"
-        labelClassName=""
-        errorClassName="error"
       >
         <input
           id="files"
