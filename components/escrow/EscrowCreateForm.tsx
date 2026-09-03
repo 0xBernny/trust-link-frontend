@@ -186,7 +186,7 @@ export default function EscrowCreateForm() {
           {values.description && (
             <div className="mt-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
               <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">Preview:</p>
-              <div 
+              <div
                 className="text-sm text-zinc-700 dark:text-zinc-300"
                 dangerouslySetInnerHTML={renderMarkdown(values.description)}
               />
@@ -227,7 +227,7 @@ export default function EscrowCreateForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting || submittingRef.current}
+          disabled={isSubmitting}
           className="inline-flex w-full items-center justify-center rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
         >
           {isSubmitting ? "Creating link..." : "Create escrow link"}
@@ -316,4 +316,4 @@ export default function EscrowCreateForm() {
       )}
     </div>
   );
-}
+};
