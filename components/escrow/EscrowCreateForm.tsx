@@ -1,3 +1,5 @@
+"use client";
+
 import { type FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
