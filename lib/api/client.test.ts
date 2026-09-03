@@ -72,7 +72,7 @@ describe("api client", () => {
   );
 
   it("injects the auth header automatically from the client token", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    fetchMock.mockResolvedValueOnce(mockResponse(escrow));
 
     const client = createApiClient("jht-123");
     await client.getEscrow("e1");
@@ -111,9 +111,13 @@ describe("api client", () => {
   // New tests for acceptance criteria
 
   it("parses JSON error responses into ApiError with message", async () => {
-    fetchMock.mockResolvedValueOnce(
-      mockResponse({ message: "Not Found" }, { ok: false, status: 404, statusText: "Not Found" })
-    );
+    fetchMock
+      .mockResolvedValueOnce(
+        mockResponse({ message: "Not Found" }, { ok: false, status: 404, statusText: "Not Found" })
+      )
+      .mockResolvedValueOnce(
+        mockResponse({ message: "Not Found" }, { ok: false, status: 404, statusText: "Not Found" })
+      );
 
     const client = createApiClient();
     const error = await client.getEscrow("missing").catch((e) => e);
@@ -144,19 +148,19 @@ describe("api client", () => {
       .mockResolvedValueOnce(
         mockResponse({ message: "Not Found" }, { ok: false, status: 404, statusText: "Not Found" })
       )
-      .mockResolvedValueOnce(mockResponse({ id: "e1", status: "active" }));
+      .mockResolvedValueOnce(mockResponse(escrow));
 
     const client = createApiClient();
     const result = await client.getEscrow("e1");
 
-    expect(result).toEqual({ id: "e1", status: "active" });
+    expect(result).toEqual(escrow);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0][0]).toContain("/escrow/e1");
     expect(fetchMock.mock.calls[1][0]).toContain("/escrows/e1");
   });
 
   it("does not set an Authorization header when no token is provided", async () => {
-    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    fetchMock.mockResolvedValueOnce(mockResponse(escrow));
 
     const client = createApiClient();
     await client.getEscrow("e1");

@@ -14,7 +14,13 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
     <div className="step step-2" data-testid="step-2">
       <h2>Step 2: Dispute Details</h2>
       <div className="form-group">
-        <FormField
+        
+      <FormField
+        id="reason"
+        label="Reason for Dispute *"
+        error={errors.reason}
+      >
+        <select
           id="reason"
           label="Reason for Dispute *"
           error={errors.reason}
@@ -36,7 +42,14 @@ export function DisputeStepDetails({ formData, errors, updateField }: Props) {
       </div>
 
       <div className="form-group">
-        <FormField
+       
+      <FormField
+        id="description"
+        label="Description *"
+        error={errors.description}
+        hint={`${formData.description.length}/20 characters minimum`}
+      >
+        <textarea
           id="description"
           label="Description *"
           error={errors.description}

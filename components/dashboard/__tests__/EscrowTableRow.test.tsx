@@ -6,7 +6,8 @@ import EscrowTableRow from "../EscrowTableRow";
 
 const mockEscrow = {
   id: "escrow-1",
-  vendorId: "vendor-1",
+  vendorId: "v1",
+  item: "Test Product",
   buyerId: "GBUYER...",
   amount: 100,
   item: "Test Product",
@@ -27,6 +28,7 @@ describe("EscrowTableRow", () => {
             escrow={mockEscrow}
             onMarkShipped={vi.fn()}
             onCancelEscrow={handleCancel}
+            onMarkShipped={handleCopy}
           />
         </tbody>
       </table>
@@ -51,6 +53,7 @@ describe("EscrowTableRow", () => {
             escrow={activeEscrow}
             onMarkShipped={vi.fn()}
             onCancelEscrow={handleCancel}
+            onMarkShipped={handleCopy}
           />
         </tbody>
       </table>
